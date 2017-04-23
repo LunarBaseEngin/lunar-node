@@ -105,8 +105,11 @@ public class TaskHandlingMessage implements Runnable {
         	case ftQuery: 
         		ftQuery( params);  
         		break;
-        	case fetchRecords: 
-        		fetchRecords( params);  
+        	case fetchRecordsDESC: 
+        		fetchRecords( params, true);  
+        		break;
+        	case fetchRecordsASC: 
+        		fetchRecords( params, false);  
         		break;
         	case fetchLog: 
         		if(params.length != 4)
@@ -116,7 +119,7 @@ public class TaskHandlingMessage implements Runnable {
                 	return ; 
         		}
         		params[1] = LogCMDConstructor.getLogTableName(params[1]); 
-        		fetchRecords( params);  
+        		fetchRecords( params, false);  
         		break;
         	default:
         		break;
@@ -440,7 +443,7 @@ public class TaskHandlingMessage implements Runnable {
     }
     
   
-    private void fetchRecords(String[] params)
+    private void fetchRecords(String[] params, boolean if_DESC)
     {
     	if(params.length != 4)
 		{
@@ -472,7 +475,10 @@ public class TaskHandlingMessage implements Runnable {
          
         ArrayList<Record32KBytes> recs = null;
         try {
-        	recs = l_DB.fetchRecords(table, from, count);
+        	if(if_DESC)
+        		recs = l_DB.fetchRecords(table, from, count);
+        	else
+        		recs = l_DB.fetchRecordsASC(table, from, count);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -48,7 +48,7 @@ public class TestRemoteFetchLog {
         	params[0] = "CorpusDB"; 
         	params[1] = "textTable_remote_1"; 
         	params[2] = "0";
-        	params[3] = "15000";
+        	params[3] = "15";
         		
         	MessageResponse resp_from_svr = client.sendRequest(cmd, params); 
         	 
@@ -64,7 +64,7 @@ public class TestRemoteFetchLog {
         	 * at MessageClientWatcher 
         	 * to block the thread waiting for server response.
         	 */
-        	 //cf.channel().closeFuture().sync();
+        	 cf.channel().closeFuture().sync();
         
         } finally {
             

@@ -85,11 +85,14 @@ public class CMDEnumeration {
 		addFulltextColumn{
 			public byte getByte(){return 18;}  
 		},
-		fetchRecords{
+		fetchRecordsDESC{
 			public byte getByte(){return 19;}  
 		}, 
-		fetchLog{
+		fetchRecordsASC{
 			public byte getByte(){return 20;}  
+		}, 
+		fetchLog{
+			public byte getByte(){return 21;}  
 		}; 
 		
 		
@@ -139,9 +142,12 @@ public class CMDEnumeration {
 	    		cmd = CMDEnumeration.command.addFulltextColumn;
 	    		break;
 	    	case 19:
-	    		cmd = CMDEnumeration.command.fetchRecords;
+	    		cmd = CMDEnumeration.command.fetchRecordsDESC;
 	    		break;
 	    	case 20:
+	    		cmd = CMDEnumeration.command.fetchRecordsASC;
+	    		break;
+	    	case 21:
 	    		cmd = CMDEnumeration.command.fetchLog;
 	    		break;
 	    	default:
