@@ -28,8 +28,11 @@ import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.logging.Logger;
+import java.util.concurrent.ThreadPoolExecutor; 
+import org.apache.log4j.FileAppender;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
+import org.apache.log4j.SimpleLayout;
 
 import LCG.DB.API.LunarDB;
 import LCG.DB.API.LunarTable;
@@ -46,7 +49,8 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import lunarion.db.local.Test.LunarServerHandlerTest;
-import lunarion.node.EDF.NodeTaskCenter; 
+import lunarion.node.EDF.NodeTaskCenter;
+import lunarion.node.logger.Timer; 
 
 /*
  * the server part is modified from the Netty user-guild:
@@ -81,7 +85,17 @@ public class LunarServerStandAlone {
 	
 	public LunarServerStandAlone()
 	{
-		
+		SimpleLayout layout = new SimpleLayout();
+		 
+    	FileAppender fa = null;
+		try {
+			fa = new  FileAppender(layout, "LunarNode.log.txt", true);
+		} catch (IOException e) { 
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	
+        logger.addAppender(fa);
 	}
 	
 	public void startServer(String __svr_root) throws IOException 
@@ -96,7 +110,9 @@ public class LunarServerStandAlone {
 		File dir = new File(server_root);
 		if(!dir.isDirectory())
 		{	
-			logger.severe("[NODE ERROR]: unable to start server at: " + server_root);  
+			logger.info(Timer.currentTime() + " [NODE ERROR]: unable to start server at: " + server_root);  
+			logger.info(Timer.currentTime() + " [NODE ERROR]: the server root directory" + server_root + " is wrong, please start server with a correct directory");
+			
 			throw new IOException("[NODE ERROR]: the server root directory" + server_root + " is wrong, please start server with a correct directory");
 		}
     	else
@@ -109,7 +125,8 @@ public class LunarServerStandAlone {
                 	 /*
                 	  * do nothing, there is no db yet
                 	  */
-            		System.out.println("[INFO]: there are no db on the server yet.");
+            		//System.out.println("[INFO]: there are no db on the server yet.");
+            		logger.info(Timer.currentTime() + " [NODE ERROR]:there are no db on the server yet." );  
                 }
             	else
             	{
@@ -126,9 +143,8 @@ public class LunarServerStandAlone {
                         	File conf_file = new File(conf);
                     		if(!conf_file.exists())
                     		{
-                    			/*
-                    			 * it is not a db directory. 
-                    			 */
+                    			logger.info(Timer.currentTime() + " [NODE ERROR]: there is no db instance under this folder: " + server_root+file_array[i].getName() );  
+                               
                     		}
                     		else
                     		{
@@ -146,6 +162,8 @@ public class LunarServerStandAlone {
 			LunarDB i_db = new LunarDB();
 			String db_root = server_root + db_names.get(i).trim(); 
 			i_db.openDB(db_root);
+			logger.info(Timer.currentTime() + " [NODE INFO]: database: " + i_db.dbName() + " is running now." );  
+            
 			db_map.put(db_names.get(i).trim(), i_db);
 			 
 			
@@ -167,15 +185,22 @@ public class LunarServerStandAlone {
         Iterator<String> keys = db_map.keySet().iterator();
         while(keys.hasNext())
         {
+        	boolean dbclosed = false;
         	String key = keys.next();
         	LunarDB db = db_map.get(key);
         	try {
 				db.closeDB();
+				dbclosed = true;
 			} catch (IOException e) {
-				logger.severe("[NODE ERROR]: fail to close database: " + key); 
+				logger.info(Timer.currentTime() + " [NODE ERROR]: fail to close database: " + key); 
 				e.printStackTrace();
 			}
+        	
+        	if(dbclosed)
+        		 logger.info(Timer.currentTime() + " [NODE INFO]: database " + key + " has been shutdown successfully"); 
         }
+        logger.info(Timer.currentTime() + " [NODE INFO]: server closed."); 
+		
 	}
 	public void bind(int port) throws InterruptedException {
 		
@@ -184,13 +209,13 @@ public class LunarServerStandAlone {
 		bootstrap.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
                     //.childHandler(new ChildChannelHandler())
-                    .childHandler(new LunarServerChannelInitializer(node_tc))
+                    .childHandler(new LunarServerChannelInitializer(node_tc, logger))
                     .option(ChannelOption.SO_BACKLOG, 1024) 
                     .childOption(ChannelOption.SO_KEEPALIVE, true);
 
 		Channel ch = bootstrap.bind(port).sync().channel();
-		System.err.println("DB node server channel binded at port: " + port + '.');
-            
+		System.err.println(Timer.currentTime() +  " DB node server channel binded at port: " + port + '.');
+		logger.info(Timer.currentTime() + " [NODE INFO]:  DB node server channel binded at port: " + port + '.');     
 		ch.closeFuture().sync();
             /*
              *  Bind and start to accept incoming connections.
@@ -207,7 +232,7 @@ public class LunarServerStandAlone {
     }
 	
 	
-	public void submit(Runnable task) {
+	public void submit(Runnable task ) {
        
         thread_executor.submit(task);
     }

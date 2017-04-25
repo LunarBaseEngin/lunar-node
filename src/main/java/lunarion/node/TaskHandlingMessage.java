@@ -22,6 +22,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
 
+import org.apache.helix.manager.zk.ZKHelixAdmin;
+import org.apache.log4j.FileAppender;
+import org.apache.log4j.Logger;
+import org.apache.log4j.SimpleLayout;
+
 import LCG.DB.API.LunarDB;
 import LCG.DB.API.LunarTable;
 import LCG.DB.API.Result.FTQueryResult;
@@ -38,6 +43,7 @@ import lunarion.node.EDF.NodeTaskCenter;
 import lunarion.node.EDF.events.VNodeIncomingRecords;
 import lunarion.node.logger.LogCMDConstructor;
 import lunarion.node.logger.LogTable;
+import lunarion.node.logger.Timer;
 import lunarion.node.remote.protocol.CodeSucceed;
 import lunarion.node.remote.protocol.MessageRequest;
 import lunarion.node.remote.protocol.MessageResponse;
@@ -45,11 +51,15 @@ import lunarion.node.remote.protocol.MessageResponseQuery;
 
 public class TaskHandlingMessage implements Runnable {
 
+	
+	
     private MessageRequest request = null;
     private MessageResponse response = null;
     private NodeTaskCenter node_tc= null;
     private ChannelHandlerContext ctx = null;
-
+    
+    private Logger logger= null;
+    
     public MessageResponse getResponse() {
         return response;
     }
@@ -62,11 +72,17 @@ public class TaskHandlingMessage implements Runnable {
         this.request = request;
     }
 
-    TaskHandlingMessage(MessageRequest request , NodeTaskCenter task_center, ChannelHandlerContext ctx) {
+    TaskHandlingMessage(MessageRequest request , 
+    						NodeTaskCenter task_center, 
+    						ChannelHandlerContext ctx, 
+    						Logger _logger) {
         this.request = request;
          
         this.node_tc = task_center;
         this.ctx = ctx;
+        this.logger = _logger;
+        
+    	
     }
 
     public void run() { 
@@ -134,6 +150,7 @@ public class TaskHandlingMessage implements Runnable {
 		if(params.length < 2)
 		{ 
 			System.err.println("[NODE ERROR]: creating a table needs at least 2 parameters: db name and table name.");
+			logger.info("[NODE ERROR]: creating a table needs at least 2 parameters: db name and table name.");
 			suc = false ; 
 			responseError(CodeSucceed.wrong_parameters);
 			return;
@@ -206,6 +223,8 @@ public class TaskHandlingMessage implements Runnable {
 		if(params.length < 3)
 		{
 			System.err.println("[NODE ERROR]: addFulltextColumn needs at least 3 parameters: db name, table name and column name");
+			logger.info("[NODE ERROR]: addFulltextColumn needs at least 3 parameters: db name, table name and column name");
+			
 			suc = false ;
 			responseError(CodeSucceed.wrong_parameters);
 			return;
@@ -354,6 +373,9 @@ public class TaskHandlingMessage implements Runnable {
 		response.setUUID(request.getUUID());
 		response.setCMD(request.getCMD());
 		response.setSucceed(suc);
+		
+		 
+		logger.info(Timer.currentTime() + " [NODE INFO]: insert succeed."); 
 		response.setParams(result_str); 
 		 
     }

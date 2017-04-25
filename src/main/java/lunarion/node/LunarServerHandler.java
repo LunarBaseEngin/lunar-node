@@ -21,6 +21,8 @@ package lunarion.node;
 import java.util.Date;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
@@ -33,9 +35,11 @@ import lunarion.node.remote.protocol.MessageResponse;
 public class LunarServerHandler extends ChannelInboundHandlerAdapter {
 
 	private final NodeTaskCenter node_tc;
+	private final Logger logger;
 
-    public LunarServerHandler(NodeTaskCenter task_map  ) {
+    public LunarServerHandler(NodeTaskCenter task_map, Logger _logger  ) {
         this.node_tc = task_map;
+        this.logger = _logger;
     }
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg)
@@ -56,7 +60,7 @@ public class LunarServerHandler extends ChannelInboundHandlerAdapter {
     		}
     		//MessageResponse response = new MessageResponse();
     		//TaskHandlingMessage recvTask = new TaskHandlingMessage(request, response, node_tc, ctx);
-    		TaskHandlingMessage recvTask = new TaskHandlingMessage(request , node_tc, ctx);
+    		TaskHandlingMessage recvTask = new TaskHandlingMessage(request , node_tc, ctx, logger);
             
             node_tc.getActiveServer().submit(recvTask);
           
