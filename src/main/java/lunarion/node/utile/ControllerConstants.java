@@ -16,7 +16,7 @@
  *******************************************************************************
  * 
  */
-package lunarion.cluster.utile;
+package lunarion.node.utile;
 
 import java.util.concurrent.atomic.AtomicLong;
 

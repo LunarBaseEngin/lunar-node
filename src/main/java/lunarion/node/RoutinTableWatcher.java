@@ -25,6 +25,7 @@ import org.apache.helix.NotificationContext;
 import org.apache.helix.spectator.RoutingTableProvider;
 
 import lunarion.node.requester.LunarDBClient;
+import lunarion.node.utile.ControllerConstants;
 
 import org.apache.helix.model.ExternalView;
 import org.apache.helix.model.InstanceConfig;
@@ -98,6 +99,10 @@ public class RoutinTableWatcher extends RoutingTableProvider {
  		{
  			System.out.println("master of partition: " + partition_name + " is connected.");
  	 		
+ 			int partition_number = ControllerConstants.parsePartitionNumber(partition_name);
+ 			
+ 			
+ 			
  		}
 	}
 	@Override

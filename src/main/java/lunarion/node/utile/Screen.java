@@ -16,7 +16,7 @@
  *******************************************************************************
  * 
  */
-package lunarion.cluster.utile;
+package lunarion.node.utile;
 
 public class Screen {
 
