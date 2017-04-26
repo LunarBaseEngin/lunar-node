@@ -35,8 +35,8 @@ import org.apache.helix.manager.zk.ZKHelixAdmin;
 import org.apache.helix.model.ExternalView; 
 import org.apache.helix.model.StateModelDefinition;
 
-import lunarion.cluster.utile.ControllerConstants;
-import lunarion.cluster.utile.Screen; 
+import lunarion.node.utile.ControllerConstants;
+import lunarion.node.utile.Screen; 
 
 /*
  * CLUSTER STATE: for one resource, if we have 3 nodes, 

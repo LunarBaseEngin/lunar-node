@@ -36,12 +36,12 @@ import org.apache.helix.model.ExternalView;
 import org.apache.helix.model.InstanceConfig;
 
 import io.netty.channel.ChannelFuture;
-import lunarion.cluster.utile.ControllerConstants;
-import lunarion.cluster.utile.Screen;
 import lunarion.db.local.shell.CMDEnumeration;
 import lunarion.node.remote.protocol.MessageResponse;
 import lunarion.node.requester.LunarDBClient;
 import lunarion.node.requester.MessageClientWatcher;
+import lunarion.node.utile.ControllerConstants;
+import lunarion.node.utile.Screen;
 
 /*
  * for one resource, if we have 3 nodes, 

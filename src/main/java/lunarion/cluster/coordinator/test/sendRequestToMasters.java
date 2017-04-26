@@ -21,9 +21,9 @@ package lunarion.cluster.coordinator.test;
 import lunarion.cluster.coordinator.Coordinator;
 import lunarion.cluster.coordinator.Resource;
 import lunarion.cluster.coordinator.ResponseCollector;
-import lunarion.cluster.utile.ControllerConstants;
 import lunarion.db.local.shell.CMDEnumeration;
 import lunarion.node.remote.protocol.MessageResponse;
+import lunarion.node.utile.ControllerConstants;
 
 public class sendRequestToMasters {
 
