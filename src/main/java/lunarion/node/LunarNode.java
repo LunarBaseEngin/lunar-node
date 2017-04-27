@@ -34,8 +34,8 @@ import org.apache.helix.spectator.RoutingTableProvider;
 
 import LCG.DB.API.LunarDB;
 import lunarion.cluster.quickstart.Quickstart;
-import lunarion.cluster.utile.ControllerConstants;
-import lunarion.cluster.utile.Screen;
+import lunarion.node.utile.ControllerConstants;
+import lunarion.node.utile.Screen;
 
 public class LunarNode {
 	private Logger logger = Logger.getLogger("LunarNode"); 

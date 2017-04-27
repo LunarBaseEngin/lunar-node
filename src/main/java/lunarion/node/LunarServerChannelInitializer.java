@@ -20,6 +20,8 @@ package lunarion.node;
 
 import java.util.Map;
 
+import org.apache.log4j.Logger;
+
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
@@ -40,17 +42,18 @@ public class LunarServerChannelInitializer extends ChannelInitializer<SocketChan
     final public static int MESSAGE_LENGTH = 4;
      
     private NodeTaskCenter node_tc;
-    
-    LunarServerChannelInitializer(NodeTaskCenter task_center) {
+    private final Logger logger;
+
+    LunarServerChannelInitializer(NodeTaskCenter task_center, Logger _logger) {
         this.node_tc = task_center;
-        
-    }
+        logger = _logger;
+    } 
 
     protected void initChannel(SocketChannel socketChannel) throws Exception {
         ChannelPipeline pipeline = socketChannel.pipeline();
          
         pipeline.addLast("decoder",
         		new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, LunarServerChannelInitializer.MESSAGE_LENGTH, 0, LunarServerChannelInitializer.MESSAGE_LENGTH));
-        pipeline.addLast(new LunarServerHandler(this.node_tc));
+        pipeline.addLast(new LunarServerHandler(this.node_tc, logger ));
     }
 }

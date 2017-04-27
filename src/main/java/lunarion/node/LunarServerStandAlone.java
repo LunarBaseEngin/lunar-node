@@ -50,7 +50,8 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import lunarion.db.local.Test.LunarServerHandlerTest;
 import lunarion.node.EDF.NodeTaskCenter;
-import lunarion.node.logger.Timer; 
+import lunarion.node.logger.Timer;
+import lunarion.node.replicator.DBReplicator; 
 
 /*
  * the server part is modified from the Netty user-guild:
@@ -61,6 +62,7 @@ public class LunarServerStandAlone {
 	private Logger logger = Logger.getLogger("LunarServerStandAlone"); 
 	 
 	private HashMap<String, LunarDB> db_map;
+	private HashMap<String, DBReplicator> db_replicators;
 	
 	/*
 	 * server processors
@@ -85,11 +87,16 @@ public class LunarServerStandAlone {
 	
 	public LunarServerStandAlone()
 	{
+		
+	}
+	
+	private void initLogger(String name)
+	{
 		SimpleLayout layout = new SimpleLayout();
 		 
     	FileAppender fa = null;
 		try {
-			fa = new  FileAppender(layout, "LunarNode.log.txt", true);
+			fa = new  FileAppender(layout, name+".log.txt", true);
 		} catch (IOException e) { 
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -97,7 +104,6 @@ public class LunarServerStandAlone {
     	
         logger.addAppender(fa);
 	}
-	
 	public void startServer(String __svr_root) throws IOException 
 	{
 		
@@ -105,6 +111,12 @@ public class LunarServerStandAlone {
 			server_root = __svr_root + "/";
 		else
 			server_root = __svr_root;
+		
+		String[] names = server_root.split("/");
+		if(names.length>1)
+			initLogger(server_root.split("/")[server_root.split("/").length-1]);
+		else
+			initLogger(names[0]);
 		
 		List<String> db_names = new ArrayList<String>();
 		File dir = new File(server_root);
@@ -157,6 +169,8 @@ public class LunarServerStandAlone {
 		}
 		 
 		db_map = new HashMap<String, LunarDB>();
+		db_replicators = new HashMap<String, DBReplicator>();
+		
 		for(int i=0;i<db_names.size();i++)
 		{
 			LunarDB i_db = new LunarDB();
@@ -164,16 +178,18 @@ public class LunarServerStandAlone {
 			i_db.openDB(db_root);
 			logger.info(Timer.currentTime() + " [NODE INFO]: database: " + i_db.dbName() + " is running now." );  
             
+			DBReplicator replica = new DBReplicator(i_db);
+			logger.info(Timer.currentTime() + " [NODE INFO]: database: " + i_db.dbName() + " has its replicator running now." );  
+            
 			db_map.put(db_names.get(i).trim(), i_db);
-			 
+			db_replicators.put(db_names.get(i).trim(), replica);
 			
 		}
 		
 		
 		node_tc = new NodeTaskCenter(this);
 		bossGroup = new NioEventLoopGroup();
-		workerGroup = new NioEventLoopGroup();
-		
+		workerGroup = new NioEventLoopGroup(); 
 	} 
 
 	public void closeServer()
@@ -191,11 +207,11 @@ public class LunarServerStandAlone {
         	try {
 				db.closeDB();
 				dbclosed = true;
+				db_replicators.get(key).close();
 			} catch (IOException e) {
 				logger.info(Timer.currentTime() + " [NODE ERROR]: fail to close database: " + key); 
 				e.printStackTrace();
-			}
-        	
+			} 
         	if(dbclosed)
         		 logger.info(Timer.currentTime() + " [NODE INFO]: database " + key + " has been shutdown successfully"); 
         }
@@ -235,15 +251,6 @@ public class LunarServerStandAlone {
 	public void submit(Runnable task ) {
        
         thread_executor.submit(task);
-    }
-	
-	private class ChildChannelHandler extends ChannelInitializer<SocketChannel> {
-        @Override
-        protected void initChannel(SocketChannel arg0) throws Exception {
-            System.out.println("server initChannel..");
-           // arg0.pipeline().addLast(new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, LunarServerChannelInitializer.MESSAGE_LENGTH, 0, LunarServerChannelInitializer.MESSAGE_LENGTH));
-            arg0.pipeline().addLast(new LunarServerHandlerTest());
-        }
     } 
 	
 	public LunarDB getDBInstant(String db_name)
