@@ -30,8 +30,8 @@ import org.apache.helix.model.InstanceConfig;
 import org.apache.helix.model.StateModelDefinition;
 
 import lunarion.cluster.coordinator.Coordinator;
-import lunarion.cluster.utile.ControllerConstants;
-import lunarion.cluster.utile.Screen;
+import lunarion.node.utile.ControllerConstants;
+import lunarion.node.utile.Screen;
 
 public class StartCoordinator { 
 	
