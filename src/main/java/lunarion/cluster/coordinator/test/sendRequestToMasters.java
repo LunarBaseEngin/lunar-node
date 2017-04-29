@@ -77,16 +77,14 @@ public class sendRequestToMasters {
 		 
 		 while(true)
 		 {
-			 Thread.sleep(10000);
+			 Thread.sleep(15000);
 			 co.printState("State after adding the 3 nodes: ", resource_name);
 			 
 			 
 			 CMDEnumeration.command cmd = CMDEnumeration.command.createTable;
 			 String[] params = new String[2];
 			 params[0] = "RTSeventhDB";
-			 params[1] = "node_table"; 
-			 
-			 
+			 params[1] = "node_table";  
 			 
 			 ResponseCollector rc =  res.sendRequest(cmd, params);
         	 

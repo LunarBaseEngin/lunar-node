@@ -32,12 +32,12 @@ import lunarion.node.EDF.NodeTaskCenter;
 import lunarion.node.remote.protocol.MessageRequest;
 import lunarion.node.remote.protocol.MessageResponse; 
 
-public class LunarServerHandler extends ChannelInboundHandlerAdapter {
+public class LunarDBServerHandler extends ChannelInboundHandlerAdapter {
 
 	private final NodeTaskCenter node_tc;
 	private final Logger logger;
 
-    public LunarServerHandler(NodeTaskCenter task_map, Logger _logger  ) {
+    public LunarDBServerHandler(NodeTaskCenter task_map, Logger _logger  ) {
         this.node_tc = task_map;
         this.logger = _logger;
     }

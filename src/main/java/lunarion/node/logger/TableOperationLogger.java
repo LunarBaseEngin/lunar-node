@@ -22,12 +22,13 @@ import java.io.IOException;
 
 import LCG.DB.API.LunarDB;
 import LCG.RecordTable.StoreUtile.Record32KBytes;
+import lunarion.node.utile.ControllerConstants;
 
-public class LogTable {
+public class TableOperationLogger {
 	
 	 public static void logAddingFulltextColumn(String db, String table, String col, LunarDB l_db)
 	 {
-		 String log_table = LogCMDConstructor.getLogTableName(table);
+		 String log_table = ControllerConstants.getLogTableName(table);
 		 String[] recs = new String[1];
 		 recs[0] = LogCMDConstructor.contructLogAddingFulltextColumn( db, table, col);
 		 Record32KBytes[] recs_inserted = l_db.insertRecord(log_table, recs);
@@ -59,7 +60,7 @@ public class LogTable {
 	  
 	 public static void logInsert(String db, String table, String[] recs, LunarDB l_db)
 	 {
-		 String log_table = LogCMDConstructor.getLogTableName(table);
+		 String log_table = ControllerConstants.getLogTableName(table);
 		 String[] insert_cmd = LogCMDConstructor.contructLogInsert(db, table, recs);
 	    	 
 	    	Record32KBytes[] recs_inserted = l_db.insertRecord(log_table, insert_cmd);
@@ -74,7 +75,7 @@ public class LogTable {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-	    }
+	  }
 	    
 
 }

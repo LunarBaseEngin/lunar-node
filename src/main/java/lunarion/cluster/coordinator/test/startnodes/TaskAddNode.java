@@ -52,18 +52,17 @@ public class TaskAddNode implements Runnable {
 
     public void run() { 
     	System.out.println("[INFO]: db node added " );
-    	while(true)
-    	{ 
+    	 
     		try {
 				node.start();
-				Thread.currentThread().join();
+				//Thread.currentThread().join();
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} 
 			
     		 
-    	}
+    	 
     	
         
     }

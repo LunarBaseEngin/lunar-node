@@ -58,8 +58,24 @@ public class ControllerConstants {
 	
 	public static String patchNameWithPartitionNumber(String name, int partition_number)
 	{
-		return name+"_"+partition_number;
-		
+		return name+"_"+partition_number; 
+	}
+	
+	public static String patchPartitionLogSuffix(int partition_number)
+	{
+		return "_"+partition_number+"_log"; 
+	}
+	
+	public static String getLogTableName(String table_name)
+	{
+		return table_name + "_log";
 	}
 
+	public static boolean isIllegalTableName(String table_name)
+	{
+		if(table_name.endsWith("_log"))
+			return true;
+		
+		return false;
+	}
 }

@@ -93,6 +93,9 @@ public class CMDEnumeration {
 		}, 
 		fetchLog{
 			public byte getByte(){return 21;}  
+		},
+		fetchTableNamesWithSuffix{
+			public byte getByte(){return 22;}  
 		}; 
 		
 		
@@ -150,6 +153,10 @@ public class CMDEnumeration {
 	    	case 21:
 	    		cmd = CMDEnumeration.command.fetchLog;
 	    		break;
+	    	case 22:
+	    		cmd = CMDEnumeration.command.fetchTableNamesWithSuffix;
+	    		break;	
+	    		
 	    	default:
 	    		break; 
 	    }

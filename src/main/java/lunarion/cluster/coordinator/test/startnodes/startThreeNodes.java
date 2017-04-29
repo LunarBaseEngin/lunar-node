@@ -58,6 +58,7 @@ public class startThreeNodes {
 		TaskAddNode tan1 = new TaskAddNode(ln1);
 		startThreeNodes.thread_executor.submit(tan1);
 		
+		 
 		int node2_port = 30002 ; 
 		LunarNode ln2 = new LunarNode(node_ip, node2_port, zkAddr, data_root, cluster_name, resource_name, creation_conf);
 		TaskAddNode tan2 = new TaskAddNode(ln2);
@@ -68,7 +69,7 @@ public class startThreeNodes {
 		LunarNode ln3 = new LunarNode(node_ip, node3_port, zkAddr, data_root, cluster_name, resource_name, creation_conf);
 		TaskAddNode tan3 = new TaskAddNode(ln3);
 		startThreeNodes.thread_executor.submit(tan3);
-		
+		 
 		
 		/*
 		int node2_port = 30002 ; 

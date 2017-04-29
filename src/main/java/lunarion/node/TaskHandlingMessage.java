@@ -20,6 +20,8 @@ package lunarion.node;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.helix.manager.zk.ZKHelixAdmin;
@@ -29,6 +31,7 @@ import org.apache.log4j.SimpleLayout;
 
 import LCG.DB.API.LunarDB;
 import LCG.DB.API.LunarTable;
+import LCG.DB.API.DBStatus.DBRuntimeStatus;
 import LCG.DB.API.Result.FTQueryResult;
 import LCG.DB.Local.NLP.FullText.Lexer.TokenizerForSearchEngine;
 import LCG.EnginEvent.Interfaces.LFuture;
@@ -42,12 +45,13 @@ import lunarion.db.local.shell.CMDEnumeration;
 import lunarion.node.EDF.NodeTaskCenter;
 import lunarion.node.EDF.events.VNodeIncomingRecords;
 import lunarion.node.logger.LogCMDConstructor;
-import lunarion.node.logger.LogTable;
+import lunarion.node.logger.TableOperationLogger;
 import lunarion.node.logger.Timer;
 import lunarion.node.remote.protocol.CodeSucceed;
 import lunarion.node.remote.protocol.MessageRequest;
 import lunarion.node.remote.protocol.MessageResponse;
 import lunarion.node.remote.protocol.MessageResponseQuery;
+import lunarion.node.utile.ControllerConstants;
 
 public class TaskHandlingMessage implements Runnable {
 
@@ -131,11 +135,14 @@ public class TaskHandlingMessage implements Runnable {
         		if(params.length != 4)
         		{
         			System.err.println("[NODE ERROR]: wrong parameters for fetching log.");
-        			responseError(CodeSucceed.wrong_parameters);
+        			responseError(CodeSucceed.wrong_parameter_count);
                 	return ; 
         		}
-        		params[1] = LogCMDConstructor.getLogTableName(params[1]); 
+        		params[1] = ControllerConstants.getLogTableName(params[1]); 
         		fetchRecords( params, false);  
+        		break;
+        	case fetchTableNamesWithSuffix:
+        		fetchTableNamesWithSuffix( params );  
         		break;
         	default:
         		break;
@@ -152,14 +159,26 @@ public class TaskHandlingMessage implements Runnable {
 			System.err.println("[NODE ERROR]: creating a table needs at least 2 parameters: db name and table name.");
 			logger.info("[NODE ERROR]: creating a table needs at least 2 parameters: db name and table name.");
 			suc = false ; 
-			responseError(CodeSucceed.wrong_parameters);
+			responseError(CodeSucceed.wrong_parameter_count);
 			return;
 		}
 		String db = params[0];
 		String table = params[1];
 		if(db == null || "".equals(db.trim()) 
-				||table == null || "".equals(table.trim()))
+				||table == null || "".equals(table.trim())
+				)
+		{
 			suc = false ;
+			responseError(CodeSucceed.empty_name );
+			return;
+		}
+		
+		if(ControllerConstants.isIllegalTableName(table))
+		{
+			suc = false ;
+			responseError(CodeSucceed.illegal_table_name);
+			return;
+		}
 		
 		String[] resp = new String[4];
 		  	resp[0] = db;
@@ -181,23 +200,35 @@ public class TaskHandlingMessage implements Runnable {
             	suc = l_DB.createTable(table);
             	l_DB.openTable(table);
             	
-            	String log_table = LogCMDConstructor.getLogTableName(table);
+            	String log_table = ControllerConstants.getLogTableName(table);
             	
             	boolean log_table_created = false;
             	log_table_created = l_DB.createTable(log_table);
             	l_DB.openTable(log_table);
             	
             	if(suc)
+            	{
             		resp[2] = CodeSucceed.create_table_succeed;
+            		logger.info(Timer.currentTime() + " " + CodeSucceed.create_table_succeed); 
+            	}
             	else
+            	{
             		resp[2] = CodeSucceed.create_table_failed_exception;
+            		logger.info(Timer.currentTime() + " " + CodeSucceed.create_table_failed_exception); 
+            	}
             	
             	if(log_table_created)
+            	{
             		resp[3] = CodeSucceed.create_log_table_succeed;
+            		logger.info(Timer.currentTime() + " " + CodeSucceed.create_table_succeed); 
+            	}
             	else
+            	{
             		resp[3] = CodeSucceed.create_log_table_failed_exception;
+            		logger.info(Timer.currentTime() + " " + CodeSucceed.create_log_table_failed_exception); 
+            	}
             	
-            	LogTable.logCreatingTable( db, table, log_table, l_DB);
+            	TableOperationLogger.logCreatingTable( db, table, log_table, l_DB);
             }
         	else
             {
@@ -226,12 +257,12 @@ public class TaskHandlingMessage implements Runnable {
 			logger.info("[NODE ERROR]: addFulltextColumn needs at least 3 parameters: db name, table name and column name");
 			
 			suc = false ;
-			responseError(CodeSucceed.wrong_parameters);
+			responseError(CodeSucceed.wrong_parameter_count);
 			return;
 		}
 		String db = params[0];
 		String table = params[1];
-		String log_table = LogCMDConstructor.getLogTableName(table);
+		String log_table = ControllerConstants.getLogTableName(table);
 		String column = params[2];
 		if(db == null || "".equals(db.trim()) 
 				||table == null || "".equals(table.trim()))
@@ -256,9 +287,15 @@ public class TaskHandlingMessage implements Runnable {
             	suc = l_DB.createTable(table);
             	l_DB.openTable(table);
             	if(suc)
+            	{
             		resp[2] = CodeSucceed.create_table_succeed;
+            		logger.info(Timer.currentTime() + " " + CodeSucceed.create_table_succeed); 
+            	}
             	else
+            	{
             		resp[2] = CodeSucceed.create_table_failed_exception;
+            		logger.info(Timer.currentTime() + " " + CodeSucceed.create_table_failed_exception); 
+            	}
             	
             	
             	
@@ -266,11 +303,17 @@ public class TaskHandlingMessage implements Runnable {
             	log_table_created = l_DB.createTable(log_table);
             	l_DB.openTable(log_table);
             	if(log_table_created)
+            	{
             		resp[3] = CodeSucceed.create_log_table_succeed;
+            		logger.info(Timer.currentTime() + " " + CodeSucceed.create_log_table_succeed); 
+            	}
             	else
+            	{
             		resp[3] = CodeSucceed.create_log_table_failed_exception;
+            		logger.info(Timer.currentTime() + " " + CodeSucceed.create_log_table_failed_exception); 
+            	}
             	
-            	LogTable.logCreatingTable( db, table, log_table, l_DB);
+            	TableOperationLogger.logCreatingTable( db, table, log_table, l_DB);
             	
             }
             if(suc)
@@ -289,7 +332,7 @@ public class TaskHandlingMessage implements Runnable {
         		TokenizerForSearchEngine t_e = new TokenizerForSearchEngine(); 
         		tt.registerTokenizer(t_e);
                 
-        		LogTable.logAddingFulltextColumn( db, table, column, l_DB);
+        		TableOperationLogger.logAddingFulltextColumn( db, table, column, l_DB);
         	    
             }
             else
@@ -303,6 +346,8 @@ public class TaskHandlingMessage implements Runnable {
         response.setCMD(request.getCMD());
         response.setSucceed(suc); 
         response.setParams(resp);  
+        
+        logger.info(Timer.currentTime() + " " + CodeSucceed.add_fulltext_column_succeed); 
     }
     
     
@@ -311,7 +356,7 @@ public class TaskHandlingMessage implements Runnable {
     	if(params.length < 3)
 		{
 			System.err.println("[NODE ERROR]: wrong parameters for inserting records.");
-			responseError(CodeSucceed.wrong_parameters);
+			responseError(CodeSucceed.wrong_parameter_count);
 			return ;
 		}
     	
@@ -366,7 +411,7 @@ public class TaskHandlingMessage implements Runnable {
 		}
 		if(suc)
 		{
-		  	LogTable.logInsert(db, table, recs_insert, l_DB);	
+		  	TableOperationLogger.logInsert(db, table, recs_insert, l_DB);	
 		}
 			  	
 		response = new MessageResponse();
@@ -385,7 +430,7 @@ public class TaskHandlingMessage implements Runnable {
     	if(params.length != 5)
 		{
 			System.err.println("[NODE ERROR]: wrong parameters for a query request.");
-			responseError(CodeSucceed.wrong_parameters);
+			responseError(CodeSucceed.wrong_parameter_count);
 			return ;
 		}
 		String db = params[0];
@@ -470,7 +515,7 @@ public class TaskHandlingMessage implements Runnable {
     	if(params.length != 4)
 		{
 			System.err.println("[NODE ERROR]: wrong parameters for fetching records.");
-			responseError(CodeSucceed.wrong_parameters);
+			responseError(CodeSucceed.wrong_parameter_count);
         	return ; 
 		}
 		String db = params[0];
@@ -519,5 +564,70 @@ public class TaskHandlingMessage implements Runnable {
         } 
 		  	
 		  	//return respond;
+    }
+    
+    private void fetchTableNamesWithSuffix(String[] params )
+    {
+    	if(params.length != 2)
+		{
+			System.err.println("[NODE ERROR]: wrong parameters for fetching table names with given suffix.");
+			responseError(CodeSucceed.wrong_parameters_for_feteching_name_with_suffix);
+        	return ; 
+		}
+		String db = params[0];
+        String table_suffix = params[1];
+        
+        
+		 
+        LunarDB l_DB = node_tc.getActiveServer().getDBInstant(db);
+        if(l_DB == null)
+        {  
+		  	responseError(CodeSucceed.db_does_not_exist);
+        	return ;
+        } 
+        
+        Iterator<String> names = l_DB.listTable();
+        if(names == null)
+        {
+        	responseError(CodeSucceed.no_table_found);	
+        	return;
+        }
+        List<String> t_names = new ArrayList<String>();
+        
+        while(names.hasNext())
+        {
+        	String t_name = names.next();
+        	if(t_name.endsWith(table_suffix)) 
+        	{
+        		LunarTable lt = l_DB.getTable(t_name);
+        		if(lt.getStatus() != DBRuntimeStatus.removed
+        				&& lt.getStatus() != DBRuntimeStatus.closed
+        				&& lt.getStatus() != DBRuntimeStatus.onClosing)
+        		{
+        			t_names.add(t_name);
+        		}
+        	} 
+        }
+        
+        if(t_names.size() >0)
+        {
+        	 String[] table_names_found = new String[t_names.size()];
+             for(int i=0;i<table_names_found.length;i++)
+             {
+             	table_names_found[i] = t_names.get(i);
+             } 
+             
+             response = new MessageResponseQuery();
+             response.setUUID(request.getUUID());
+             response.setCMD(request.getCMD());
+             response.setSucceed(true);
+             response.setParams(table_names_found); 
+        }
+        else
+        {
+        	responseError(CodeSucceed.no_table_found);	
+        }
+       
+         
     }
 }

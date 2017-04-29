@@ -50,6 +50,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import lunarion.db.local.Test.LunarServerHandlerTest;
 import lunarion.node.EDF.NodeTaskCenter;
+import lunarion.node.logger.LoggerFactory;
 import lunarion.node.logger.Timer;
 import lunarion.node.replicator.DBReplicator; 
 
@@ -57,9 +58,9 @@ import lunarion.node.replicator.DBReplicator;
  * the server part is modified from the Netty user-guild:
  * http://netty.io/wiki/user-guide-for-5.x.html
  */
-public class LunarServerStandAlone {
+public class LunarDBServerStandAlone {
 	
-	private Logger logger = Logger.getLogger("LunarServerStandAlone"); 
+	private Logger logger = null; 
 	 
 	private HashMap<String, LunarDB> db_map;
 	private HashMap<String, DBReplicator> db_replicators;
@@ -77,46 +78,30 @@ public class LunarServerStandAlone {
 	private String server_root;
 	private NodeTaskCenter node_tc;
 	
+	/*
 	private static class LunarServerInstatance {
-		private static final LunarServerStandAlone g_server_instance = new LunarServerStandAlone();
+		private static final LunarDBServerStandAlone g_server_instance = new LunarDBServerStandAlone();
 	}
 
-	public static LunarServerStandAlone getInstance() {
+	public static LunarDBServerStandAlone getInstance() {
 		return LunarServerInstatance.g_server_instance;
 	}
-	
-	public LunarServerStandAlone()
+	*/
+	public LunarDBServerStandAlone()
 	{
 		
 	}
 	
-	private void initLogger(String name)
-	{
-		SimpleLayout layout = new SimpleLayout();
-		 
-    	FileAppender fa = null;
-		try {
-			fa = new  FileAppender(layout, name+".log.txt", true);
-		} catch (IOException e) { 
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-    	
-        logger.addAppender(fa);
-	}
-	public void startServer(String __svr_root) throws IOException 
+	
+	public void startServer(String __svr_root,Logger _logger) throws IOException 
 	{
 		
 		if(!__svr_root.endsWith("/"))
 			server_root = __svr_root + "/";
 		else
-			server_root = __svr_root;
+			server_root = __svr_root; 
 		
-		String[] names = server_root.split("/");
-		if(names.length>1)
-			initLogger(server_root.split("/")[server_root.split("/").length-1]);
-		else
-			initLogger(names[0]);
+		logger = _logger;
 		
 		List<String> db_names = new ArrayList<String>();
 		File dir = new File(server_root);
@@ -225,7 +210,7 @@ public class LunarServerStandAlone {
 		bootstrap.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
                     //.childHandler(new ChildChannelHandler())
-                    .childHandler(new LunarServerChannelInitializer(node_tc, logger))
+                    .childHandler(new LunarDBServerChannelInitializer(node_tc, logger))
                     .option(ChannelOption.SO_BACKLOG, 1024) 
                     .childOption(ChannelOption.SO_KEEPALIVE, true);
 
@@ -269,12 +254,19 @@ public class LunarServerStandAlone {
 	        }
 	        
 	        String svr_root = "/home/feiben/DBTest/LunarNode/";
-			 
-	        LunarServerStandAlone.getInstance().startServer(svr_root );
+	        LunarDBServerStandAlone ldbssa = new LunarDBServerStandAlone();
+	        ldbssa.startServer(svr_root, LoggerFactory.getLogger("LunarNode"));
 	        try {
-	        	LunarServerStandAlone.getInstance().bind(port);
+	        	ldbssa.bind(port);
 	        } finally { 
-	        	LunarServerStandAlone.getInstance().closeServer(); 
+	        	ldbssa.closeServer(); 
 	        }
+	        /*
+	        LunarDBServerStandAlone.getInstance().startServer(svr_root, LoggerFactory.getLogger("LunarNode"));
+	        try {
+	        	LunarDBServerStandAlone.getInstance().bind(port);
+	        } finally { 
+	        	LunarDBServerStandAlone.getInstance().closeServer(); 
+	        }*/
 	    }
 }

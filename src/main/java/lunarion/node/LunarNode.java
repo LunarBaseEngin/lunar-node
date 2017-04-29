@@ -22,8 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.logging.Logger;
+import java.util.concurrent.Executors; 
 
 import org.apache.helix.HelixManager;
 import org.apache.helix.HelixManagerFactory;
@@ -31,14 +30,19 @@ import org.apache.helix.InstanceType;
 import org.apache.helix.model.InstanceConfig;
 import org.apache.helix.participant.StateMachineEngine;
 import org.apache.helix.spectator.RoutingTableProvider;
+import org.apache.log4j.FileAppender;
+import org.apache.log4j.Logger;
+import org.apache.log4j.SimpleLayout;
 
 import LCG.DB.API.LunarDB;
 import lunarion.cluster.quickstart.Quickstart;
+import lunarion.node.logger.LoggerFactory;
+import lunarion.node.logger.Timer;
 import lunarion.node.utile.ControllerConstants;
 import lunarion.node.utile.Screen;
 
 public class LunarNode {
-	private Logger logger = Logger.getLogger("LunarNode"); 
+	private Logger logger = null; 
 	
 	
 	private final String node_name; /* is as this form: 192.168.1.8_30001*/
@@ -56,7 +60,8 @@ public class LunarNode {
 	private static final String STATE_MODEL_NAME = ControllerConstants.STATE_MODEL_NAME;
 	
 	protected  ExecutorService thread_executor = Executors.newFixedThreadPool(1); 
-	LunarServerStandAlone lsa = new LunarServerStandAlone(); 
+	
+	private LunarDBServerStandAlone lsa = new LunarDBServerStandAlone(); 
 	
 	
 	
@@ -72,6 +77,12 @@ public class LunarNode {
 	    instanceConfig.setPort("" + _node_port);
 	    instanceConfig.setInstanceEnabled(true);
 	    Screen.echo("[INFO]: node add myself "+instanceConfig.getInstanceName()+" to the cluster :" +  _cluster_name);
+	   
+	    logger = LoggerFactory.getLogger(instanceConfig.getInstanceName());
+		
+	    
+	    logger.info(Timer.currentTime() + " [INFO]: node add myself "+instanceConfig.getInstanceName()+" to the cluster :" +  _cluster_name);
+		
 	    String instanceName = instanceConfig.getInstanceName();
 	    node_name = instanceName;
 		
@@ -89,10 +100,14 @@ public class LunarNode {
 		if(!db_node_instance.createDB(db_root_path, _db_creation_conf_file))
 		{
 			System.out.println("[WARNING]: database " + db_root_path + " exists on this node. Can not create again. "); 
+			logger.info(Timer.currentTime() + " [WARNING]: database " + db_root_path + " exists on this node. Can not create again. ");  
+				
 		} 
 		else
 		{
 			System.out.println("[SUCCEED]: database " + db_root_path + " has been created successfully. "); 
+			logger.info(Timer.currentTime() + " [SUCCEED]: database " + db_root_path + " has been created successfully. "); 
+			
 		} 
 		 
 		try {
@@ -114,17 +129,18 @@ public class LunarNode {
 		 }
 		 */
 		 try {
-			 lsa.startServer(db_root_path ); 
+			 lsa.startServer(db_root_path, logger ); 
 			 
 			 TaskStartWaiting task_sw = new TaskStartWaiting(lsa,node_port );
 			 thread_executor.submit(task_sw) ;
-			// LunarServerStandAlone.getInstance().bind(node_port);
+			 
 				 
 	     }
 		 catch(Exception e)
 		 {
-			 e.printStackTrace();
-			 logger.severe("[NODE ERROR]: unable to start db at: " + db_root_path);  
+			 e.printStackTrace(); 
+			 logger.info(Timer.currentTime() + " [NODE ERROR]: unable to start db at: " + db_root_path);  
+				
 		 }
 	        
 	      boolean alive = true;
@@ -148,7 +164,7 @@ public class LunarNode {
 	    			              InstanceType.PARTICIPANT, ZK_ADDRESS);
 	    			  
 	    			  MasterSlaveStateModelFactory stateModelFactory =
-	    			          new MasterSlaveStateModelFactory(LunarServerStandAlone.getInstance(), 
+	    			          new MasterSlaveStateModelFactory(lsa, 
 	    			        		  								db_name, 
 	    			        		  								manager, 
 	    			        		  								node_name, 

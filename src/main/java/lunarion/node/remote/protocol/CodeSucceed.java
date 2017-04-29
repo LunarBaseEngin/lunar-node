@@ -23,7 +23,7 @@ public class CodeSucceed {
 	static public String add_fulltext_column_succeed = "[SUCEED 00000002]: full text search column has been sucessfully added.";
 	static public String create_log_table_succeed = "[SUCEED 00000003]: log table has been sucessfully created.";
 	
-	static public String wrong_parameters = "[FAILURE 00000000]: parameters are wrong.";
+	static public String wrong_parameter_count = "[FAILURE 00000000]: the number of parameters are wrong.";
 	
 	static public String create_table_failed_already_exists = "[FAILURE 00000001]: table already exists, can not be created again.";
 	static public String create_table_failed_exception = "[FAILURE 00000002]: exception occurred when creating the table.";
@@ -32,5 +32,10 @@ public class CodeSucceed {
 	static public String db_does_not_exist = "[FAILURE 00000005]: database does not exist.";
 	static public String create_log_table_failed_exception = "[FAILURE 00000006]: exception occurred when creating the log table.";
 	static public String no_records_found = "[FAILURE 00000007]: found no records in the table.";
+	
+	static public String wrong_parameters_for_feteching_name_with_suffix = "[FAILURE 00000008]: wrong parameters for fetching table names with given suffix.";
+	static public String no_table_found = "[FAILURE 00000009]: no table found.";
+	static public String empty_name = "[FAILURE 00000010]: db name or table name can not be empty, failt to create table.";
+	static public String illegal_table_name = "[FAILURE 00000011]: can not create table with illegal name. The name you commit may end with _log. remove it.";
 	
 }

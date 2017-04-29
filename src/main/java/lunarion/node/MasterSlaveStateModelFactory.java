@@ -35,16 +35,16 @@ import LCG.DB.API.LunarDB;
 @SuppressWarnings("rawtypes")
 public class MasterSlaveStateModelFactory extends StateModelFactory<StateModel> {
   int delay;
-  LunarServerStandAlone db_server;
+  LunarDBServerStandAlone db_server;
   //LunarDB db_node_instance = null;
   HelixManager manager = null;
   
   String instance_name = "";//192.168.0.88:30001
-  String resource_name = "";
+  String resource_name = "";//used as db name
   int port;
     
 
-  public MasterSlaveStateModelFactory(  LunarServerStandAlone  _db_server,
+  public MasterSlaveStateModelFactory(  LunarDBServerStandAlone  _db_server,
 		  								String _db_name,
 		  								HelixManager _manager, 
 		  								String _instance_name,  
@@ -64,111 +64,16 @@ public class MasterSlaveStateModelFactory extends StateModelFactory<StateModel> 
   public StateModel createNewStateModel(String _resource_name, String _partition_name) {
 	  resource_name  = _resource_name;
 	   
-	  MasterSlaveStateModel stateModel = new MasterSlaveStateModel( manager, 
+	  MasterSlaveStateModel stateModel = new MasterSlaveStateModel( db_server.getDBInstant(resource_name),
+			  														manager, 
 			  														instance_name, 
 			  														resource_name, 
 			  														_partition_name);
 	  
-	  stateModel.setDBServer(db_server, port ); 
+	   
 	  stateModel.setDelay(delay); 
 	    
 	  return stateModel;
   }
 
-  public static class MasterSlaveStateModel extends StateModel {
-    
-	//private LunarDB db_node_instance;
-	  private LunarServerStandAlone db_server;
-	private int port;
-	private HelixManager manager = null;
-	private RoutinTableWatcher routing_table_provider = null;
-	     
-	private int trans_delay = 0;
-    private String partition_name;
-    private String instance_name = "";
-    private String resoure_name = "";
-    
-    
-    public MasterSlaveStateModel(HelixManager _manager, String _instance, String _resource, String _partition) 
-    {
-    	manager = _manager;
-    	instance_name = _instance;
-    	resoure_name = _resource;
-    	partition_name = _partition;
-    	
-    	this.routing_table_provider = new RoutinTableWatcher(instance_name, resoure_name, partition_name);
-    	try {
-    		manager.addExternalViewChangeListener(routing_table_provider);
-    	} catch (Exception e) {
-    		e.printStackTrace();
-    	}
-    }
-    
-    public String getPartitionName() {
-    	return partition_name;
-    }
-
-    public void setDBServer(LunarServerStandAlone _db_server, 
-    						int _port )
-    {
-    	//this.db_node_instance = _db_node_instance;
-    	db_server = _db_server;
-    	this.port = _port; 
-    } 
-    
-    public void setDelay(int delay) {
-    	trans_delay = delay > 0 ? delay : 0;
-    } 
-
-    public void onBecomeSlaveFromOffline(Message message, NotificationContext context) throws InterruptedException {
-      System.out.println(instance_name + " transitioning from " + message.getFromState() + " to "
-          + message.getToState() + " for " + partition_name);
-      /*
-       * blocked, if replication does not complete, this partition will never be a master.
-       */
-      routing_table_provider.replicateFromMaster();
-      Thread.sleep(3000);
-     
-    }
-
-    private void sleep() {
-      try {
-        Thread.sleep(trans_delay);
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
-    }
-
-    public void onBecomeSlaveFromMaster(Message message, NotificationContext context) {
-      System.out.println(instance_name + " transitioning from " + message.getFromState() + " to "
-          + message.getToState() + " for " + partition_name); 
-         
-      sleep();
-
-    }
-
-    public void onBecomeMasterFromSlave(Message message, NotificationContext context) {
-      System.out.println(instance_name + " transitioning from " + message.getFromState() + " to "
-          + message.getToState() + " for " + partition_name);
-      
-      
-      
-      sleep();
-
-    }
-
-    public void onBecomeOfflineFromSlave(Message message, NotificationContext context) {
-      System.out.println(instance_name + " transitioning from " + message.getFromState() + " to "
-          + message.getToState() + " for " + partition_name);
-      sleep();
-
-    }
-
-    public void onBecomeDroppedFromOffline(Message message, NotificationContext context) {
-      System.out.println(instance_name + " Dropping partition " + partition_name);
-      sleep();
-
-    }
-  }
-
-}
+ }

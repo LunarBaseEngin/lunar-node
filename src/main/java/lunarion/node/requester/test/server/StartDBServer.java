@@ -18,7 +18,9 @@
  */
 package lunarion.node.requester.test.server;
 
-import lunarion.node.LunarServerStandAlone;
+import lunarion.node.LunarDBServerStandAlone;
+import lunarion.node.LunarNode;
+import lunarion.node.logger.LoggerFactory;
 
 public class StartDBServer {
 	public static void main(String[] args) throws Exception {
@@ -33,11 +35,12 @@ public class StartDBServer {
         
         String svr_root = "/home/feiben/DBTest/LunarNode/";
 		 
-        LunarServerStandAlone.getInstance().startServer(svr_root );
+        LunarDBServerStandAlone lsa = new LunarDBServerStandAlone();
+        lsa.startServer(svr_root, LoggerFactory.getLogger("LunarNode")); 
         try {
-        	LunarServerStandAlone.getInstance().bind(port);
+        	lsa.bind(port);
         } finally { 
-        	LunarServerStandAlone.getInstance().closeServer(); 
+        	lsa.closeServer(); 
         }
     }
 }

@@ -32,14 +32,14 @@ import LCG.DB.EDF.Events.QuerySimple;
 import LCG.DB.EDF.Events.QuerySimpleIDs;
 import LCG.DB.EDF.Events.Update; 
 import LCG.EnginEvent.EventDispatcher;
-import lunarion.node.LunarServerStandAlone;
+import lunarion.node.LunarDBServerStandAlone;
 import lunarion.node.EDF.events.VNodeIncomingRecords;
 
 public class NodeTaskCenter extends EventDispatcher{
 	  
-	final LunarServerStandAlone l_server;
+	final LunarDBServerStandAlone l_server;
 	 
-	public NodeTaskCenter(LunarServerStandAlone _server ) {
+	public NodeTaskCenter(LunarDBServerStandAlone _server ) {
 		 
 		l_server = _server;
 		 
@@ -63,7 +63,7 @@ public class NodeTaskCenter extends EventDispatcher{
 		 */
 	} 
 	
-	public LunarServerStandAlone getActiveServer()
+	public LunarDBServerStandAlone getActiveServer()
 	{
 		return this.l_server;
 	}

@@ -32,7 +32,7 @@ import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
 import lunarion.node.EDF.NodeTaskCenter; 
 
-public class LunarServerChannelInitializer extends ChannelInitializer<SocketChannel> {
+public class LunarDBServerChannelInitializer extends ChannelInitializer<SocketChannel> {
 
   
 	/*
@@ -44,7 +44,7 @@ public class LunarServerChannelInitializer extends ChannelInitializer<SocketChan
     private NodeTaskCenter node_tc;
     private final Logger logger;
 
-    LunarServerChannelInitializer(NodeTaskCenter task_center, Logger _logger) {
+    LunarDBServerChannelInitializer(NodeTaskCenter task_center, Logger _logger) {
         this.node_tc = task_center;
         logger = _logger;
     } 
@@ -53,7 +53,7 @@ public class LunarServerChannelInitializer extends ChannelInitializer<SocketChan
         ChannelPipeline pipeline = socketChannel.pipeline();
          
         pipeline.addLast("decoder",
-        		new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, LunarServerChannelInitializer.MESSAGE_LENGTH, 0, LunarServerChannelInitializer.MESSAGE_LENGTH));
-        pipeline.addLast(new LunarServerHandler(this.node_tc, logger ));
+        		new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, LunarDBServerChannelInitializer.MESSAGE_LENGTH, 0, LunarDBServerChannelInitializer.MESSAGE_LENGTH));
+        pipeline.addLast(new LunarDBServerHandler(this.node_tc, logger ));
     }
 }

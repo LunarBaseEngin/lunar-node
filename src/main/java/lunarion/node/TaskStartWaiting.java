@@ -41,11 +41,11 @@ import lunarion.node.remote.protocol.MessageResponseQuery;
 
 public class TaskStartWaiting implements Runnable {
 
-    private LunarServerStandAlone server = null;
+    private LunarDBServerStandAlone server = null;
     private int port;
 
 
-    TaskStartWaiting(LunarServerStandAlone _server_instance, int _port) {
+    TaskStartWaiting(LunarDBServerStandAlone _server_instance, int _port) {
         this.server = _server_instance;
          
         this.port = _port; 
@@ -53,15 +53,14 @@ public class TaskStartWaiting implements Runnable {
 
     public void run() { 
     	System.out.println("[INFO]: db node server bind at port " + port);
-    	while(true)
-    	{
+    	 
     		try {
     			server.bind(port);
     		} catch (InterruptedException e) {
     			// TODO Auto-generated catch block
     			e.printStackTrace();
     		}
-    	}
+    	 
     	
         
     }

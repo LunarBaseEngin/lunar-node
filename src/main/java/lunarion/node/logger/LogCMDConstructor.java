@@ -31,10 +31,7 @@ public class LogCMDConstructor {
 	
 	public static final String param_delim = ReservedSymbols.value_for_rec_column_delim;
 	
-	public static String getLogTableName(String table_name)
-	{
-		return table_name + "_log";
-	}
+	 
 	
 	static public String patchParams(String[] params )
 	{

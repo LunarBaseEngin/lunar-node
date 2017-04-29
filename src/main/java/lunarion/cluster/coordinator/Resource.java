@@ -110,7 +110,7 @@ public class Resource {
 		  */
 		 //if(NUM_NODES == 1)
 		// {
-			 admin.rebalance(cluster_name, resource_name, NUM_NODES.get()); 
+		 		admin.rebalance(cluster_name, resource_name, NUM_NODES.get()); 
 			 
 			 boolean the_node_connected = false;
 			 while(!the_node_connected)
