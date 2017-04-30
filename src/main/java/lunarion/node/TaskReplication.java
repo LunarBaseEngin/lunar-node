@@ -51,19 +51,23 @@ public class TaskReplication implements Runnable {
     private int db_port;
     private Logger replicator_logger = null;
     private final LunarDBClient client_to_master ;
-    private final LunarDB local_db;
+   // private final LunarDB local_db;
+    private LunarDBServerStandAlone db_server; 
+    
     private final String partition_name;
     private final String resource_name;
     
     private AtomicBoolean shutdown_requested = new AtomicBoolean(false);
     //private Thread r_thread;
     
-    TaskReplication(LunarDB _local_db, LunarDBClient _client_to_master, String _master_addr, int _db_port, 
+    TaskReplication( LunarDBServerStandAlone  _db_server, LunarDBClient _client_to_master, String _master_addr, int _db_port, 
     				Logger _partition_logger,
     				String _partition_name,
     				String _resource_name ) 
     {
-        this.local_db = _local_db;
+        //this.local_db = _local_db;
+    	
+    	this.db_server = _db_server;
         this.master_addr = _master_addr;
         this.replicator_logger =  _partition_logger;
         this.db_port = _db_port; 
@@ -115,12 +119,19 @@ public class TaskReplication implements Runnable {
         	 	
  			if(resp_from_svr != null && resp_from_svr.isSucceed())
  			{
+ 				/*
  				System.out.println("LunarNode responded command: "+ resp_from_svr.getCMD());
  	    		System.out.println("LunarNode responded UUID: "+ resp_from_svr.getUUID());
  	    		System.out.println("LunarNode responded suceed: "+ resp_from_svr.isSucceed());
+ 	    		*/
  	    		for(int i=0;i<resp_from_svr.getParams().length;i++)
  	    		{
  	    			System.out.println("LunarNode responded: "+ resp_from_svr.getParams()[i]);
+ 	    			
+ 	    			String table = resp_from_svr.getParams()[i];
+ 	    			
+ 	    			
+ 	    			
  	    		}
  			}
  			else

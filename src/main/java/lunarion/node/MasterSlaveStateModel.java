@@ -31,8 +31,8 @@ import LCG.DB.API.LunarDB;
 public class MasterSlaveStateModel extends StateModel {
   
 	 
-	private LunarDB local_db;
-	 
+	//private LunarDB local_db;
+	private LunarDBServerStandAlone db_server; 
 	private HelixManager manager = null;
 	private RoutinTableWatcher routing_table_provider = null;
 	     
@@ -44,16 +44,17 @@ public class MasterSlaveStateModel extends StateModel {
   
   
 
-public MasterSlaveStateModel(LunarDB _local_db, HelixManager _manager, String _instance, String _resource, String _partition) 
+public MasterSlaveStateModel(LunarDBServerStandAlone  _db_server, HelixManager _manager, String _instance, String _resource, String _partition) 
 {
 	
-	local_db = _local_db;
+	//local_db = _local_db;
+	db_server = _db_server;
 	  manager = _manager;
 	  instance_name = _instance;
 	  resoure_name = _resource;
 	  partition_name = _partition;
 
-	  this.routing_table_provider = new RoutinTableWatcher(instance_name, resoure_name, partition_name, local_db);
+	  this.routing_table_provider = new RoutinTableWatcher(instance_name, resoure_name, partition_name, db_server);
   	
 	  try {
 		  manager.addExternalViewChangeListener(routing_table_provider);

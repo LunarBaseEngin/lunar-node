@@ -60,7 +60,7 @@ public class LunarDBServerHandler extends ChannelInboundHandlerAdapter {
     		}
     		//MessageResponse response = new MessageResponse();
     		//TaskHandlingMessage recvTask = new TaskHandlingMessage(request, response, node_tc, ctx);
-    		TaskHandlingMessage recvTask = new TaskHandlingMessage(request , node_tc, ctx, logger);
+    		TaskHandlingMessage recvTask = new TaskHandlingMessage(request , node_tc.getActiveServer(), ctx, logger);
             
             node_tc.getActiveServer().submit(recvTask);
           

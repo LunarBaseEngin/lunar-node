@@ -59,7 +59,9 @@ public class TaskHandlingMessage implements Runnable {
 	
     private MessageRequest request = null;
     private MessageResponse response = null;
-    private NodeTaskCenter node_tc= null;
+    //private NodeTaskCenter node_tc= null;
+    
+    private LunarDBServerStandAlone l_db_ssa = null;
     private ChannelHandlerContext ctx = null;
     
     private Logger logger= null;
@@ -77,33 +79,48 @@ public class TaskHandlingMessage implements Runnable {
     }
 
     TaskHandlingMessage(MessageRequest request , 
-    						NodeTaskCenter task_center, 
+    						LunarDBServerStandAlone _l_db_ssa, 
     						ChannelHandlerContext ctx, 
     						Logger _logger) {
         this.request = request;
          
-        this.node_tc = task_center;
+       // this.node_tc = task_center;
+        this.l_db_ssa = _l_db_ssa;
         this.ctx = ctx;
         this.logger = _logger;
         
     	
+    }
+    
+    TaskHandlingMessage(MessageRequest request , 
+    					LunarDBServerStandAlone _l_db_ssa,  
+						Logger _logger) {
+    		this.request = request;
+
+    		//this.node_tc = task_center;
+    		this.l_db_ssa = _l_db_ssa;
+    		this.ctx = null;
+    		this.logger = _logger; 
     }
 
     public void run() { 
        
         execute(request); 
         
-      
-        int len = response.size();
-        ByteBuf response_buff = Unpooled.buffer(4+len);
-        response_buff.writeInt(len);
-        response.write(response_buff);
-      
-    	ctx.writeAndFlush(response_buff).addListener(new ChannelFutureListener() {
-            public void operationComplete(ChannelFuture channelFuture) throws Exception {
-                System.out.println("[NODE INFO]: LunarNode responsed the request with message id:" + request.getUUID());
-            }
-        });
+        if(ctx!=null)
+        {
+        	 int len = response.size();
+             ByteBuf response_buff = Unpooled.buffer(4+len);
+             response_buff.writeInt(len);
+             response.write(response_buff);
+           
+         	ctx.writeAndFlush(response_buff).addListener(new ChannelFutureListener() {
+                 public void operationComplete(ChannelFuture channelFuture) throws Exception {
+                     System.out.println("[NODE INFO]: LunarNode responsed the request with message id:" + request.getUUID());
+                 }
+             });
+        }
+       
     }
 
     private void execute(MessageRequest request) {
@@ -185,7 +202,7 @@ public class TaskHandlingMessage implements Runnable {
 		  	resp[1] = table;
 		  	
 		
-        LunarDB l_DB = node_tc.getActiveServer().getDBInstant(db);
+        LunarDB l_DB = l_db_ssa.getDBInstant(db);
         
         if(l_DB == null)
         {
@@ -273,7 +290,7 @@ public class TaskHandlingMessage implements Runnable {
 		resp[1] = table;
 		  	
 		
-        LunarDB l_DB = node_tc.getActiveServer().getDBInstant(db);
+        LunarDB l_DB = l_db_ssa.getDBInstant(db);
         if(l_DB == null)
         {
         	suc = false;
@@ -368,7 +385,7 @@ public class TaskHandlingMessage implements Runnable {
         	recs_insert[i] = params[i+2];
         }
 		//return node_tc.dispatch(new VNodeIncomingRecords(db,table,recs));
-        LunarDB l_DB = node_tc.getActiveServer().getDBInstant(db);
+        LunarDB l_DB = l_db_ssa.getDBInstant(db);
         
         
         if(l_DB == null)
@@ -440,7 +457,7 @@ public class TaskHandlingMessage implements Runnable {
         int count = Integer.parseInt(params[4]);
          
 		//return node_tc.dispatch(new VNodeIncomingRecords(db,table,recs));
-        LunarDB l_DB = node_tc.getActiveServer().getDBInstant(db);
+        LunarDB l_DB = l_db_ssa.getDBInstant(db);
         if(l_DB == null)
         {   
         	responseError(CodeSucceed.db_does_not_exist);
@@ -525,7 +542,7 @@ public class TaskHandlingMessage implements Runnable {
         int count = Integer.parseInt(params[3]);
          
 		 
-        LunarDB l_DB = node_tc.getActiveServer().getDBInstant(db);
+        LunarDB l_DB = l_db_ssa.getDBInstant(db);
         if(l_DB == null)
         {  
 		  	responseError(CodeSucceed.db_does_not_exist);
@@ -579,7 +596,7 @@ public class TaskHandlingMessage implements Runnable {
         
         
 		 
-        LunarDB l_DB = node_tc.getActiveServer().getDBInstant(db);
+        LunarDB l_DB = l_db_ssa.getDBInstant(db);
         if(l_DB == null)
         {  
 		  	responseError(CodeSucceed.db_does_not_exist);

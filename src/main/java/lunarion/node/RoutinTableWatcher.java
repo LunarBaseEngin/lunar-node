@@ -57,7 +57,9 @@ public class RoutinTableWatcher extends RoutingTableProvider {
 	/*
 	 * local db instance that replicates data from the master
 	 */
-	private final LunarDB local_db;
+	//private final LunarDB local_db;
+	
+	private LunarDBServerStandAlone db_server; 
 	private final LunarDBClient client ;
 	private TaskReplication replication_service;
 	private AtomicBoolean replication_started = new AtomicBoolean(false);
@@ -66,12 +68,13 @@ public class RoutinTableWatcher extends RoutingTableProvider {
 	ExecutorService thread_executor = Executors.newFixedThreadPool(1); 
 	 
 	public RoutinTableWatcher(String _instance_name, String _resource_name, 
-								String _partion_name, LunarDB _local_db ) {
+								String _partion_name, LunarDBServerStandAlone  _db_server) {
 		this.instance_name = _instance_name;
 		this.resource_name = _resource_name; 
 		this.partition_name = _partion_name; 
 		this.partition_logger = LoggerFactory.getLogger( _instance_name + "_ "+ _partion_name);
-		this.local_db = _local_db;
+		//this.local_db = _local_db;
+		this.db_server = _db_server;
 		this.client = new LunarDBClient();
 	}
 	
@@ -104,7 +107,7 @@ public class RoutinTableWatcher extends RoutingTableProvider {
 			return; 
 		  }	 
 		
-		replication_service = new TaskReplication(local_db, client,
+		replication_service = new TaskReplication(db_server, client,
 													current_master_config.getHostName(), 
 													LunarNode.calcDBPort(Integer.parseInt(current_master_config.getPort())) , 
 													partition_logger,
@@ -117,14 +120,16 @@ public class RoutinTableWatcher extends RoutingTableProvider {
 	}
 	
 	public void stopReplication()
-	{
+	{ 
 		if(replication_started.get())
 		{
 			//replication_service.stopRep();
 			thread_executor.shutdownNow();
 			client.shutdown();
 			replication_started.set(false);
-		}
+		}  
+		replication_initiated.set(false);
+		
 	}
 	private boolean findNewMaster()
 	{

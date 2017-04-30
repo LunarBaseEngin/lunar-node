@@ -64,7 +64,7 @@ public class MasterSlaveStateModelFactory extends StateModelFactory<StateModel> 
   public StateModel createNewStateModel(String _resource_name, String _partition_name) {
 	  resource_name  = _resource_name;
 	   
-	  MasterSlaveStateModel stateModel = new MasterSlaveStateModel( db_server.getDBInstant(resource_name),
+	  MasterSlaveStateModel stateModel = new MasterSlaveStateModel( db_server,
 			  														manager, 
 			  														instance_name, 
 			  														resource_name, 
