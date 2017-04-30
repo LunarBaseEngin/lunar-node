@@ -80,7 +80,7 @@ public MasterSlaveStateModel(LunarDB _local_db, HelixManager _manager, String _i
     /*
      * blocked, if replication does not complete, this partition will never be a master.
      */
-    routing_table_provider.replicateFromMaster();
+    routing_table_provider.startReplication();
     Thread.sleep(3000);
    
   }
@@ -97,6 +97,7 @@ public MasterSlaveStateModel(LunarDB _local_db, HelixManager _manager, String _i
     System.out.println(instance_name + " transitioning from " + message.getFromState() + " to "
         + message.getToState() + " for " + partition_name); 
        
+    routing_table_provider.startReplication();
     sleep();
 
   }
@@ -105,7 +106,7 @@ public MasterSlaveStateModel(LunarDB _local_db, HelixManager _manager, String _i
     System.out.println(instance_name + " transitioning from " + message.getFromState() + " to "
         + message.getToState() + " for " + partition_name);
     
-    
+    routing_table_provider.stopReplication();
     
     sleep();
 

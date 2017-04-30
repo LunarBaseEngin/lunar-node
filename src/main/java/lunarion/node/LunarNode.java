@@ -52,6 +52,8 @@ public class LunarNode {
 	//private final LunarDB db_node_instance;
 	private HelixManager manager = null;
 	private int node_port;
+	private int db_port;
+	
 	private String ZK_ADDRESS;
 	private String cluster_name;
 	private String resource_name;/* used as db name*/
@@ -64,8 +66,13 @@ public class LunarNode {
 	private LunarDBServerStandAlone lsa = new LunarDBServerStandAlone(); 
 	
 	
-	
-	public LunarNode(String _node_ip, int _node_port, String _zookeeper_addr, 
+	public static int calcDBPort(int _node_port)
+	{
+		int const_for_db_port = 10000; 
+		
+		return _node_port + const_for_db_port;
+	}
+	public LunarNode(String _node_ip, int _node_port , String _zookeeper_addr, 
 					String _data_root,
 					String _cluster_name,  
 					String _resource_name, 
@@ -89,6 +96,8 @@ public class LunarNode {
 		
 		ZK_ADDRESS = _zookeeper_addr;
 		node_port = _node_port;
+		db_port = LunarNode.calcDBPort(node_port);
+		
 		cluster_name = _cluster_name;
 		resource_name = _resource_name;
 		 LunarDB db_node_instance = new LunarDB();
@@ -131,7 +140,7 @@ public class LunarNode {
 		 try {
 			 lsa.startServer(db_root_path, logger ); 
 			 
-			 TaskStartWaiting task_sw = new TaskStartWaiting(lsa,node_port );
+			 TaskStartWaiting task_sw = new TaskStartWaiting(lsa, db_port );
 			 thread_executor.submit(task_sw) ;
 			 
 				 
@@ -139,7 +148,7 @@ public class LunarNode {
 		 catch(Exception e)
 		 {
 			 e.printStackTrace(); 
-			 logger.info(Timer.currentTime() + " [NODE ERROR]: unable to start db at: " + db_root_path);  
+			 logger.info(Timer.currentTime() + " [NODE ERROR]: unable to start db at: " + db_root_path + ", and db port at " + db_port);  
 				
 		 }
 	        

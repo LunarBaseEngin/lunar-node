@@ -37,6 +37,7 @@ import org.apache.helix.model.InstanceConfig;
 
 import io.netty.channel.ChannelFuture;
 import lunarion.db.local.shell.CMDEnumeration;
+import lunarion.node.LunarNode;
 import lunarion.node.remote.protocol.MessageResponse;
 import lunarion.node.requester.LunarDBClient;
 import lunarion.node.requester.MessageClientWatcher;
@@ -199,7 +200,7 @@ public class Resource {
 							 LunarDBClient client = new LunarDBClient();
 							 try {
 								client.connect(getInstantConfig(i).getHostName(), 
-										 		Integer.parseInt(getInstantConfig(i).getPort()));
+										LunarNode.calcDBPort(Integer.parseInt(getInstantConfig(i).getPort())));
 								master_map.put(partitionName, client);
 								
 							 } catch (Exception e) {

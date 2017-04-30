@@ -41,14 +41,14 @@ public class MasterSlaveStateModelFactory extends StateModelFactory<StateModel> 
   
   String instance_name = "";//192.168.0.88:30001
   String resource_name = "";//used as db name
-  int port;
+  int node_port;
     
 
   public MasterSlaveStateModelFactory(  LunarDBServerStandAlone  _db_server,
 		  								String _db_name,
 		  								HelixManager _manager, 
 		  								String _instance_name,  
-		  								int _port,
+		  								int _node_port,
 		  								int _delay) 
   {
 	  db_server = _db_server;
@@ -57,7 +57,7 @@ public class MasterSlaveStateModelFactory extends StateModelFactory<StateModel> 
 	  instance_name = _instance_name;
 	  resource_name = _db_name;
 	  delay = _delay;
-	  port = _port;
+	  node_port = _node_port;
   } 
 
   @Override

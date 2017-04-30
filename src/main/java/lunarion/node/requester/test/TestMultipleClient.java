@@ -86,16 +86,27 @@ public class TestMultipleClient {
 	    	 	try {
 	    	 		client.connect("127.0.0.1", port);
 	    			 
+	    	 		while(true)
+	    	 		{
+	    	 			MessageResponse resp_from_svr = null;
+	    	 			try {
+	    	 				resp_from_svr = client.sendRequest(cmd, arges); 
+	    					//Thread.sleep(10000);
+	    				} catch (InterruptedException e) {
+	    					// TODO Auto-generated catch block
+	    					e.printStackTrace();
+	    				}
+	    	 			
+	   	           	 
+		            	System.out.println(Thread.currentThread().getId() + " LunarNode responded command: "+ resp_from_svr.getCMD());
+		        		System.out.println(Thread.currentThread().getId() + " LunarNode responded UUID: "+ resp_from_svr.getUUID());
+		        		System.out.println(Thread.currentThread().getId() + " LunarNode responded suceed: "+ resp_from_svr.isSucceed());
+		        		for(int i=0;i<resp_from_svr.getParams().length;i++)
+		        		{
+		        			System.out.println(Thread.currentThread().getId() + " LunarNode responded: "+ resp_from_svr.getParams()[i]);
+		        		}
+	    	 		}
 	    	 		
-	    	 		MessageResponse resp_from_svr = client.sendRequest(cmd, arges); 
-	           	 
-	            	System.out.println(Thread.currentThread().getId() + " LunarNode responded command: "+ resp_from_svr.getCMD());
-	        		System.out.println(Thread.currentThread().getId() + " LunarNode responded UUID: "+ resp_from_svr.getUUID());
-	        		System.out.println(Thread.currentThread().getId() + " LunarNode responded suceed: "+ resp_from_svr.isSucceed());
-	        		for(int i=0;i<resp_from_svr.getParams().length;i++)
-	        		{
-	        			System.out.println(Thread.currentThread().getId() + " LunarNode responded: "+ resp_from_svr.getParams()[i]);
-	        		}
 					 
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block

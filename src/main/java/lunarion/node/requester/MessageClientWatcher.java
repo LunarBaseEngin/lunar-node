@@ -44,15 +44,13 @@ public class MessageClientWatcher {
              * If exceeds the threshold of time waiting,  
              * returns null; 
              */
-            condition.await(60*1000, TimeUnit.MILLISECONDS);
+           // condition.await(60*1000, TimeUnit.MILLISECONDS);
+            condition.await();
             System.out.println("interrupted by finish(...)");
-            if (this.response != null) {
-            	//System.out.println(this.response.getParams()[1]);
-                
-                return this.response ;
-            } else {
-                return null;
-            }
+            
+            //System.out.println(this.response.getParams()[1]); 
+            return this.response ;
+            
         } finally {
             lock.unlock();
         }

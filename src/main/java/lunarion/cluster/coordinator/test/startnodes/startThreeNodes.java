@@ -41,7 +41,7 @@ public class startThreeNodes {
 		String creation_conf = "/home/feiben/EclipseWorkspace/LunarBaseApplication/creation.conf";
 		
 		int node1_port = 30001 ; 
-		
+		 
 		/*
 		String[] node1_arges = new String[7];
 		node1_arges[0] = zkAddr;
@@ -60,12 +60,14 @@ public class startThreeNodes {
 		
 		 
 		int node2_port = 30002 ; 
+		 
 		LunarNode ln2 = new LunarNode(node_ip, node2_port, zkAddr, data_root, cluster_name, resource_name, creation_conf);
 		TaskAddNode tan2 = new TaskAddNode(ln2);
 		startThreeNodes.thread_executor.submit(tan2);
 		
 		
 		int node3_port = 30003 ; 
+		 
 		LunarNode ln3 = new LunarNode(node_ip, node3_port, zkAddr, data_root, cluster_name, resource_name, creation_conf);
 		TaskAddNode tan3 = new TaskAddNode(ln3);
 		startThreeNodes.thread_executor.submit(tan3);
