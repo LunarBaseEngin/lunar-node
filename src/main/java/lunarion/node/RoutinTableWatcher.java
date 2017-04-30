@@ -61,6 +61,7 @@ public class RoutinTableWatcher extends RoutingTableProvider {
 	private final LunarDBClient client ;
 	private TaskReplication replication_service;
 	private AtomicBoolean replication_started = new AtomicBoolean(false);
+	private AtomicBoolean replication_initiated = new AtomicBoolean(false);
 	
 	ExecutorService thread_executor = Executors.newFixedThreadPool(1); 
 	 
@@ -76,17 +77,12 @@ public class RoutinTableWatcher extends RoutingTableProvider {
 	
 	public void startReplication()
 	{ 
+		replication_initiated.set(true);
+		
 		if(!findNewMaster())
-			return;
+			return;  
 		
-		if(replication_started.get())
-		{
-			//replication_service.stopRep(); 
-			thread_executor.shutdownNow();
-			client.shutdown();
-			replication_started.set(false);
-		}
-		
+		stopReplication();  
 		
 		if(i_am_master.get())
 		{
@@ -97,9 +93,7 @@ public class RoutinTableWatcher extends RoutingTableProvider {
 		
 		System.out.println(" @replicateFromMaster(),  Start replicating data from the master of partition: " + partition_name);
 		partition_logger.info(Timer.currentTime()+ " [NODE INFO]: @startReplication(), Start replicating data from the master of partition: " + partition_name);
-    	
-		if(client.isConnected())
-    		client.shutdown();
+    	 
     	try {
 			client.connect(current_master_config.getHostName(), LunarNode.calcDBPort(Integer.parseInt(current_master_config.getPort())) );
 		  } catch (Exception e) {
@@ -189,7 +183,16 @@ public class RoutinTableWatcher extends RoutingTableProvider {
 			
 			partition_logger.info(Timer.currentTime()+ " [COORDINATOR STATE CHANGE]: @onExternalViewChange(...)=============================");
 		    	
-			
-			//startReplication();
+			/*
+			 * must after this partition from offline to slave, then we can do findMaster 
+			 * or replication things.
+			 * 
+			 * the replication_initiated is the first time set true at 
+			 * MasterSlaveStateModel.onBecomeSlaveFromOffline(...)
+			 */
+			if(replication_initiated.get())
+			{ 
+				startReplication();
+			}
 	}
 }
