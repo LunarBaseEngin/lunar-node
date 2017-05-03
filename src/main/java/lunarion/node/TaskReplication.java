@@ -63,8 +63,7 @@ public class TaskReplication implements Runnable {
     private final String instance_name;
     
     private AtomicBoolean shutdown_requested = new AtomicBoolean(false);
-    private AtomicBoolean in_replication = new AtomicBoolean(false);
-    
+     
     //private Thread r_thread;
     
     TaskReplication( String _instance_name,
@@ -89,37 +88,49 @@ public class TaskReplication implements Runnable {
     public void run() { 
     	
     	try{
-    		
-    		if(client_to_master.isConnected())
-    		{
-	    		System.out.println("@TaskReplication.run(), Master of partition: "+ partition_name + " is connected.");
-				replicator_logger.info(Timer.currentTime()+ " [NODE INFO]: @TaskReplication.run(), Master of partition: "+ partition_name + "(" + master_addr+"_"+master_db_port+") is connected.");
-				 
+    			int failure_count = 0 ;
+    			 
 		    	while (!shutdown_requested.get())
 		    	{
-		    		try {
-		    			in_replication.set(true); 
-						replicateFromMaster( ) ;
-						in_replication.set(false); 
-						
-						Thread.sleep(5000);
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+		    		if(client_to_master.isConnected())
+		    		{
+			    		try {
+			    			 
+							replicateFromMaster( ) ;
+							 
+							
+							Thread.sleep(5000);
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+		    		}
+		    		else
+		    		{
+		    			failure_count ++;
+		    			if(failure_count >=10)
+		    			{
+		    				shutdown_requested.set(true);
+		    			}
+		    			else
+		    			{
+		    				try {
+								Thread.sleep(5000);
+							} catch (InterruptedException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+		    				System.out.println("@TaskReplication.run(), Master of partition: "+ partition_name + " is not connected.");
+		    				replicator_logger.info(Timer.currentTime()+ " [NODE INFO]: @TaskReplication.run(), Master of partition: "+ partition_name + " is not connected.");
+		    			}
+		    		}
 		    	}
 		    	//client_to_master.shutdown();
 		    	 
 		    	 
 		    	System.err.println("@TaskReplication.run() has been shutdown");
 		    	replicator_logger.info(Timer.currentTime()+ " [NODE INFO]: @TaskReplication.run() has been shutdown");
-				 
-    		} 
-    		else
-    		{
-				System.out.println("@TaskReplication.run(), Master of partition: "+ partition_name + " is not connected.");
-				replicator_logger.info(Timer.currentTime()+ " [NODE INFO]: @TaskReplication.run(), Master of partition: "+ partition_name + " is not connected.");
-	    	}
+		 
     	}
     	finally
     	{
@@ -134,18 +145,18 @@ public class TaskReplication implements Runnable {
     {
     	this.shutdown_requested.set(true);
     	
-    }
-    
-    public boolean inReplication()
-    {
-    	return in_replication.get();
-    }
+    } 
      
     private void replicateFromMaster( ) throws InterruptedException
 	{ 
  			System.out.println(" @TaskReplication.replicateFromMaster(), start replicating data of partition: " + partition_name + " from master: " + this.master_addr + "_"+master_db_port);   
  			replicator_logger.info(Timer.currentTime() 
- 							+ " [NODE INFO]:  @TaskReplication.replicateFromMaster(), start replicating data of partition: " + partition_name + " from master: " + this.master_addr + "_"+master_db_port);
+ 							+ " [NODE INFO]:  @TaskReplication.replicateFromMaster(), start replicating data of partition: " 
+ 							+ partition_name 
+ 							+ " from master: " 
+ 							+ this.master_addr 
+ 							+ "_"
+ 							+ master_db_port);
 				
  			int partition_number = ControllerConstants.parsePartitionNumber(partition_name);
  			
@@ -153,13 +164,13 @@ public class TaskReplication implements Runnable {
         	String[] params = new String[2];
         	params[0] = resource_name;  
         	params[1] = ControllerConstants.patchPartitionLogSuffix( partition_number);
-        	replicator_logger.info(Timer.currentTime()+ " [NODE INFO]:  @TaskReplication.replicateFromMaster(), sending");
+        	replicator_logger.debug(Timer.currentTime()+ " [NODE INFO]:  @TaskReplication.replicateFromMaster(), sending");
 			
         	MessageResponse resp_from_svr = client_to_master.sendRequest(cmd, params); 
         	 	
  			if(resp_from_svr != null && resp_from_svr.isSucceed())
  			{
- 				replicator_logger.info(Timer.currentTime()+ " [NODE INFO]:  @TaskReplication.replicateFromMaster(), receieved");
+ 				replicator_logger.debug(Timer.currentTime()+ " [NODE INFO]:  @TaskReplication.replicateFromMaster(), receieved");
  				
  				/*
  				System.out.println("LunarNode responded command: "+ resp_from_svr.getCMD());

@@ -143,16 +143,38 @@ public class RoutinTableWatcher extends RoutingTableProvider {
 			return; 
 		}	 
     	 
-		replication_service = new TaskReplication( instance_name, db_server, client,
+		if(client.isConnected())
+		{
+    		System.out.println("@RoutinTableWatcher.startReplication(), Master of partition: "+ partition_name + " is connected.");
+    		partition_logger.info(Timer.currentTime()+ " [NODE INFO]: @RoutinTableWatcher.startReplication(), Master of partition: "
+    							+ partition_name 
+    							+ "(" + current_master_config.getHostName() 
+    							+ "_"
+    							+ LunarNode.calcDBPort(Integer.parseInt(current_master_config.getPort()))
+    							+ ") is connected.");
+		
+    		replication_service = new TaskReplication( instance_name, db_server, client,
 													current_master_config.getHostName(), 
 													LunarNode.calcDBPort(Integer.parseInt(current_master_config.getPort())) , 
 													partition_logger,
 													partition_name,
 													resource_name);
 		
-		//replication_service.startRep();
-		thread_executor.submit(replication_service);
-		replication_started.set(true);
+    		//replication_service.startRep();
+    		thread_executor.submit(replication_service);
+    		replication_started.set(true);
+		}
+		else
+		{
+			System.out.println("@RoutinTableWatcher.startReplication(), Master of partition: "+ partition_name + " can not connect to.");
+    		partition_logger.info(Timer.currentTime()+ " [NODE INFO]: @RoutinTableWatcher.startReplication(), Master of partition: "
+    							+ partition_name 
+    							+ "(" + current_master_config.getHostName() 
+    							+ "_"
+    							+ LunarNode.calcDBPort(Integer.parseInt(current_master_config.getPort()))
+    							+ ") can not connect to.");
+    		replication_started.set(false);
+		}
 	}
 	
 	public void stopReplication()
