@@ -18,6 +18,13 @@
  */
 package lunarion.node.logger;
 
+import java.util.HashMap;
+import java.util.UUID;
+
+import LCG.DB.Grammar.Parser.PatternInterpreter;
+import LCG.RecordTable.StoreUtile.LunarColumn;
+import LCG.RecordTable.StoreUtile.Record32KBytes;
+import lunarion.db.local.shell.CMDEnumeration;
 import lunarion.db.local.shell.CMDEnumeration.command;
 import lunarion.node.remote.protocol.MessageRequest;
 import lunarion.node.remote.protocol.ReservedSymbols;
@@ -30,6 +37,7 @@ public class LogCMDConstructor {
 	public static final String col_param = "params";
 	
 	public static final String param_delim = ReservedSymbols.value_for_rec_column_delim;
+	private static PatternInterpreter p_i = new PatternInterpreter();
 	
 	 
 	
@@ -45,6 +53,39 @@ public class LogCMDConstructor {
 		}
 		
 		return str;
+	}
+	
+	public static MessageRequest parseLoggedCMD(String log_cmd)
+	{
+		if(log_cmd.startsWith("{") && log_cmd.endsWith("}"))
+		{
+			String s_data = log_cmd.substring(1, log_cmd.length() - 1).trim();
+			HashMap<String, LunarColumn> columns =  p_i.buildRaw(s_data);
+			LunarColumn cmd_col = columns.get(col_cmd);
+			LunarColumn params_col = columns.get(col_param);
+			
+			if(cmd_col!= null)
+			{
+				byte cmd_in_byte = (byte)Integer.parseInt(cmd_col.getColumnValue());
+				CMDEnumeration.command cmd = CMDEnumeration.getCMD(cmd_in_byte);
+				
+				String[] params =  params_col.getColumnValue().split(param_delim);
+				MessageRequest request = new MessageRequest();
+				request.setUUID(UUID.randomUUID().toString()); 
+				request.setCMD(cmd);
+				request.setParams(params);
+				return request;
+			}
+			else
+				return null; 
+		}
+		else
+		{
+			return null;
+		}
+		
+		
+		
 	}
 	public static String contructLogCreate(String db, String table)
 	{  

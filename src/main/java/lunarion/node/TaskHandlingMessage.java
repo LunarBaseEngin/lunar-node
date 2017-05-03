@@ -531,7 +531,7 @@ public class TaskHandlingMessage implements Runnable {
     {
     	if(params.length != 4)
 		{
-			System.err.println("[NODE ERROR]: wrong parameters for fetching records.");
+			System.err.println("[NODE ERROR]: wrong parameters for fetching records, can not be: " + params.length);
 			responseError(CodeSucceed.wrong_parameter_count);
         	return ; 
 		}
@@ -567,7 +567,7 @@ public class TaskHandlingMessage implements Runnable {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-        if(recs != null )
+        if(recs != null && !recs.isEmpty())
         {
         	response = new MessageResponseQuery();
         	response.setUUID(request.getUUID());

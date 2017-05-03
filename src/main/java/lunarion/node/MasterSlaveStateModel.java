@@ -78,9 +78,7 @@ public MasterSlaveStateModel(LunarDBServerStandAlone  _db_server, HelixManager _
   public void onBecomeSlaveFromOffline(Message message, NotificationContext context) throws InterruptedException {
     System.out.println(instance_name + " transitioning from " + message.getFromState() + " to "
         + message.getToState() + " for " + partition_name);
-    /*
-     * blocked, if replication does not complete, this partition will never be a master.
-     */
+   
     routing_table_provider.startReplication();
     Thread.sleep(3000);
    
@@ -107,7 +105,7 @@ public MasterSlaveStateModel(LunarDBServerStandAlone  _db_server, HelixManager _
     System.out.println(instance_name + " transitioning from " + message.getFromState() + " to "
         + message.getToState() + " for " + partition_name);
     
-    routing_table_provider.stopReplication();
+	routing_table_provider.stopReplication();
     
     sleep();
 

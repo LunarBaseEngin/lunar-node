@@ -19,6 +19,7 @@
 package lunarion.node.requester;
 
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -31,8 +32,8 @@ public class MessageClientWatcher {
 	private final String message_uuid;
     private MessageResponse response;
     private Lock lock = new ReentrantLock();
-    private Condition condition = lock.newCondition();
-
+	private Condition condition = lock.newCondition();
+     
     public MessageClientWatcher(String uuid) {
     	message_uuid = uuid;
     }
@@ -43,10 +44,15 @@ public class MessageClientWatcher {
             /*
              * If exceeds the threshold of time waiting,  
              * returns null; 
+             * 
+             * It must be a time interval instead of an endless waiting, 
+             * since the thread of caller may dead for whatever reason, 
+             * this client has to wake up and finish the job.
              */
-           // condition.await(60*1000, TimeUnit.MILLISECONDS);
-            condition.await();
-            System.out.println("interrupted by finish(...)");
+            condition.await(5*1000, TimeUnit.MILLISECONDS);
+            //  condition.await(); 
+            
+            System.out.println("interrupted by finish(...) or time is up. ");
             
             //System.out.println(this.response.getParams()[1]); 
             return this.response ;
@@ -63,7 +69,8 @@ public class MessageClientWatcher {
             /*
              * notify to interrupt the await() called in start() 
              */
-            condition.signal();
+             condition.signal();
+             
             System.out.println("send signal");
         } finally {
             lock.unlock();

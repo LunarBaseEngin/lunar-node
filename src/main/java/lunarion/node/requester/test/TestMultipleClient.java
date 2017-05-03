@@ -21,6 +21,7 @@ package lunarion.node.requester.test;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import io.netty.channel.ChannelFuture;
 import lunarion.db.local.shell.CMDEnumeration;
 import lunarion.node.LunarNode;
 import lunarion.node.remote.protocol.MessageResponse;
@@ -41,32 +42,37 @@ public class TestMultipleClient {
     	params[2] = "0";
     	params[3] = "15"; 
          */
-		 
+		 int port = 9090;
+		     
+		
     	CMDEnumeration.command cmd = CMDEnumeration.command.fetchTableNamesWithSuffix;
     	String[] params = new String[2];
     	params[0] = "CorpusDB"; 
     	params[1] = "_1";  
 		
-    	TestMultipleClient tmc= new TestMultipleClient();
-    	
-        TaskSendCMD t1 = tmc.getTask(cmd, params);
+    	TestMultipleClient tmc= new TestMultipleClient(); 
+         
         
-        thread_executor.submit(t1);
+        for(int i=0;i<25;i++)
+        {
+        	/*
+        	 * must be noticed that the client.connect() has to be outside the thread task, 
+        	 * otherwise the task will be blocked and never quit, hence the following 
+        	 * tasks can not be submit to the executor service.  
+        	 */
+        	 LunarDBClient clienti = new LunarDBClient();
+        	 clienti.connect("127.0.0.1", port);
+            TaskSendCMD ti = tmc.getTask(clienti, cmd, params);
+            
+            thread_executor.submit(ti);
+        }
         
-       	
-        TaskSendCMD t2 = tmc.getTask(cmd, params);
-        
-        thread_executor.submit(t2);
-        
-        
-        TaskSendCMD t3 = tmc.getTask(cmd, params);
-        
-        thread_executor.submit(t3);
+        //thread_executor.shutdownNow();
 	}
 	
-	public TaskSendCMD getTask(CMDEnumeration.command _cmd, String[] _args )
+	public TaskSendCMD getTask(LunarDBClient client, CMDEnumeration.command _cmd, String[] _args )
 	{
-		return new TaskSendCMD(_cmd, _args) ; 
+		return new TaskSendCMD(  client, _cmd, _args) ; 
 	}
 	
 	public class TaskSendCMD implements Runnable {
@@ -76,24 +82,23 @@ public class TestMultipleClient {
 	    LunarDBClient client = null;
 	    int port = 9090;
 	    
-	    TaskSendCMD(CMDEnumeration.command _cmd, String[] _args ) {
+	    TaskSendCMD(LunarDBClient _client, CMDEnumeration.command _cmd, String[] _args ) {
 	        this.cmd = _cmd; 
 	        arges = _args;
-	        client = new LunarDBClient();
+	        client = _client;
 	    }
 
-	    public void run() { 
-	    	 	try {
-	    	 		client.connect("127.0.0.1", port);
-	    			 
-	    	 		while(true)
-	    	 		{
+	    public void run() {  
+    		
+	    
+	    	 
+	    	 	 
 	    	 			MessageResponse resp_from_svr = null;
 	    	 			try {
 	    	 				resp_from_svr = client.sendRequest(cmd, arges); 
 	    					//Thread.sleep(10000);
 	    				} catch (InterruptedException e) {
-	    					// TODO Auto-generated catch block
+	    					 
 	    					e.printStackTrace();
 	    				}
 	    	 			
@@ -105,16 +110,17 @@ public class TestMultipleClient {
 		        		{
 		        			System.out.println(Thread.currentThread().getId() + " LunarNode responded: "+ resp_from_svr.getParams()[i]);
 		        		}
-	    	 		}
-	    	 		
+	    	 		 
+		        		System.out.println(Thread.currentThread().getId() + " shutdown the client ");
+		        		
+		        		client.shutdown();
+		        		
+		        		System.out.println(Thread.currentThread().getId() + " shutdown ok ");
+		        		
 					 
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}  
+			 
+	    	 
+	    	//System.out.println(Thread.currentThread().getId() + " shutdown ok ");
 	        
 	    }
 	}
