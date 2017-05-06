@@ -19,7 +19,7 @@
 package lunarion.node;
 
 import java.util.Date;
-import java.util.Map;
+import java.util.Map;  
 
 import org.apache.log4j.Logger;
 
@@ -36,15 +36,14 @@ public class LunarDBServerHandler extends ChannelInboundHandlerAdapter {
 
 	private final NodeTaskCenter node_tc;
 	private final Logger logger;
-
+	
     public LunarDBServerHandler(NodeTaskCenter task_map, Logger _logger  ) {
         this.node_tc = task_map;
         this.logger = _logger;
     }
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg)
-            throws Exception {  
-    	 
+            throws Exception { 
   
     	try{
     		ByteBuf buf = (ByteBuf) msg;
@@ -60,7 +59,10 @@ public class LunarDBServerHandler extends ChannelInboundHandlerAdapter {
     		}
     		//MessageResponse response = new MessageResponse();
     		//TaskHandlingMessage recvTask = new TaskHandlingMessage(request, response, node_tc, ctx);
-    		TaskHandlingMessage recvTask = new TaskHandlingMessage(request , node_tc.getActiveServer(), ctx, logger);
+    		TaskHandlingMessage recvTask = new TaskHandlingMessage(request , 
+    																node_tc.getActiveServer(), 
+    																ctx, 
+    																logger);
             
             node_tc.getActiveServer().submit(recvTask);
           

@@ -87,8 +87,7 @@ public class TaskHandlingMessage implements Runnable {
        // this.node_tc = task_center;
         this.l_db_ssa = _l_db_ssa;
         this.ctx = ctx;
-        this.logger = _logger;
-        
+        this.logger = _logger; 
     	
     }
     
@@ -133,6 +132,9 @@ public class TaskHandlingMessage implements Runnable {
         	case createTable:
         		createTable(params);
         		break;
+        	case notifySlavesUpdate:
+        		notifySlavesUpdate(params);
+        		break;
         	case addFulltextColumn:
         		addFulltextColumn( params);
         		break;
@@ -167,7 +169,17 @@ public class TaskHandlingMessage implements Runnable {
         return;
         		
     }
-    
+    /*
+     * Params:
+     * params[0]: db name;
+     * params[1]: name of table_i on partition i to be created;
+     * 
+     * Response:
+     * resp[0] = db;
+     * resp[1] = table_i on partition i created. 
+     * resp[2] = CodeSucceed.create_table_succeed, or failure message.
+     * resp[3] = CodeSucceed.create_log_table_succeed, or failure message.  
+     */
     private void createTable(String[] params)
     {
     	boolean suc = true;
@@ -197,7 +209,7 @@ public class TaskHandlingMessage implements Runnable {
 			return;
 		}
 		
-		String[] resp = new String[4];
+		String[] resp = new String[5];
 		  	resp[0] = db;
 		  	resp[1] = table;
 		  	
@@ -263,7 +275,33 @@ public class TaskHandlingMessage implements Runnable {
         response.setParams(resp);  
     }
 
-   
+    private void notifySlavesUpdate(String[] params)
+    {
+    	boolean suc = true;
+		if(params.length < 2)
+		{
+			System.err.println("[NODE ERROR]: " + CodeSucceed.wrong_parameters_for_notifying_update);
+			logger.info("[NODE ERROR]: " + CodeSucceed.wrong_parameters_for_notifying_update );
+			
+			suc = false ;
+			responseError(CodeSucceed.wrong_parameters_for_notifying_update);
+			return;
+		} 
+
+		String db_name = params[0];
+		String table = params[1];
+		 
+		int partition = ControllerConstants.parsePartitionNumber(table);
+		if(partition >=0 )
+		{
+			String partition_name = ControllerConstants.patchNameWithPartitionNumber(db_name,partition);
+			
+			System.err.println("[NODE INFO]: notify slaves.........");
+			
+			l_db_ssa.notifyUpdate(partition_name, params);
+			System.err.println("[NODE INFO]: notification ok.........");
+		}
+    }
    
     private void addFulltextColumn(String[] params)
     {
@@ -354,7 +392,7 @@ public class TaskHandlingMessage implements Runnable {
             }
             else
             {
-            	 
+            	 ;
             }
         } 
         

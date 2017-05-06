@@ -18,6 +18,9 @@
  */
 package lunarion.node;
 
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+
 import org.apache.helix.HelixManager;
 import org.apache.helix.NotificationContext;
 import org.apache.helix.model.Message;
@@ -54,7 +57,8 @@ public MasterSlaveStateModel(LunarDBServerStandAlone  _db_server, HelixManager _
 	  resoure_name = _resource;
 	  partition_name = _partition;
 
-	  this.routing_table_provider = new RoutinTableWatcher(instance_name, resoure_name, partition_name, db_server);
+	  this.routing_table_provider = new RoutinTableWatcher(instance_name, resoure_name, 
+			  												partition_name, db_server );
   	
 	  try {
 		  manager.addExternalViewChangeListener(routing_table_provider);
@@ -79,7 +83,7 @@ public MasterSlaveStateModel(LunarDBServerStandAlone  _db_server, HelixManager _
     System.out.println(instance_name + " transitioning from " + message.getFromState() + " to "
         + message.getToState() + " for " + partition_name);
    
-    routing_table_provider.startReplication();
+	routing_table_provider.startReplication();
     Thread.sleep(3000);
    
   }
@@ -96,7 +100,7 @@ public MasterSlaveStateModel(LunarDBServerStandAlone  _db_server, HelixManager _
     System.out.println(instance_name + " transitioning from " + message.getFromState() + " to "
         + message.getToState() + " for " + partition_name); 
        
-    routing_table_provider.startReplication();
+	routing_table_provider.startReplication();
     sleep();
 
   }

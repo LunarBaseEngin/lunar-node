@@ -96,6 +96,9 @@ public class CMDEnumeration {
 		},
 		fetchTableNamesWithSuffix{
 			public byte getByte(){return 22;}  
+		},
+		notifySlavesUpdate{
+			public byte getByte(){return 23;}  
 		}; 
 		
 		
@@ -156,7 +159,9 @@ public class CMDEnumeration {
 	    	case 22:
 	    		cmd = CMDEnumeration.command.fetchTableNamesWithSuffix;
 	    		break;	
-	    		
+	    	case 23:
+	    		cmd = CMDEnumeration.command.notifySlavesUpdate;
+	    		break;			
 	    	default:
 	    		break; 
 	    }

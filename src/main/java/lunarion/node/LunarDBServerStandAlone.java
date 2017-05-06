@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -52,6 +53,7 @@ import lunarion.db.local.Test.LunarServerHandlerTest;
 import lunarion.node.EDF.NodeTaskCenter;
 import lunarion.node.logger.LoggerFactory;
 import lunarion.node.logger.Timer;
+import lunarion.node.remote.protocol.CodeSucceed;
 import lunarion.node.replicator.DBReplicator; 
 
 /*
@@ -61,9 +63,16 @@ import lunarion.node.replicator.DBReplicator;
 public class LunarDBServerStandAlone {
 	
 	private Logger logger = null; 
-	 
+	
+	/*
+	 * <db_name, LunarDB instance>
+	 */
 	private HashMap<String, LunarDB> db_map;
 	private HashMap<String, DBReplicator> db_replicators;
+	/*
+	 * <partition_name, queue of messages for this partition>
+	 */
+	private HashMap<String, BlockingQueue<String[]>> table_partition_notification_queue_map;
 	
 	/*
 	 * server processors
@@ -155,6 +164,7 @@ public class LunarDBServerStandAlone {
 		 
 		db_map = new HashMap<String, LunarDB>();
 		db_replicators = new HashMap<String, DBReplicator>();
+		table_partition_notification_queue_map = new HashMap<String, BlockingQueue<String[]>>();
 		
 		for(int i=0;i<db_names.size();i++)
 		{
@@ -242,7 +252,41 @@ public class LunarDBServerStandAlone {
 	{
 		return this.db_map.get(db_name);
 	}
+ 
+	public void registerRoutinTableWatcherQueue(String partition_name, BlockingQueue<String[]> table_partirion_update_notification_queue )
+	{
+		table_partition_notification_queue_map.put(partition_name, table_partirion_update_notification_queue);
+	}
 	
+	public void notifyUpdate(String partition_name, String[] update_db_and_table)
+	{
+		BlockingQueue<String[]> bq = table_partition_notification_queue_map.get(partition_name);
+		if(bq != null)
+		{
+			logger.info("[NODE INFO]: start notifying slave on partition " 
+							+ partition_name 
+							+ " to update data from "
+							+ update_db_and_table[0]
+							+ "."
+							+ update_db_and_table[1]);
+			
+			bq.add(update_db_and_table);
+			logger.info("[NODE INFO]: notified slave on partition " 
+							+ partition_name 
+							+ " to update data from "
+							+ update_db_and_table[0]
+							+ "."
+							+ update_db_and_table[1]);
+			
+		}
+		else
+		{
+			System.err.println("[NODE ERROR]: the queue for accepting update notification must not be null.");
+			logger.info("[NODE ERROR]: the queue for accepting update notification must not be null.");
+		}
+		 
+	}
+	 
 	public static void main(String[] args) throws Exception {
 	        int port = 9090;
 	        if (args != null && args.length > 0) {

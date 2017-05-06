@@ -18,27 +18,29 @@
  */
 package lunarion.cluster.coordinator;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 
+import LCG.RecordTable.StoreUtile.Record32KBytes;
 import lunarion.node.remote.protocol.MessageResponse;
 
 public class ResponseCollector {
 	
 	/*
-	 * <partition_name, MessageResponse >
+	 * <message UUID, MessageResponse >
 	 */
 	private ConcurrentHashMap<String, MessageResponse> response_map  ;
-	private boolean succeed = false;
+	private boolean succeed = true;
 	
 	public ResponseCollector(ConcurrentHashMap<String, MessageResponse> _map)
 	{
 		response_map = _map;
 		
-		Iterator<String> key_partitions = response_map.keySet().iterator();
-		while(key_partitions.hasNext())
+		Iterator<String> uuids = response_map.keySet().iterator();
+		while(uuids.hasNext())
 		{
-			MessageResponse mr = response_map.get(key_partitions.next());
+			MessageResponse mr = response_map.get(uuids.next());
 			if(mr == null || !mr.isSucceed())
 				succeed = false;
 		}
@@ -50,21 +52,52 @@ public class ResponseCollector {
 		return succeed;
 	}
 	
+	public ArrayList<String[]> getUpdatedTables()
+	{
+		if(succeed)
+		{
+			ArrayList<String[]> updated_tables = new ArrayList<String[]>();
+			Iterator<String> key_partitions = response_map.keySet().iterator();
+			
+			/*
+			 * at least has one response.
+			 */  
+			while(key_partitions.hasNext())
+			{
+				String partition = key_partitions.next();
+				MessageResponse mr = response_map.get(partition);
+				if(mr!=null)
+				{  
+					System.out.println("updated table on partition " +partition+ " is: "+ mr.getParams()[1]);
+					 
+					String[]  db_and_table = new String[2];	 
+					db_and_table[0] = mr.getParams()[0];
+					db_and_table[1] = mr.getParams()[1];
+					updated_tables.add(db_and_table);
+				}  
+			}
+			
+			return updated_tables;
+		}
+		else
+			return null;
+	}
+	
 	public void printResponse()
 	{
-		Iterator<String> key_partitions = response_map.keySet().iterator();
-		while(key_partitions.hasNext())
+		Iterator<String> uuids = response_map.keySet().iterator();
+		while(uuids.hasNext())
 		{
-			String partition = key_partitions.next();
-			MessageResponse mr = response_map.get(partition);
+			String uuid = uuids.next();
+			MessageResponse mr = response_map.get(uuid);
 			if(mr!=null)
 			{
-				System.out.println("partition " +partition+ " responded: command "+ mr.getCMD());
-				System.out.println("partition " +partition+ " responded: UUID "+ mr.getUUID());
-				System.out.println("partition " +partition+ " responded: suceed "+ mr.isSucceed());
+				System.out.println( uuid+ " responded: command "+ mr.getCMD());
+				System.out.println( uuid+ " responded: UUID "+ mr.getUUID());
+				System.out.println( uuid+ " responded: suceed "+ mr.isSucceed());
 				for(int i=0;i<mr.getParams().length;i++)
 				{
-					 System.out.println("partition " +partition+ " responded: "+ mr.getParams()[i]);
+					 System.out.println( uuid+ " responded: "+ mr.getParams()[i]);
 				} 
 			}
 			

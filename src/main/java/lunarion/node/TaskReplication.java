@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.helix.model.InstanceConfig;
@@ -63,7 +65,9 @@ public class TaskReplication implements Runnable {
     private final String instance_name;
     
     private AtomicBoolean shutdown_requested = new AtomicBoolean(false);
-     
+	BlockingQueue<String[]> update_notification_queue = null;
+    //private String[] update_db_and_table;
+    
     //private Thread r_thread;
     
     TaskReplication( String _instance_name,
@@ -73,7 +77,8 @@ public class TaskReplication implements Runnable {
     				int _db_port, 
     				Logger _partition_logger,
     				String _partition_name,
-    				String _resource_name ) 
+    				String _resource_name,
+    				BlockingQueue<String[]> _update_notification_queue) 
     {  
     	this.instance_name = _instance_name;
     	this.db_server = _db_server;
@@ -83,21 +88,30 @@ public class TaskReplication implements Runnable {
         this.partition_name = _partition_name;
         this.resource_name = _resource_name;
         this.client_to_master = _client_to_master;
+        
+        this.update_notification_queue = _update_notification_queue;
+        //this.update_db_and_table = _update_db_and_table;
     }
 
     public void run() { 
     	
     	try{
     			int failure_count = 0 ;
-    			 
-		    	while (!shutdown_requested.get())
+    			String[] db_and_table_to_be_updated = null; 
+		    	while (!shutdown_requested.get() )
 		    	{
 		    		if(client_to_master.isConnected())
 		    		{
-			    		try {
-			    			 
-							replicateFromMaster( ) ;
-							 
+			    		try { 
+			    			System.err.println("waiting for message........");
+			    			db_and_table_to_be_updated=update_notification_queue.poll(3, TimeUnit.SECONDS) ;
+			    			if(db_and_table_to_be_updated != null)
+			    			{
+			    				System.err.println("get........");			    			
+			    				replicateFromMaster(db_and_table_to_be_updated) ;
+			    			}
+			    			
+			    			//replicateFromMaster( ) ; 
 							
 							Thread.sleep(5000);
 						} catch (InterruptedException e) {
@@ -146,8 +160,87 @@ public class TaskReplication implements Runnable {
     	this.shutdown_requested.set(true);
     	
     } 
-     
-    private void replicateFromMaster( ) throws InterruptedException
+    
+    private boolean checkPartition(String name)
+    {
+    	int partition_number = ControllerConstants.parsePartitionNumber(partition_name);
+    	int partition_to_be_checked = ControllerConstants.parsePartitionNumber(name);
+    	if(partition_number != partition_to_be_checked)
+    		return false;
+    	
+    	return true;
+			
+    }
+    
+    private void executeLog(MessageResponse resp_of_logs )
+    {
+    	for(int j=0; j<resp_of_logs.getParams().length;j++)
+		{
+			System.out.println("LunarNode responded: "+ resp_of_logs.getParams()[j]);
+			MessageRequest logged_cmd = LogCMDConstructor.parseLoggedCMD(resp_of_logs.getParams()[j]);
+			if(logged_cmd != null )
+			{
+				TaskHandlingMessage replication_task 
+													= new TaskHandlingMessage(logged_cmd, 
+																				db_server,  
+																				replicator_logger);
+				replication_task.run();
+				System.out.println("command: "+ logged_cmd.getCMD() + " executed succeed.");
+				replicator_logger.info(Timer.currentTime()+ " [NODE INFO]: @replicateFromMaster(), " + "command: "+ logged_cmd.getCMD() + " executed succeed.");			
+			}
+			else
+			{
+				System.err.println("logged_cmd is null, no command can be executed." );
+				replicator_logger.info(Timer.currentTime()+ " [NODE INFO]: @replicateFromMaster(), logged_cmd is null, no command can be executed. ");
+    				
+			}
+		}  
+    }
+    private void replicateFromMaster(String[] db_and_table) throws InterruptedException
+    {
+    	if(db_and_table==null || db_and_table.length<2)
+		{
+			return;
+		}
+    	
+    	System.out.println(" @TaskReplication.replicateFromMaster(...), start replicating data of partition: " + partition_name + " from master: " + this.master_addr + "_"+master_db_port);   
+    	replicator_logger.info(Timer.currentTime() 
+							+ " [NODE INFO]:  @TaskReplication.replicateFromMaster(...), start replicating data of partition: " 
+							+ partition_name 
+							+ " from master: " 
+							+ this.master_addr 
+							+ "_"
+							+ master_db_port);
+		
+		
+    	String table_name = db_and_table[1];
+		if(!checkPartition(table_name))
+		{		
+			replicator_logger.info(Timer.currentTime() 
+								+ " [NODE ERROR]:  @TaskReplication.replicateFromMaster(...), wrong table to be replicated: " 
+								+ table_name );
+		}
+		
+		String log_table_name =  ControllerConstants.getLogTableName(table_name);
+		CMDEnumeration.command get_logs = CMDEnumeration.command.fetchRecordsASC;
+		String[] params_for_log = new String[4];
+		params_for_log[0] = resource_name; 
+		params_for_log[1] = log_table_name; 
+		params_for_log[2] = "0";
+		params_for_log[3] = "15";
+		MessageResponse resp_of_logs = client_to_master.sendRequest(get_logs, params_for_log); 
+ 	 	
+		if(resp_of_logs != null && resp_of_logs.isSucceed())
+		{ 
+			executeLog( resp_of_logs );
+		}
+		else
+		{
+			System.err.println("log table is emtpy as of now." );
+			replicator_logger.info(Timer.currentTime()+ " [NODE INFO]: @TaskReplication.replicateFromMaster(...), log table is emtpy as of now.");	
+		}	
+    }
+    private void replicateFromMaster() throws InterruptedException
 	{ 
  			System.out.println(" @TaskReplication.replicateFromMaster(), start replicating data of partition: " + partition_name + " from master: " + this.master_addr + "_"+master_db_port);   
  			replicator_logger.info(Timer.currentTime() 

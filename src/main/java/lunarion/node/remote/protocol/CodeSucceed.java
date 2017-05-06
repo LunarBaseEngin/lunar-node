@@ -23,6 +23,7 @@ public class CodeSucceed {
 	static public String add_fulltext_column_succeed = "[SUCEED 00000002]: full text search column has been sucessfully added.";
 	static public String create_log_table_succeed = "[SUCEED 00000003]: log table has been sucessfully created.";
 	
+	
 	static public String wrong_parameter_count = "[FAILURE 00000000]: the number of parameters are wrong.";
 	
 	static public String create_table_failed_already_exists = "[FAILURE 00000001]: table already exists, can not be created again.";
@@ -37,5 +38,7 @@ public class CodeSucceed {
 	static public String no_table_found = "[FAILURE 00000009]: no table found.";
 	static public String empty_name = "[FAILURE 00000010]: db name or table name can not be empty, failt to create table.";
 	static public String illegal_table_name = "[FAILURE 00000011]: can not create table with illegal name. The name you commit may end with _log. remove it.";
+	
+	static public String wrong_parameters_for_notifying_update = "[FAILURE 00000012]: can not nofity slaves any updates, notifySlavesUpdate needs at least 2 parameters: db name, table name who has been updated.";
 	
 }

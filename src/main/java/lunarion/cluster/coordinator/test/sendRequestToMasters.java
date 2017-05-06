@@ -78,6 +78,12 @@ public class sendRequestToMasters {
 		 while(true)
 		 {
 			 Thread.sleep(15000);
+			 /*
+			  * in the case that some of the nodes were not connected in the first place,
+			  * then here update again for sure.
+			  */
+			 res.updateMasters( ) ;
+			 
 			 co.printState("State after adding the 3 nodes: ", resource_name);
 			 
 			 
@@ -88,6 +94,7 @@ public class sendRequestToMasters {
 			 
 			 ResponseCollector rc =  res.sendRequest(cmd, params);
         	 
+			 res.notifySlavesUpdate(rc);
 			 rc.printResponse();
 		 }
 		 

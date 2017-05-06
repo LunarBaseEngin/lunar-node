@@ -20,8 +20,10 @@ package lunarion.node;
 
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.helix.NotificationContext;
@@ -45,6 +47,12 @@ public class RoutinTableWatcher extends RoutingTableProvider {
 	private String resource_name; 
 	private String partition_name; 
 	private InstanceConfig current_master_config = null;
+	 
+	/*
+	 * one partition one queue for accepting replication messages.
+	 */
+	private final int queue_capacity = 1024; 
+	private final BlockingQueue<String[]> table_update_notification_queue = new LinkedBlockingQueue<String[]>(queue_capacity);
 	
 	private AtomicBoolean i_am_master = new AtomicBoolean(false);
 	/*
@@ -64,21 +72,21 @@ public class RoutinTableWatcher extends RoutingTableProvider {
 	private TaskReplication replication_service;
 	private AtomicBoolean replication_started = new AtomicBoolean(false);
 	private AtomicBoolean replication_initiated = new AtomicBoolean(false);
-	private AtomicBoolean in_finding_master = new AtomicBoolean(false);
-	
+	 
 	
 	private ExecutorService thread_executor = Executors.newFixedThreadPool(1); 
-	public AtomicBoolean stop_singnal = new AtomicBoolean(false);
-	public AtomicBoolean still_running = new AtomicBoolean(false);
-	
+	 
 	public RoutinTableWatcher(String _instance_name, String _resource_name, 
-								String _partion_name, LunarDBServerStandAlone  _db_server) {
+								String _partion_name, LunarDBServerStandAlone  _db_server ) {
 		this.instance_name = _instance_name;
 		this.resource_name = _resource_name; 
 		this.partition_name = _partion_name; 
 		this.partition_logger = LoggerFactory.getLogger( _instance_name + "_ "+ _partion_name);
 		//this.local_db = _local_db;
 		this.db_server = _db_server;
+		
+		this.db_server.registerRoutinTableWatcherQueue(this.partition_name, this.table_update_notification_queue);
+		 
 		//this.client = new LunarDBClient();
 	}
 	
@@ -96,7 +104,7 @@ public class RoutinTableWatcher extends RoutingTableProvider {
 			if(replication_service!=null)
 			{
 				replication_service.shutdown();
-				this.stop_singnal.set(true);
+				 
 				//client.shutdown();
 				//thread_executor.shutdownNow();
 			}
@@ -114,36 +122,31 @@ public class RoutinTableWatcher extends RoutingTableProvider {
 			if(replication_service!=null)
 			{ 
 				replication_service.shutdown();
-				this.stop_singnal.set(true);
+				 
 				//client.shutdown();
 				//thread_executor.shutdownNow();
 			}
 			//thread_executor.shutdownNow();
 			return;
 		} 
-		
-		//while(this.still_running.get())
-			//;
-		
-		this.stop_singnal.set(false);
+ 	 
 		System.out.println(" @RoutinTableWatcher.startReplication(),  Start replicating data from the master of partition: " + partition_name);
-		 partition_logger.info(Timer.currentTime()+ " [NODE INFO]: @RoutinTableWatcher.startReplication(), Start replicating data from the master of partition: " + partition_name);
+		partition_logger.info(Timer.currentTime()+ " [NODE INFO]: @RoutinTableWatcher.startReplication(), Start replicating data from the master of partition: " + partition_name);
     	 
-		 LunarDBClient client = new LunarDBClient();
+		LunarDBClient client_to_master = new LunarDBClient();
 		try {
    		 
-			client.connect(current_master_config.getHostName(), LunarNode.calcDBPort(Integer.parseInt(current_master_config.getPort())) );
+			client_to_master.connect(current_master_config.getHostName(), LunarNode.calcDBPort(Integer.parseInt(current_master_config.getPort())) );
 		} 
 		catch (Exception e) 
 		{
-			client.shutdown();
-			 partition_logger.info(Timer.currentTime()+ " [NODE INFO]: @RoutinTableWatcher.startReplication(), " + " can not connect to the master " + resource_name + " for partition:" + partition_name );
-		  
+			client_to_master.shutdown();
+			partition_logger.info(Timer.currentTime()+ " [NODE INFO]: @RoutinTableWatcher.startReplication(), " + " can not connect to the master " + resource_name + " for partition:" + partition_name );
 			e.printStackTrace();
 			return; 
 		}	 
     	 
-		if(client.isConnected())
+		if(client_to_master.isConnected())
 		{
     		System.out.println("@RoutinTableWatcher.startReplication(), Master of partition: "+ partition_name + " is connected.");
     		partition_logger.info(Timer.currentTime()+ " [NODE INFO]: @RoutinTableWatcher.startReplication(), Master of partition: "
@@ -153,12 +156,13 @@ public class RoutinTableWatcher extends RoutingTableProvider {
     							+ LunarNode.calcDBPort(Integer.parseInt(current_master_config.getPort()))
     							+ ") is connected.");
 		
-    		replication_service = new TaskReplication( instance_name, db_server, client,
+    		replication_service = new TaskReplication( instance_name, db_server, client_to_master,
 													current_master_config.getHostName(), 
 													LunarNode.calcDBPort(Integer.parseInt(current_master_config.getPort())) , 
 													partition_logger,
 													partition_name,
-													resource_name);
+													resource_name,
+													table_update_notification_queue);
 		
     		//replication_service.startRep();
     		thread_executor.submit(replication_service);
@@ -181,7 +185,7 @@ public class RoutinTableWatcher extends RoutingTableProvider {
 	{ 
 		if(replication_started.get())
 		{
-			this.stop_singnal.set(true);
+			//this.stop_singnal.set(true);
 			//replication_service.stopRep();
 			if(replication_service!=null)
 				replication_service.shutdown();
@@ -195,12 +199,7 @@ public class RoutinTableWatcher extends RoutingTableProvider {
 	}
 	private boolean findNewMaster()
 	{
-		//while(in_finding_master.get())
-		//{
-		//	System.err.println("==========waiting for finding master================");
-		//}
-		
-		in_finding_master.set(true);
+		 
 		List<InstanceConfig>  instances = getInstancesForResource(resource_name,partition_name, "MASTER");
 
 		if (instances.size() > 0) 
@@ -216,8 +215,8 @@ public class RoutinTableWatcher extends RoutingTableProvider {
 	    			  System.out.println("I am the master of resource " + resource_name + " for partition:" + partition_name); 
 	    			  i_am_master.set(true);
 	    			 
-	    			   partition_logger.info(Timer.currentTime()+ " [NODE INFO]: @findMaster(), " + "At instance " + this.instance_name + ", I am the master of resource " + resource_name + " for partition:" + partition_name);
-	    			  in_finding_master.set(false);
+	    			  partition_logger.info(Timer.currentTime()+ " [NODE INFO]: @findMaster(), " + "At instance " + this.instance_name + ", I am the master of resource " + resource_name + " for partition:" + partition_name);
+	    			  
 	    			  if(current_master_config != null)
 	    			  { 
 	    				  current_master_config = null;
@@ -237,13 +236,12 @@ public class RoutinTableWatcher extends RoutingTableProvider {
 		    			  i_am_master.set(false);
 		    			  
 		    			  System.out.println("Found new master " + current_master_config.getInstanceName() + " of resource " + resource_name + " for partition:" + partition_name);
-		    			   partition_logger.info(Timer.currentTime()+ " [NODE INFO]: @findMaster(), " + "Found new master " + current_master_config.getInstanceName() + " of resource " + resource_name + " for partition:" + partition_name);
-		    			  in_finding_master.set(false);
+		    			  partition_logger.info(Timer.currentTime()+ " [NODE INFO]: @findMaster(), " + "Found new master " + current_master_config.getInstanceName() + " of resource " + resource_name + " for partition:" + partition_name);
+		    			  
 		    			  return true; 
 	    			  }
 	    			  else
-	    			  {
-	    				  in_finding_master.set(false);
+	    			  { 
 	    				  i_am_master.set(false);
 	    				  return false;
 	    			  }
@@ -253,8 +251,8 @@ public class RoutinTableWatcher extends RoutingTableProvider {
 	    	  {
 	        		System.out.println("Invalid number of masters found at :" + instances);
 	        		i_am_master.set(false);
-	        		 partition_logger.info(Timer.currentTime()+ " [NODE ERROR]: @findMaster(), Invalid number of masters found at :" + instances);
-	        		in_finding_master.set(false);
+	        		partition_logger.info(Timer.currentTime()+ " [NODE ERROR]: @findMaster(), Invalid number of masters found at :" + instances);
+	        		 
 	        		return false; 
 	    	  }
 	      } 
@@ -262,8 +260,8 @@ public class RoutinTableWatcher extends RoutingTableProvider {
 	      {
 	    	  System.out.println(" @findMaster(), No master of resource " + resource_name + " for partition "+ partition_name +" found");
 	    	  i_am_master.set(false);
-	    	   partition_logger.info(Timer.currentTime()+ " [NODE WARNING]: @findMaster(), No master of resource " + resource_name + " for partition "+ partition_name +" found");
-	    	  in_finding_master.set(false);
+	    	  partition_logger.info(Timer.currentTime()+ " [NODE WARNING]: @findMaster(), No master of resource " + resource_name + " for partition "+ partition_name +" found");
+	    	  
 	    	  return false;
 	      } 
 		
