@@ -25,6 +25,7 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
 import lunarion.db.local.shell.CMDEnumeration;
 import lunarion.node.remote.protocol.MessageResponse;
+import lunarion.node.remote.protocol.RemoteResult;
 import lunarion.node.requester.LunarDBClient;
 
 public class TestRemoteFetchLog {
@@ -50,7 +51,7 @@ public class TestRemoteFetchLog {
         	params[2] = "0";
         	params[3] = "15";
         		
-        	MessageResponse resp_from_svr = client.sendRequest(cmd, params); 
+        	RemoteResult resp_from_svr = client.sendRequest(cmd, params); 
         	 
         	System.out.println("LunarNode responded command: "+ resp_from_svr.getCMD());
     		System.out.println("LunarNode responded UUID: "+ resp_from_svr.getUUID());

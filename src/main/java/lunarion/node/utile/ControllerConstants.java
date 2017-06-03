@@ -56,6 +56,17 @@ public class ControllerConstants {
 		
 	}
 	
+	public static String parseTableName(String partition_name)
+	{
+		 
+		int last_index_of = partition_name.lastIndexOf("_");
+		if(last_index_of <=0)
+			return partition_name;
+		
+		return partition_name.substring(0, last_index_of);
+		
+	}
+	
 	public static String patchNameWithPartitionNumber(String name, int partition_number)
 	{
 		return name+"_"+partition_number; 
@@ -77,5 +88,12 @@ public class ControllerConstants {
 			return true;
 		
 		return false;
+	}
+	
+	static public void main(String[] args)
+	{
+		String table_name = "___tttttt_xdddsd___0";
+		String table_name2 = "fffff_6";
+		System.out.println(ControllerConstants.parseTableName(table_name2));
 	}
 }

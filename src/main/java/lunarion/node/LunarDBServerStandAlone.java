@@ -40,6 +40,7 @@ import LCG.DB.API.LunarTable;
 import LCG.DB.Local.NLP.FullText.Lexer.TokenizerForSearchEngine;
 import LCG.FSystem.Def.DBFSProperties;
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.AdaptiveRecvByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -219,11 +220,13 @@ public class LunarDBServerStandAlone {
 		ServerBootstrap bootstrap = new ServerBootstrap();
 		bootstrap.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
-                    //.childHandler(new ChildChannelHandler())
-                    .childHandler(new LunarDBServerChannelInitializer(node_tc, logger))
+                    .childOption(ChannelOption.RCVBUF_ALLOCATOR, new AdaptiveRecvByteBufAllocator(64, 1024, 65536*512))
                     .option(ChannelOption.SO_BACKLOG, 1024) 
-                    .childOption(ChannelOption.SO_KEEPALIVE, true);
+                    .option(ChannelOption.TCP_NODELAY, true)
+                    .childOption(ChannelOption.SO_KEEPALIVE, true)
+                    .childHandler(new LunarDBServerChannelInitializer(node_tc, logger));
 
+		 
 		Channel ch = bootstrap.bind(port).sync().channel();
 		System.err.println(Timer.currentTime() +  " DB node server channel binded at port: " + port + '.');
 		logger.info(Timer.currentTime() + " [NODE INFO]:  DB node server channel binded at port: " + port + '.');     

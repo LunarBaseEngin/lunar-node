@@ -25,6 +25,7 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
 import lunarion.db.local.shell.CMDEnumeration;
 import lunarion.node.remote.protocol.MessageResponse;
+import lunarion.node.remote.protocol.RemoteResult;
 import lunarion.node.requester.LunarDBClient;
 
 public class TestRemoteFullTextQuery {
@@ -54,15 +55,15 @@ public class TestRemoteFullTextQuery {
         	params[3] = "1";
         	params[4] = "1500";
         		
-        	MessageResponse resp_from_svr = client.sendRequest(cmd, params); 
-        	 
-        	System.out.println("LunarNode responded command: "+ resp_from_svr.getCMD());
-    		System.out.println("LunarNode responded UUID: "+ resp_from_svr.getUUID());
-    		System.out.println("LunarNode responded suceed: "+ resp_from_svr.isSucceed());
-    		for(int i=0;i<resp_from_svr.getParams().length;i++)
+        	RemoteResult resp_from_svr = client.sendRequest(cmd, params);  
+        	
+    		String[] records = resp_from_svr.fetchQueryResult( 0, 100); 
+    		for(int i=0;i<records.length;i++)
     		{
-    			System.out.println("LunarNode responded: "+ resp_from_svr.getParams()[i]);
+    			System.out.println(records[i]); 
     		}
+    		
+    		System.out.println("==================================="); 
         	/*
         	 * it's ok, use condition.await(10*1000, TimeUnit.MILLISECONDS)
         	 * at MessageClientWatcher 

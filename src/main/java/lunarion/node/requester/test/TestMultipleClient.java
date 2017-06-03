@@ -25,6 +25,7 @@ import io.netty.channel.ChannelFuture;
 import lunarion.db.local.shell.CMDEnumeration;
 import lunarion.node.LunarNode;
 import lunarion.node.remote.protocol.MessageResponse;
+import lunarion.node.remote.protocol.RemoteResult;
 import lunarion.node.requester.LunarDBClient;
 
 public class TestMultipleClient {
@@ -88,36 +89,34 @@ public class TestMultipleClient {
 	        client = _client;
 	    }
 
-	    public void run() {  
-    		
-	    
-	    	 
-	    	 	 
-	    	 			MessageResponse resp_from_svr = null;
-	    	 			try {
-	    	 				resp_from_svr = client.sendRequest(cmd, arges); 
-	    					//Thread.sleep(10000);
-	    				} catch (InterruptedException e) {
-	    					 
-	    					e.printStackTrace();
-	    				}
+	    public void run() 
+	    {
+	    	RemoteResult resp_from_svr = null;
+	    	
+	    	try {
+	    		resp_from_svr = client.sendRequest(cmd, arges); 
+	    		
+	    		//Thread.sleep(10000);
+	    		
+	    	} catch (InterruptedException e) 
+	    	{
+	    		e.printStackTrace();
+	    	}
 	    	 			
 	   	           	 
-		            	System.out.println(Thread.currentThread().getId() + " LunarNode responded command: "+ resp_from_svr.getCMD());
-		        		System.out.println(Thread.currentThread().getId() + " LunarNode responded UUID: "+ resp_from_svr.getUUID());
-		        		System.out.println(Thread.currentThread().getId() + " LunarNode responded suceed: "+ resp_from_svr.isSucceed());
-		        		for(int i=0;i<resp_from_svr.getParams().length;i++)
-		        		{
-		        			System.out.println(Thread.currentThread().getId() + " LunarNode responded: "+ resp_from_svr.getParams()[i]);
-		        		}
+	    	System.out.println(Thread.currentThread().getId() + " LunarNode responded command: "+ resp_from_svr.getCMD());
+	    	System.out.println(Thread.currentThread().getId() + " LunarNode responded UUID: "+ resp_from_svr.getUUID());
+	    	System.out.println(Thread.currentThread().getId() + " LunarNode responded suceed: "+ resp_from_svr.isSucceed());
+	    	for(int i=0;i<resp_from_svr.getParams().length;i++)
+	    	{
+	    		System.out.println(Thread.currentThread().getId() + " LunarNode responded: "+ resp_from_svr.getParams()[i]);
+	    	}
 	    	 		 
-		        		System.out.println(Thread.currentThread().getId() + " shutdown the client ");
+	    	System.out.println(Thread.currentThread().getId() + " shutdown the client ");
 		        		
-		        		client.shutdown();
+	    	client.shutdown();
 		        		
-		        		System.out.println(Thread.currentThread().getId() + " shutdown ok ");
-		        		
-					 
+	    	System.out.println(Thread.currentThread().getId() + " shutdown ok "); 
 			 
 	    	 
 	    	//System.out.println(Thread.currentThread().getId() + " shutdown ok ");

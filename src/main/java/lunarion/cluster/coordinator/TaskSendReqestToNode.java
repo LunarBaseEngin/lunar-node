@@ -32,28 +32,29 @@ import lunarion.db.local.shell.CMDEnumeration;
 import lunarion.node.EDF.NodeTaskCenter;
 import lunarion.node.remote.protocol.MessageRequest;
 import lunarion.node.remote.protocol.MessageResponse;
+import lunarion.node.remote.protocol.RemoteResult;
 import lunarion.node.requester.LunarDBClient;
 import lunarion.node.requester.MessageClientWatcher;
 
-public class TaskSendReqestToNode implements Callable<MessageResponse>  {
+public class TaskSendReqestToNode implements Callable<RemoteResult>  {
 
-	private String partition;
+	 
 	private LunarDBClient client;
 	private CMDEnumeration.command cmd;
 	private String[] params;
 	 
-	public TaskSendReqestToNode(String _patition_name, LunarDBClient _client, CMDEnumeration.command _cmd, 
+	public TaskSendReqestToNode( LunarDBClient _client, CMDEnumeration.command _cmd, 
 								String[] _params )
 	{
-		partition = _patition_name;
+		 
 		client = _client;
 		cmd = _cmd;
 		params = _params;
 		 
 	}
 	@Override 
-	public MessageResponse call() { 
-		MessageResponse resp_from_svr; 
+	public RemoteResult call() { 
+		RemoteResult resp_from_svr; 
 		 try {
 			 
 			 resp_from_svr = client.sendRequest(cmd, params);

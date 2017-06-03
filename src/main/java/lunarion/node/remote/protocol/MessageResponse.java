@@ -28,6 +28,8 @@ import LCG.RecordTable.StoreUtile.Record32KBytes;
 import LCG.StorageEngin.Serializable.Impl.VariableGeneric;
 import io.netty.buffer.ByteBuf;
 import lunarion.db.local.shell.CMDEnumeration;
+import lunarion.db.local.shell.CMDEnumeration.command;
+import lunarion.node.requester.LunarDBClient;
 
 /*
  * has to extends from Object, otherwise it can not be used in Callable<MessageResponse>, 
@@ -41,12 +43,22 @@ public class MessageResponse  extends Object{
 	private boolean succeed=false;
 	
 	private String delim = ReservedSymbols.remote_message_delim;
-	private String null_str = "null"; 
+	private static String null_str = "null"; 
 	private String message_uuid;
 	String[] params;
 	
-	public MessageResponse()
+	private String db_name;
+	private String table_name;
+ 	 
+	
+	public MessageResponse( )
 	{
+		 
+	}
+	
+	public static String getNullStr()
+	{
+		return null_str;
 	}
 	
 	public CMDEnumeration.command getCMD()
@@ -74,7 +86,7 @@ public class MessageResponse  extends Object{
 		this.params = _params;
 	}
 	
-	public void setParams(ArrayList<Record32KBytes> _params)
+	public void setParams(String db, String table, ArrayList<Record32KBytes> _params)
 	{
 		return;
 	}
@@ -104,16 +116,63 @@ public class MessageResponse  extends Object{
 		}
 		//String str = new String(message_byte_buf.array(), 2, message_byte_buf.readableBytes() -2 );
 		String[] all_params = str.split(delim);
-		message_uuid = all_params[0];
-		this.params = new String[all_params.length-1];
-		//System.arraycopy(all_params, 1, this.params, 0, all_params.length-1);
-		for(int i=0;i<this.params.length;i++)
+		message_uuid = all_params[0]; 
+		
+		if(cmd == command.fetchQueryResultRecs 
+				|| cmd == command.fetchRecordsASC 
+				|| cmd == command.fetchRecordsDESC)
 		{
-			if(!all_params[i+1].equalsIgnoreCase(this.null_str))
-				this.params[i] = all_params[i+1];
+			/*
+			 * all_params[0]: uuid
+			 * all_params[1]: db_name
+			 * all_params[2]: table_name
+			 * 
+			 * ignore the first three params 
+			 */
+			if(succeed)
+			{
+				db_name = all_params[1];
+				table_name = all_params[2];
+				this.params = new String[all_params.length-3];
+				//System.arraycopy(all_params, 1, this.params, 0, all_params.length-1);
+				for(int i=0;i<this.params.length;i++)
+				{
+					if(!all_params[i+3].equalsIgnoreCase(this.null_str))
+						this.params[i] = all_params[i+3];
+					else
+						this.params[i] = null;
+				}
+				return;
+			}
 			else
-				this.params[i] = null;
+				return;
+			
 		}
+		 
+			this.params = new String[all_params.length-1];
+			//System.arraycopy(all_params, 1, this.params, 0, all_params.length-1);
+			for(int i=0;i<this.params.length;i++)
+			{
+				if(!all_params[i+1].equalsIgnoreCase(this.null_str))
+					this.params[i] = all_params[i+1];
+				else
+					this.params[i] = null;
+			} 
+			if(cmd == command.fetchTableNamesWithSuffix)
+			{
+				db_name = "";
+				table_name = this.params[0];
+				return;
+			}
+			if(cmd == command.getColumns ||cmd == command.closeQueryResult )
+			{
+				db_name = "";
+				table_name = "";
+				return;
+			}
+			 
+			db_name =  this.params[0];
+			table_name = this.params[1];
 		 
 	}
 	
@@ -126,7 +185,6 @@ public class MessageResponse  extends Object{
 	{
 		return this.message_uuid = uuid;
 	}
-	
 	
 	
 	public void write(ByteBuf message_byte_buf) 
@@ -210,5 +268,63 @@ public class MessageResponse  extends Object{
 		
 		return size;
 	}
+	
+	public int getResultCount()
+	{
+		if(!this.succeed)
+			return 0;
+		
+		if(cmd == command.ftQuery || cmd == command.rgQuery 
+				|| cmd == command.ptQuery
+				|| cmd == command.sqlSelect)
+		{
+			return Integer.parseInt(this.params[3]);
+		}
+		if( cmd == command.fetchRecordsASC
+				||  cmd == command.fetchRecordsDESC)
+		{
+			//return Integer.parseInt(this.params[0]);
+			return this.params.length;
+		}
+		if(cmd == CMDEnumeration.command.recsCount)
+		{
+			return Integer.parseInt(this.params[2]);
+		}
+		return 0;
+	}
+	
+	public String getIntermediateResultUUID()
+	{
+		/*
+		 * only fulltext query, range query, point query and algebraic logic filter in sqlSelect has there result 
+		 * cached on the server, for further logic filter.
+		 * 
+		 * And the intermediate uuid is at 2 of the response parameter array .
+		 */
+		if(cmd  == command.ftQuery || cmd  == command.rgQuery 
+				|| cmd  == command.ptQuery
+				|| cmd  == command.sqlSelect)
+		{
+			return this.params[2];
+		}
+		
+		return "";
+	}
+	
+	public String getTableName()
+	{
+		/*
+		if(cmd == command.getColumns 
+				|| cmd == command.fetchRecordsASC
+				|| cmd == command.fetchRecordsDESC
+				|| cmd == command.fetchQueryResultRecs)
+			return ""; 
+		
+		return this.params[1];
+		*/
+		
+		return this.table_name;
+	}
+	
 	
 }

@@ -30,18 +30,24 @@ import lunarion.db.local.shell.CMDEnumeration;
 public class MessageResponseQuery extends MessageResponse{
 	 
 	@Override
-	public void setParams(ArrayList<Record32KBytes> _params)
+	public void setParams(String db, String table, ArrayList<Record32KBytes> _params)
 	{
-		if(_params == null )
+		if(_params == null || _params.size()==0 )
 		{
-			this.params = new String[1];
-			this.params[0] = null;
+			this.params = new String[3];
+			this.params[0] = db;
+			this.params[1] = table;
+			this.params[2] = null;
+			
 			return ;
 		}
-		this.params = new String[_params.size()];
-		for(int i=0;i<this.params.length;i++)
+		this.params = new String[_params.size()+2];
+		this.params[0] = db;
+		this.params[1] = table;
+		
+		for(int i = 2; i < this.params.length; i++)
 		{
-			this.params[i] = _params.get(i).recData();
+			this.params[i] = _params.get(i-2).recData();
 		} 
 	} 
 }

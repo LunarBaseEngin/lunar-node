@@ -38,7 +38,7 @@ public class startThreeNodes {
 		 
 		String node_ip = "localhost";
 		 
-		String creation_conf = "/home/feiben/EclipseWorkspace/LunarBaseApplication/creation.conf";
+		String creation_conf = "/home/feiben/EclipseWorkspace/lunarbase-node/conf-datanode/creation.conf";
 		
 		int node1_port = 30001 ; 
 		 
@@ -70,35 +70,6 @@ public class startThreeNodes {
 		 
 		LunarNode ln3 = new LunarNode(node_ip, node3_port, zkAddr, data_root, cluster_name, resource_name, creation_conf);
 		TaskAddNode tan3 = new TaskAddNode(ln3);
-		startThreeNodes.thread_executor.submit(tan3);
-		 
-		
-		/*
-		int node2_port = 30002 ; 
-		String[] node2_arges = new String[7];
-		node2_arges[0] = zkAddr;
-		node2_arges[1] = data_root;
-		node2_arges[2] = cluster_name;
-		node2_arges[3] = resource_name;
-		node2_arges[4] = node_ip;
-		node2_arges[5] = ""+node2_port;
-		node2_arges[6] = creation_conf;
-		
-		LunarNode.main(node2_arges);
-		
-		
-		String node3_port = "30003"; 
-		String[] node3_arges = new String[7];
-		node3_arges[0] = zkAddr;
-		node3_arges[1] = data_root;
-		node3_arges[2] = cluster_name;
-		node3_arges[3] = resource_name;
-		node3_arges[4] = node_ip;
-		node3_arges[5] = node3_port;
-		node3_arges[6] = creation_conf;
-	
-		LunarNode.main(node3_arges);
-		*/
-	}
-
+		startThreeNodes.thread_executor.submit(tan3); 
+	} 
 }

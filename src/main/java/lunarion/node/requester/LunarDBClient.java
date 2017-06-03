@@ -30,6 +30,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import io.netty.channel.AdaptiveRecvByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -42,6 +43,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import lunarion.db.local.shell.CMDEnumeration;
 import lunarion.node.remote.protocol.MessageRequest;
 import lunarion.node.remote.protocol.MessageResponse;
+import lunarion.node.remote.protocol.RemoteResult;
 
 public class LunarDBClient { 
 	public Vector<ChannelFuture > channel_list = new Vector<ChannelFuture >();
@@ -65,6 +67,8 @@ public class LunarDBClient {
 	            Bootstrap client_bootstrap = new Bootstrap();
 	            client_bootstrap.group(group)
 	            		.channel(NioSocketChannel.class)
+	            		.option(ChannelOption.SO_SNDBUF,  1024 * 1024)
+	            		.option(ChannelOption.RCVBUF_ALLOCATOR, new AdaptiveRecvByteBufAllocator(64, 1024, 65536*512))
 	                    //.option(ChannelOption.TCP_NODELAY, true)
 	            		.option(ChannelOption.SO_KEEPALIVE, true)
 	                    .handler(new ClientChannelInitializer(client_handler));
@@ -121,7 +125,7 @@ public class LunarDBClient {
 		group.shutdownGracefully();
 	}
 	
-	public MessageResponse sendRequest(CMDEnumeration.command cmd, Object[] args) throws InterruptedException
+	public RemoteResult sendRequest(CMDEnumeration.command cmd, Object[] args) throws InterruptedException
 	{
 		MessageRequest request = new MessageRequest();
         request.setUUID(UUID.randomUUID().toString()); 
@@ -129,8 +133,24 @@ public class LunarDBClient {
         request.setParams((String[])args);
        
         ChannelFuture cf = channel_list.get(0);
+        MessageResponse resp = client_handler.sendRequest(request, cf);
+        if(resp == null)
+        	return null;
         
-        return client_handler.sendRequest(request, cf);
+        return new RemoteResult(this, resp);
+        
+	}
+	
+	public MessageResponse internalQuery(CMDEnumeration.command cmd, Object[] args) throws InterruptedException
+	{
+		MessageRequest request = new MessageRequest();
+        request.setUUID(UUID.randomUUID().toString()); 
+        request.setCMD(cmd);
+        request.setParams((String[])args);
+       
+        ChannelFuture cf = channel_list.get(0);
+        //System.err.println("internal query sent");
+        return  client_handler.sendRequest(request, cf) ;
         
 	}
 	

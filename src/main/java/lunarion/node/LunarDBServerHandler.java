@@ -19,10 +19,12 @@
 package lunarion.node;
 
 import java.util.Date;
-import java.util.Map;  
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
 
+import LCG.DB.API.Result.FTQueryResult;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
@@ -30,12 +32,18 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.ReferenceCountUtil;
 import lunarion.node.EDF.NodeTaskCenter;
 import lunarion.node.remote.protocol.MessageRequest;
-import lunarion.node.remote.protocol.MessageResponse; 
+import lunarion.node.remote.protocol.MessageResponse;
+import lunarion.node.requester.MessageClientWatcher; 
 
 public class LunarDBServerHandler extends ChannelInboundHandlerAdapter {
 
 	private final NodeTaskCenter node_tc;
 	private final Logger logger;
+	/*
+	 * <result_uuid, query result object>
+	 */
+	private ConcurrentHashMap<String, FTQueryResult> result_map = new ConcurrentHashMap<String, FTQueryResult>();
+
 	
     public LunarDBServerHandler(NodeTaskCenter task_map, Logger _logger  ) {
         this.node_tc = task_map;
@@ -50,19 +58,22 @@ public class LunarDBServerHandler extends ChannelInboundHandlerAdapter {
     		 
     		MessageRequest request = new MessageRequest();
     		request.read(buf); 
-        	 
+        	
+    		/*
     		System.out.println("LunarNode received command: "+ request.getCMD());
     		System.out.println("LunarNode received UUID: "+ request.getUUID());
     		for(int i=0;i<request.getParams().length;i++)
     		{
     			System.out.println("LunarNode received: "+ request.getParams()[i]);
     		}
+    		*/
     		//MessageResponse response = new MessageResponse();
     		//TaskHandlingMessage recvTask = new TaskHandlingMessage(request, response, node_tc, ctx);
     		TaskHandlingMessage recvTask = new TaskHandlingMessage(request , 
     																node_tc.getActiveServer(), 
     																ctx, 
-    																logger);
+    																logger, 
+    																result_map);
             
             node_tc.getActiveServer().submit(recvTask);
           

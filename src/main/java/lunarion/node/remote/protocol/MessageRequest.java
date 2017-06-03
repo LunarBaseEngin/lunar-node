@@ -26,7 +26,7 @@ import LCG.StorageEngin.Serializable.Impl.VariableGeneric;
 import io.netty.buffer.ByteBuf;
 import lunarion.db.local.shell.CMDEnumeration;
 
-public class MessageRequest extends Event{
+public class MessageRequest extends Object{
 	 
 	//private byte[] raw_byte_buf; 
 	private final int cmd_at = 0;//1 byte, 256 commands
@@ -34,12 +34,17 @@ public class MessageRequest extends Event{
 	private boolean succeed=false;
 	
 	private static String delim = ReservedSymbols.remote_message_delim;
-	private String null_str = "null"; 
+	private static String null_str = "null"; 
 	private String message_uuid;
 	String[] params;
 	
 	public MessageRequest()
 	{
+	}
+	
+	public static String getNullStr()
+	{
+		return null_str;
 	}
 	
 	public CMDEnumeration.command getCMD()

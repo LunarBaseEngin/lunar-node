@@ -47,6 +47,7 @@ import lunarion.node.remote.protocol.CodeSucceed;
 import lunarion.node.remote.protocol.MessageRequest;
 import lunarion.node.remote.protocol.MessageResponse;
 import lunarion.node.remote.protocol.MessageResponseQuery;
+import lunarion.node.remote.protocol.RemoteResult;
 import lunarion.node.requester.LunarDBClient;
 import lunarion.node.utile.ControllerConstants;
 
@@ -172,7 +173,7 @@ public class TaskReplication implements Runnable {
 			
     }
     
-    private void executeLog(MessageResponse resp_of_logs )
+    private void executeLog(RemoteResult resp_of_logs )
     {
     	for(int j=0; j<resp_of_logs.getParams().length;j++)
 		{
@@ -228,7 +229,7 @@ public class TaskReplication implements Runnable {
 		params_for_log[1] = log_table_name; 
 		params_for_log[2] = "0";
 		params_for_log[3] = "15";
-		MessageResponse resp_of_logs = client_to_master.sendRequest(get_logs, params_for_log); 
+		RemoteResult resp_of_logs = client_to_master.sendRequest(get_logs, params_for_log); 
  	 	
 		if(resp_of_logs != null && resp_of_logs.isSucceed())
 		{ 
@@ -259,7 +260,7 @@ public class TaskReplication implements Runnable {
         	params[1] = ControllerConstants.patchPartitionLogSuffix( partition_number);
         	replicator_logger.debug(Timer.currentTime()+ " [NODE INFO]:  @TaskReplication.replicateFromMaster(), sending");
 			
-        	MessageResponse resp_from_svr = client_to_master.sendRequest(cmd, params); 
+        	RemoteResult resp_from_svr = client_to_master.sendRequest(cmd, params); 
         	 	
  			if(resp_from_svr != null && resp_from_svr.isSucceed())
  			{
@@ -282,7 +283,7 @@ public class TaskReplication implements Runnable {
  	    			params_for_log[2] = "0";
  	    			params_for_log[3] = "15";
  	    			
- 	    			MessageResponse resp_of_logs = client_to_master.sendRequest(get_logs, params_for_log); 
+ 	    			RemoteResult resp_of_logs = client_to_master.sendRequest(get_logs, params_for_log); 
  	        	 	
  	    			if(resp_of_logs != null && resp_of_logs.isSucceed())
  	    			{

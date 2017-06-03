@@ -19,12 +19,14 @@
 package lunarion.cluster.coordinator;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.I0Itec.zkclient.IDefaultNameSpace;
 import org.I0Itec.zkclient.ZkClient;
@@ -35,6 +37,7 @@ import org.apache.helix.manager.zk.ZKHelixAdmin;
 import org.apache.helix.model.ExternalView; 
 import org.apache.helix.model.StateModelDefinition;
 
+import lunarion.cluster.coordinator.server.CoordinatorServer; 
 import lunarion.node.utile.ControllerConstants;
 import lunarion.node.utile.Screen; 
 
@@ -57,10 +60,9 @@ public class Coordinator {
 	 * by default.
 	 */
 	private static String ZK_ADDRESS = "localhost:2199";
-	private static String CLUSTER_NAME = "LunarDB_RTSeventhDB";
+	private static String CLUSTER_NAME = "LunarDB_RTSeventhDB"; 
 	
-	
-	/* actually it is a master-slave model*/
+	/* actually it is a master-slave model */
 	private static final String STATE_MODEL_NAME = ControllerConstants.STATE_MODEL_NAME;
 	
 	// states
@@ -76,15 +78,32 @@ public class Coordinator {
 	private HashMap<String, Resource> resource_list = new HashMap<String, Resource>(); 
 	
 	//private static List<LunarNode> NODE_LIST;
-	private static HelixAdmin admin;
+	private HelixAdmin admin;
 	private ControllerConstants controller;
 	
-	public Coordinator(String _zookeeper_addr, String _cluster_name, ControllerConstants _c_p)
+	private AtomicBoolean started = new AtomicBoolean(false);
+	
+ 
+	private static class CoordinatorInstatance {
+		private static final Coordinator g_coordinator = new Coordinator();
+	}
+
+	public static Coordinator getInstance() {
+		return CoordinatorInstatance.g_coordinator ;
+	}
+	
+	public Coordinator()
+	{
+		
+	}
+	
+	public void init(String _zookeeper_addr, String _cluster_name, ControllerConstants _c_p)
 	{
 		ZK_ADDRESS = _zookeeper_addr;
 		CLUSTER_NAME = _cluster_name;
 		controller = _c_p;
 	}
+	 
 	
 	public void shutdown()
 	{
@@ -112,7 +131,7 @@ public class Coordinator {
 	    server.start();  
 	}
 	
-	public static void setup() 
+	public void setup() 
 	{
 	    admin = new ZKHelixAdmin(ZK_ADDRESS);
 	    // create cluster
@@ -136,13 +155,17 @@ public class Coordinator {
 	   
 	}
 	
-	public void addResource( String _resource_name, int _num_partitions, int _num_replicas)
+	public void addResource( String _resource_name, int _num_partitions, int _num_replicas, int _max_rec_per_partition, 
+							String _meta_file, String _model_file) throws IOException
 	{
 		Resource res = new Resource( admin, 
 				CLUSTER_NAME, 
 				_resource_name, 
 				_num_partitions, 
-				_num_replicas);
+				_num_replicas,
+				_max_rec_per_partition,
+				_meta_file,
+				_model_file);
 
 		resource_list.put(_resource_name, res);	
 		

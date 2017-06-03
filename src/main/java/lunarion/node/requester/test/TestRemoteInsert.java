@@ -23,6 +23,7 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
 import lunarion.db.local.shell.CMDEnumeration;
 import lunarion.node.remote.protocol.MessageResponse;
+import lunarion.node.remote.protocol.RemoteResult;
 import lunarion.node.requester.LunarDBClient;
 
 public class TestRemoteInsert {
@@ -45,14 +46,18 @@ public class TestRemoteInsert {
         	for(int i = 0;i<300;i++)
         	{  
         		CMDEnumeration.command cmd = CMDEnumeration.command.insert;
-        		String[] params = new String[5];
+        		String[] params = new String[9];
         		params[0] = "CorpusDB";
         		params[1] = "textTable_remote_1";
-        		params[2] = "{content=[\" this is the test content " + i+".\"]}";
-        		params[3] = "{content=[\" this is the test content " + (i*10)+".\"]}";
-        		params[4] = "{content=[\" 是共同的强，大家都有份,,.  \"]}"; 
+        		params[2] = "{payment=100, content=[\" this is the test content " + i+".\"]}";
+        		params[3] = "{payment=10, content=[\" this is the test content " + (i*10)+".\"]}";
+        		params[4] = "{payment=20, content=[\" 是共同的强，大家都有份,,.   " + (i*100) +".\"]}";
+        		params[5] = "{payment=30, content=[\" 是共同的强，大家都有份,,. " + (i*1000) +".\"]}";
+        		params[6] = "{payment=40, content=[\" 是共同的强，大家都有份,,. " + (i*10000) +".\"]}";
+        		params[7] = "{payment=50, content=[\" 是共同的强，大家都有份,,. " + (i*100000) +".\"]}";
+        		params[8] = "{payment=60, content=[\" 是共同的强，大家都有份,,. " + (i*1000000) +".\"]}";
         	 	
-        		MessageResponse resp_from_svr = client.sendRequest(cmd, params); 
+        		RemoteResult resp_from_svr = client.sendRequest(cmd, params); 
            	 
             	System.out.println("LunarNode responded command: "+ resp_from_svr.getCMD());
         		System.out.println("LunarNode responded UUID: "+ resp_from_svr.getUUID());

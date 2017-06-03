@@ -18,6 +18,12 @@
  */
 package lunarion.cluster.coordinator.test;
 
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
 import lunarion.cluster.coordinator.Coordinator;
 import lunarion.cluster.coordinator.Resource;
 import lunarion.cluster.coordinator.ResponseCollector;
@@ -25,17 +31,31 @@ import lunarion.db.local.shell.CMDEnumeration;
 import lunarion.node.remote.protocol.MessageResponse;
 import lunarion.node.utile.ControllerConstants;
 
-public class sendRequestToMasters {
+public class sendRequestToMasters_createTable {
 
-	public static void main(String[] args) throws InterruptedException {
+	public static void main(String[] args) throws InterruptedException, IOException {
 		
     	
     	
-    	String zkAddr = "localhost:2199";
-		String cluster_name = "DBCluster";
-		String resource_name = "RTSeventhDB"; /* used as db name */
-		int num_partition = 6;
-		int num_replicas = 2;
+		Properties prop1 = new Properties();     
+		try {
+			//InputStream in = new BufferedInputStream (new FileInputStream("/home/lunarbase/TestSpace/Controller/db_message.properties"));
+			InputStream in = new BufferedInputStream (new FileInputStream("/home/feiben/EclipseWorkspace/lunarbase-node/conf-coordinator/coordinator.conf"));
+			prop1.load(in);    
+			in.close();
+		}catch(Exception e){
+	            System.out.println(e);
+	    }
+		String zkAddr	=	prop1.getProperty("ZOOKEEPER").trim();//localhost:2199
+		String cluster_name  =  prop1.getProperty("CLUSTER_NAME").trim();//DBCluster
+		String resource_name  =  prop1.getProperty("RESOURCE_NAME").trim();//RTSeventhDB
+		int num_partition = Integer.parseInt(prop1.getProperty("PARTITION_NUM").trim());//6
+		int num_replicas = Integer.parseInt(prop1.getProperty("REPLICAS_NUM").trim());//2
+		String node_ip = prop1.getProperty("NODE_IP");//data node address, can be localhost or an ip
+		int max_rec_per_partition = Integer.parseInt(prop1.getProperty("MAX_REC_PER_PARITION").trim());
+		String meta_file = prop1.getProperty("METADATA_FILE").trim();
+		String model_file = prop1.getProperty("MODEL_FILE").trim();
+		
 		
 		 if (args.length < 5) {
 		      System.err.println("[USAGE]: StartCoordinator _zk_ddress _cluster_name _resource_name _num_partiotions _num_replicas");
@@ -54,18 +74,20 @@ public class sendRequestToMasters {
 		 
 		 ControllerConstants cc = new ControllerConstants();
 		 
-		 Coordinator co = new Coordinator(zkAddr,cluster_name, cc);
+		 Coordinator co = new Coordinator();
+		 co.init(zkAddr,cluster_name, cc);
+		 
 		 co.startZookeeper();
 		 co.setup();
-		 co.addResource(resource_name, num_partition,num_replicas);
+		 co.addResource(resource_name, num_partition,num_replicas, max_rec_per_partition, meta_file, model_file );
 		 co.startController();
 		// co.printState("State after starting the coordinator: ", resource_name);
 		 
 		 try
 		 { 
 			 co.addNodeToResource(resource_name, "localhost", 30001);
-			 co.addNodeToResource(resource_name, "localhost", 30002); 
-			 co.addNodeToResource(resource_name, "localhost", 30003);
+			 //co.addNodeToResource(resource_name, "localhost", 30002); 
+			// co.addNodeToResource(resource_name, "localhost", 30003);
 		 }
 		 catch(Exception e)
 		 {

@@ -65,7 +65,29 @@
     		<artifactId>metrics-core</artifactId>
     		<version>3.0.2</version>
 		</dependency>
-		
+	<!-- calcite for sql parser -->
+		<dependency>
+			<groupId>org.apache.calcite</groupId>
+			<artifactId>calcite-core</artifactId>
+			<version>1.4.0-incubating</version>
+		</dependency>
+        
+        <dependency>
+			<groupId>org.apache.calcite</groupId>
+			<artifactId>calcite-avatica</artifactId>
+			<version>1.4.0-incubating</version>
+		</dependency>
+        
+        <dependency>
+			<groupId>org.apache.calcite</groupId>
+			<artifactId>calcite-linq4j</artifactId>
+			<version>1.4.0-incubating</version>
+		</dependency>
+		<dependency>
+      		<groupId>commons-lang</groupId>
+			<artifactId>commons-lang</artifactId>
+			<version>2.5</version>
+    	</dependency>	
 	<!-- for text analysis -->
 	<dependency>
 			<groupId>cn.lcg</groupId>

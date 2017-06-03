@@ -33,6 +33,8 @@ public class MessageClientWatcher {
     private MessageResponse response;
     private Lock lock = new ReentrantLock();
 	private Condition condition = lock.newCondition();
+	
+	//private AtomicBoolean in_waiting = new AtomicBoolean(false);
      
     public MessageClientWatcher(String uuid) {
     	message_uuid = uuid;
@@ -52,7 +54,16 @@ public class MessageClientWatcher {
             condition.await(5*1000, TimeUnit.MILLISECONDS);
             //  condition.await(); 
             
-            System.out.println("interrupted by finish(...) or time is up. ");
+            if(response == null)
+            {
+            	System.out.println("time is up. ");
+            }
+            else
+            {
+            	//System.out.println("interrupted by finish(...) ");
+            	//System.err.println("cmd is: " + response.getCMD());
+            	;
+            }
             
             //System.out.println(this.response.getParams()[1]); 
             return this.response ;
@@ -69,8 +80,7 @@ public class MessageClientWatcher {
             /*
              * notify to interrupt the await() called in start() 
              */
-             condition.signal();
-             
+            condition.signal();
             System.out.println("send signal");
         } finally {
             lock.unlock();

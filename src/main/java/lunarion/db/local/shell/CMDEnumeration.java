@@ -41,7 +41,7 @@ public class CMDEnumeration {
 		ptQuery{
 			public byte getByte(){return 9;}  
 		}, 
-		/* range query, e.g. where price>100 and price <200 or 50<distance<=100 */
+		/* range query, e.g. where price>100 and price <200 or 50<distance and distance <=100 */
 		rgQuery{
 			public byte getByte(){return 10;}  
 		},  
@@ -99,6 +99,27 @@ public class CMDEnumeration {
 		},
 		notifySlavesUpdate{
 			public byte getByte(){return 23;}  
+		},
+		fetchQueryResultRecs{
+			public byte getByte(){return 24;}  
+		},
+		addAnalyticColumn{
+			public byte getByte(){return 25;}  
+		},
+		addStorableColumn{
+			public byte getByte(){return 26;}   
+		},
+		sqlSelect{
+			public byte getByte(){return 27;}   
+		},
+		getColumns{
+			public byte getByte(){return 28;}   
+		},
+		recsCount{
+			public byte getByte(){return 29;}   
+		},
+		closeQueryResult{
+			public byte getByte(){return 30;}   
 		}; 
 		
 		
@@ -161,10 +182,48 @@ public class CMDEnumeration {
 	    		break;	
 	    	case 23:
 	    		cmd = CMDEnumeration.command.notifySlavesUpdate;
-	    		break;			
+	    		break;	
+	    	case 24:
+	    		cmd = CMDEnumeration.command.fetchQueryResultRecs;
+	    		break;	
+	    	case 25:
+	    		cmd = CMDEnumeration.command.addAnalyticColumn;
+	    		break;	
+	    	case 26:
+	    		cmd = CMDEnumeration.command.addStorableColumn;
+	    		break;	
+	    	case 27:
+	    		cmd = CMDEnumeration.command.sqlSelect;
+	    		break;	
+	    	case 28:
+	    		cmd = CMDEnumeration.command.getColumns;
+	    		break;
+	    	case 29:
+	    		cmd = CMDEnumeration.command.recsCount;
+	    		break; 
+	    	case 30:
+	    		cmd = CMDEnumeration.command.closeQueryResult;
+	    		break;
 	    	default:
 	    		break; 
 	    }
 		return cmd;
+	}
+	
+	public static boolean needNotify(CMDEnumeration.command cmd)
+	{
+		switch(cmd)
+		{
+		case createDB:
+		case createTable:
+		case insert:
+		case delete:
+		case addFulltextColumn:
+		case addAnalyticColumn:
+		case addStorableColumn:
+			return true; 
+		}
+		
+		return false;
 	}
 }
