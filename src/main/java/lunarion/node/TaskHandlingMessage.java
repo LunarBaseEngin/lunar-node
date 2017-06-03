@@ -434,11 +434,11 @@ public class TaskHandlingMessage implements Runnable {
 	        			 
 	            		if(ok)
 	            		{
-								resp[3] = CodeSucceed.add_storable_column_succeed;
+								resp[3] = CodeSucceed.add_analytic_column_succeed;
 	            		}
 	            		else
 	            		{
-								resp[3] = CodeSucceed.add_storable_column_failed;
+								resp[3] = CodeSucceed.add_analytic_column_failed;
 								suc = false;
 	            		} 
 	            		

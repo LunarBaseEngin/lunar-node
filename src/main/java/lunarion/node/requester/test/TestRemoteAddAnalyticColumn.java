@@ -46,7 +46,7 @@ public class TestRemoteAddAnalyticColumn {
         	params[0] = "CorpusDB"; /* db */
         	params[1] = "textTable_remote_1"; /* table */
         	params[2] = "payment"	; /* column needs to be analytical, i.e can do range query and other arithmetic operation */
-        	params[3] = "long"	; /* column type in string */
+        	params[3] = "long"	; /* column type in long */
         	
         	client.sendRequest(cmd, params);  
         
