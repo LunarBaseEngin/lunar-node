@@ -82,6 +82,21 @@ public class Statement {
 		return new ResultSet(client, rr);
 	} 
 	
+	public ResultSet addStorableColumn(String table_name, String column ) throws InterruptedException
+	{  
+		CMDEnumeration.command cmd = CMDEnumeration.command.addStorableColumn;
+		String[] params = new String[3];
+		params[0] = db; /* db */
+		params[1] = table_name; /* table */
+		params[2] = column ; /* column needs to be stored */
+		
+		client.sendRequest(cmd, params);  
+    	
+    	RemoteResult rr = client.sendRequest(cmd, params);  
+		
+		return new ResultSet(client, rr);
+	} 
+	
 	public ResultSet insert(String table_name, String[] recs) throws InterruptedException
 	{
 		CMDEnumeration.command cmd = CMDEnumeration.command.insert;
@@ -99,7 +114,7 @@ public class Statement {
 	
 	public ResultSet executeQuery(String statement) throws InterruptedException
 	{
-		CMDEnumeration.command cmd = CMDEnumeration.command.sqlSelect;
+		CMDEnumeration.command cmd = CMDEnumeration.command.filterForWhereClause;
     	String[] params = new String[4];
     	params[0] = db; 
     	params[1] = statement;

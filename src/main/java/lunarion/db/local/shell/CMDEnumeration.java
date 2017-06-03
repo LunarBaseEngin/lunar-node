@@ -109,7 +109,7 @@ public class CMDEnumeration {
 		addStorableColumn{
 			public byte getByte(){return 26;}   
 		},
-		sqlSelect{
+		filterForWhereClause{
 			public byte getByte(){return 27;}   
 		},
 		getColumns{
@@ -120,6 +120,9 @@ public class CMDEnumeration {
 		},
 		closeQueryResult{
 			public byte getByte(){return 30;}   
+		},
+		sqlSelect{
+			public byte getByte(){return 31;}   
 		}; 
 		
 		
@@ -193,7 +196,7 @@ public class CMDEnumeration {
 	    		cmd = CMDEnumeration.command.addStorableColumn;
 	    		break;	
 	    	case 27:
-	    		cmd = CMDEnumeration.command.sqlSelect;
+	    		cmd = CMDEnumeration.command.filterForWhereClause;
 	    		break;	
 	    	case 28:
 	    		cmd = CMDEnumeration.command.getColumns;
@@ -203,6 +206,9 @@ public class CMDEnumeration {
 	    		break; 
 	    	case 30:
 	    		cmd = CMDEnumeration.command.closeQueryResult;
+	    		break;
+	    	case 31:
+	    		cmd = CMDEnumeration.command.sqlSelect;
 	    		break;
 	    	default:
 	    		break; 

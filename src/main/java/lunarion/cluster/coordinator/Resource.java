@@ -421,7 +421,7 @@ public class Resource {
 	    	case fetchLog:
 	    		rc = fetchLog(params);
 	    		break; 
-	    	case sqlSelect:
+	    	case filterForWhereClause:
 	    		/*
 	    		 * for sql select, params is:
 	    		 * params[0]: db name;
@@ -1125,7 +1125,7 @@ public class Resource {
 			String instance_name = master_map.get(current_partition_name);
 			LunarDBClient client = instance_connection_map.get(instance_name);
 			
-			CMDEnumeration.command cmd = CMDEnumeration.command.sqlSelect; 
+			CMDEnumeration.command cmd = CMDEnumeration.command.filterForWhereClause; 
         	
 			String[] new_param = new String[3];
 			new_param[0] = this.resource_name;

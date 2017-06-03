@@ -96,6 +96,16 @@ public class MessageResponse  extends Object{
 		return this.params;
 	}
 	
+	public String[] getResultRecords()
+	{
+		if(cmd == command.fetchQueryResultRecs 
+				|| cmd == command.fetchRecordsASC 
+				|| cmd == command.fetchRecordsDESC)
+			return this.params;
+		
+		return null;
+	}
+	
 	public void read(ByteBuf message_byte_buf)
 	{ 
 		byte[] raw_byte_buf = new byte[message_byte_buf.readableBytes()];
@@ -276,7 +286,7 @@ public class MessageResponse  extends Object{
 		
 		if(cmd == command.ftQuery || cmd == command.rgQuery 
 				|| cmd == command.ptQuery
-				|| cmd == command.sqlSelect)
+				|| cmd == command.filterForWhereClause)
 		{
 			return Integer.parseInt(this.params[3]);
 		}
@@ -303,7 +313,7 @@ public class MessageResponse  extends Object{
 		 */
 		if(cmd  == command.ftQuery || cmd  == command.rgQuery 
 				|| cmd  == command.ptQuery
-				|| cmd  == command.sqlSelect)
+				|| cmd  == command.filterForWhereClause)
 		{
 			return this.params[2];
 		}

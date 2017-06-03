@@ -188,7 +188,7 @@ public class TaskHandlingMessage implements Runnable {
         	case getColumns:
         		getColumns( params );  
         		break;
-        	case sqlSelect:
+        	case filterForWhereClause:
         		sqlSelect( params );  
         		break;
         	case recsCount:
@@ -492,7 +492,7 @@ public class TaskHandlingMessage implements Runnable {
             }
             else
             {
-            	responseError(CodeSucceed.create_log_table_failed_exception);
+            	responseError(CodeSucceed.add_column_failed);
             	return ; 
             }
         } 
@@ -503,7 +503,7 @@ public class TaskHandlingMessage implements Runnable {
         response.setSucceed(suc); 
         response.setParams(resp);  
         
-        logger.info(Timer.currentTime() + " " + CodeSucceed.add_fulltext_column_succeed); 
+        logger.info(Timer.currentTime() + " " + CodeSucceed.add_column_succeed); 
     }
     
     
@@ -762,7 +762,16 @@ public class TaskHandlingMessage implements Runnable {
 		String db = params[0];
         String table = params[table_name_index];
         String query_result_uuid = params[2];
-        int from = Integer.parseInt(params[3]);
+         
+        long l_from = Long.parseLong(params[3]);
+        if(l_from > Integer.MAX_VALUE)
+        {	
+        	responseError(CodeSucceed.rec_id_out_of_boundary);
+        	return;
+        }
+    	
+        int from = (int) l_from;
+        
         int count = Integer.parseInt(params[4]); 
 		 
         LunarDB l_DB = l_db_ssa.getDBInstant(db);

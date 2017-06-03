@@ -18,6 +18,13 @@
  */
 package lunarion.db.driver.sql;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicLong;
+
+import lunarion.cluster.coordinator.Resource;
+import lunarion.cluster.coordinator.ResponseCollector;
+import lunarion.cluster.coordinator.adaptor.converter.RecordConverter;
 import lunarion.node.remote.protocol.RemoteResult;
 import lunarion.node.requester.LunarDBClient;
 
@@ -26,12 +33,68 @@ public class ResultSet {
 	private LunarDBClient l_client ;
 	private RemoteResult r_result;
 	
+	private String current;
+	/*
+	 * begin with -1, otherwise, lost the first record
+	 */
+	private AtomicLong current_rec_id = new AtomicLong(-1);
+	  
+	 
+	final private long total_results;
+	
+	final long maximum_cached = 1024*4;
+	final long maximum_cached_mask = (~(maximum_cached-1));
+	long cached_from = 0; 
+	String[] cached_recs = null;
+	int current_cached = 0;
+	
+  	  
+	
 	public ResultSet(LunarDBClient _client, RemoteResult _result)
 	{
 		this.l_client = _client;
 		this.r_result = _result;
+		
+		total_results = r_result.getResultCount();
 	}
 	
+	public String current() throws InterruptedException {
+		   
+		if(current_rec_id.get() >= cached_from 
+				&& current_rec_id.get() < (cached_from + current_cached) 
+				&& cached_recs != null)
+		{
+			String rec = cached_recs[(int)(current_rec_id.get() - cached_from)];
+			if(rec != null && !rec.equals(""))
+				current = rec;
+		}
+		else
+		{
+			cached_from = ((current_rec_id.get())&maximum_cached_mask);
+			//result = db_inst.fetchRecords( db_inst.getDBName() , table_name, cached_from, (int)maximum_cached, true);
+			cached_recs = r_result.fetchQueryResult(cached_from, (int)maximum_cached);
+			
+			  	
+			if (cached_recs ==null ) 
+			{  
+				current = null;  
+			}
+			else
+			{
+				current_cached = cached_recs.length;
+				
+				current = cached_recs[(int)(current_rec_id.get() - cached_from)];
+				 
+			} 
+		}  
+	    return current;
+	  
+	}
+	public boolean next() 
+	{ 
+		//return current_rec_id.incrementAndGet() < db_inst.recsCount(table_name);
+		return current_rec_id.incrementAndGet() < total_results;
+	}
 	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub

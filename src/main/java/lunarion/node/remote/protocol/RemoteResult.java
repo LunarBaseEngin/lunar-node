@@ -35,11 +35,11 @@ public class RemoteResult  {
 	/*
 	 * never fetch a count greater than the maximum value of an integer.
 	 */
-	public  String[] fetchQueryResult( int from, int count) throws InterruptedException
+	public  String[] fetchQueryResult( long from, int count) throws InterruptedException
 	{
 		if(message.getCMD() == command.ftQuery || message.getCMD() == command.rgQuery 
 												|| message.getCMD() == command.ptQuery
-												|| message.getCMD() == command.sqlSelect)
+												|| message.getCMD() == command.filterForWhereClause)
 		{
 			 String[] params = new String[5];
 			 
@@ -50,13 +50,13 @@ public class RemoteResult  {
 			 params[4] = ""+count;
 			 
 			 MessageResponse resp_from_svr = client.internalQuery(command.fetchQueryResultRecs, params);
-			 return resp_from_svr.getParams(); 
+			 return resp_from_svr.getResultRecords(); 
 			
 		}
 		if(message.getCMD() == command.fetchQueryResultRecs || message.getCMD() == command.fetchRecordsDESC
 														|| message.getCMD() == command.fetchRecordsASC)
 		{
-			return message.getParams();
+			return message.getResultRecords();
 		}
 		
 		
@@ -67,7 +67,7 @@ public class RemoteResult  {
 	{
 		if(message.getCMD() == command.ftQuery || message.getCMD() == command.rgQuery 
 				|| message.getCMD() == command.ptQuery
-				|| message.getCMD() == command.sqlSelect)
+				|| message.getCMD() == command.filterForWhereClause)
 		{
 			String[] params = new String[3];
 			 
@@ -105,6 +105,11 @@ public class RemoteResult  {
 	public String[] getParams()
 	{
 		return message.getParams();
+	}
+	
+	public String[] getResultRecords()
+	{
+		return message.getResultRecords();
 	}
 	
 	public String getIntermediateResultUUID()

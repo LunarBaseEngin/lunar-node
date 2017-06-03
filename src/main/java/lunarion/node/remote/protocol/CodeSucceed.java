@@ -26,6 +26,7 @@ public class CodeSucceed {
 	static public String add_analytic_column_succeed = "[SUCEED 00000005]: analytic column has been sucessfully added.";
 	static public String insert_succeed = "[SUCEED 00000006]: successfully inserted all the records.";
 	static public String result_removed_succeed = "[SUCEED 00000007]: successfully removed query result in cache.";
+	static public String add_column_succeed = "[SUCEED 00000008]: add column succeed for analytic/fulltextSearch/Storable.";
 	
 	
 	
@@ -56,5 +57,8 @@ public class CodeSucceed {
 	static public String wrong_parameters_for_records_count = "[FAILURE 00000019]: wrong parameters for fetching records count.";
 	
 	static public String result_removed_failed = "[FAILURE 00000020]: fail in removing query result in cache.";
+	static public String add_column_failed = "[FAILURE 00000021]: fail to add column for analytic/fulltextSearch/Storable.";
+	
+	static public String rec_id_out_of_boundary = "[FAILURE 00000022]: one node does not support records more than the maximum value of integer.";
 	
 }

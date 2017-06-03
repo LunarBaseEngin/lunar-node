@@ -111,7 +111,7 @@ public class sendRequestToMaster_querySqlSelect {
 		 
 	     Thread.sleep(10000);
 	     co.printState("State after adding the 1 nodes: ", resource_name);
-		 CMDEnumeration.command cmd = CMDEnumeration.command.sqlSelect;
+		 CMDEnumeration.command cmd = CMDEnumeration.command.filterForWhereClause;
 		 
 		 /*
 		  * like
