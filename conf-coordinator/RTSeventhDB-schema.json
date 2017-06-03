@@ -1,0 +1,16 @@
+{
+  version: '1.0',
+  defaultSchema: 'RTSeventhDB',
+  schemas: [
+    {      
+      type: 'custom',
+      name: 'RTSeventhDB',
+      factory: 'lunarion.cluster.coordinator.adaptor.LunarDBSchemaFactory',
+      operand: { 
+      	flavor: 'filterable',
+        full_path:'',
+        column0: 'content'
+      }
+    }
+  ]
+}
