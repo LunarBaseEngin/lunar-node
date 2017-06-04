@@ -61,4 +61,6 @@ public class CodeSucceed {
 	
 	static public String rec_id_out_of_boundary = "[FAILURE 00000022]: one node does not support records more than the maximum value of integer.";
 	
+	static public String unknown_cmd = "[FAILURE 00000023]: the command is unknown to lunar-node .";
+	
 }

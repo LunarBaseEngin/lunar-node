@@ -35,7 +35,7 @@ public class Statement {
 		this.db = _db;
 	}
 	
-	public ResultSet createTable(String table_name) throws InterruptedException
+	public LResultSet createTable(String table_name) throws InterruptedException
 	{
 		CMDEnumeration.command cmd = CMDEnumeration.command.createTable;
     	String[] params = new String[2];
@@ -43,7 +43,7 @@ public class Statement {
     	params[1] = table_name.trim(); 
 		RemoteResult rr = client.sendRequest(cmd, params);
 		
-		return new ResultSet(client, rr);
+		return new LResultSet(client, rr);
 	}
 	
 	/*
@@ -53,7 +53,7 @@ public class Statement {
 	 * varchar(to do)
 	 * time(to do)
 	 */
-	public ResultSet addAnalyticColumn(String table_name, String column, String type) throws InterruptedException
+	public LResultSet addAnalyticColumn(String table_name, String column, String type) throws InterruptedException
 	{
 		CMDEnumeration.command cmd = CMDEnumeration.command.addAnalyticColumn;
     	String[] params = new String[4];
@@ -64,10 +64,10 @@ public class Statement {
     	
     	RemoteResult rr = client.sendRequest(cmd, params);  
 		
-		return new ResultSet(client, rr);
+		return new LResultSet(client, rr);
 	}
 	
-	public ResultSet addFulltextColumn(String table_name, String column ) throws InterruptedException
+	public LResultSet addFulltextColumn(String table_name, String column ) throws InterruptedException
 	{  
 		CMDEnumeration.command cmd = CMDEnumeration.command.addFulltextColumn;
 		String[] params = new String[3];
@@ -79,10 +79,10 @@ public class Statement {
     	
     	RemoteResult rr = client.sendRequest(cmd, params);  
 		
-		return new ResultSet(client, rr);
+		return new LResultSet(client, rr);
 	} 
 	
-	public ResultSet addStorableColumn(String table_name, String column ) throws InterruptedException
+	public LResultSet addStorableColumn(String table_name, String column ) throws InterruptedException
 	{  
 		CMDEnumeration.command cmd = CMDEnumeration.command.addStorableColumn;
 		String[] params = new String[3];
@@ -94,10 +94,10 @@ public class Statement {
     	
     	RemoteResult rr = client.sendRequest(cmd, params);  
 		
-		return new ResultSet(client, rr);
+		return new LResultSet(client, rr);
 	} 
 	
-	public ResultSet insert(String table_name, String[] recs) throws InterruptedException
+	public LResultSet insert(String table_name, String[] recs) throws InterruptedException
 	{
 		CMDEnumeration.command cmd = CMDEnumeration.command.insert;
     	String[] params = new String[recs.length+2];
@@ -108,19 +108,19 @@ public class Statement {
     	
 		RemoteResult rr = client.sendRequest(cmd, params);
 		
-		return new ResultSet(client, rr);
+		return new LResultSet(client, rr);
 	}
 	
 	
-	public ResultSet executeQuery(String statement) throws InterruptedException
+	public LResultSet executeQuery(String statement) throws InterruptedException
 	{
-		CMDEnumeration.command cmd = CMDEnumeration.command.filterForWhereClause;
-    	String[] params = new String[4];
+		CMDEnumeration.command cmd = CMDEnumeration.command.sqlSelect;
+    	String[] params = new String[2];
     	params[0] = db; 
     	params[1] = statement;
 		RemoteResult rr = client.sendRequest(cmd, params);
 		
-		return new ResultSet(client, rr);
+		return new LResultSet(client, rr);
 	}
 
 }

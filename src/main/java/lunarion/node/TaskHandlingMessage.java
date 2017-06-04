@@ -189,7 +189,7 @@ public class TaskHandlingMessage implements Runnable {
         		getColumns( params );  
         		break;
         	case filterForWhereClause:
-        		sqlSelect( params );  
+        		filterForWhereClause( params );  
         		break;
         	case recsCount:
         		recsCount( params );  
@@ -666,7 +666,7 @@ public class TaskHandlingMessage implements Runnable {
         	response.setUUID(request.getUUID());
         	response.setCMD(request.getCMD());
         	response.setSucceed(false);
-        	response.setParams(db, table, recs);
+        	response.setParamsFromNode(db, table, recs);
         } 
 		  	
         //return respond;
@@ -744,7 +744,7 @@ public class TaskHandlingMessage implements Runnable {
         	response.setUUID(request.getUUID());
         	response.setCMD(request.getCMD());
         	response.setSucceed(false);
-        	response.setParams(db, table, recs);
+        	response.setParamsFromNode(db, table, recs);
         } 
 		  	
         //return respond;
@@ -808,7 +808,7 @@ public class TaskHandlingMessage implements Runnable {
 				response.setUUID(request.getUUID());
 			    response.setCMD(request.getCMD());
 			    response.setSucceed(true);
-				response.setParams(db, table, recs); 
+				response.setParamsFromNode(db, table, recs); 
 			} catch (IOException e) {
 				 
 				response = new MessageResponse();
@@ -851,29 +851,6 @@ public class TaskHandlingMessage implements Runnable {
 		String db = params[0];
         String table = params[table_name_index];
         String query_result_uuid = params[2];
-        
-		 
-        LunarDB l_DB = l_db_ssa.getDBInstant(db);
-        if(l_DB == null)
-        {   
-        	responseError(CodeSucceed.db_does_not_exist);
-        	return ;
-        }
-        
-        
-        LunarTable t_table = l_DB.getTable(table);
-        if(t_table == null)
-        {
-        	response = new MessageResponse();
-		  	response.setUUID(request.getUUID());
-		  	response.setCMD(request.getCMD());
-		  	response.setSucceed(false); 
-		  	String[] resp = new String[1];
-		  	resp[0] = CodeSucceed.table_does_not_exist;
-		  	response.setParams(resp); 
-		  
-        	return ;
-        } 
         
         FTQueryResult result = this.result_map.remove(query_result_uuid);
         if(result!= null)
@@ -959,7 +936,7 @@ public class TaskHandlingMessage implements Runnable {
         	response.setUUID(request.getUUID());
         	response.setCMD(request.getCMD());
         	response.setSucceed(true);
-        	response.setParams(db, table, recs); 
+        	response.setParamsFromNode(db, table, recs); 
         }
         else
         { 
@@ -1092,7 +1069,7 @@ public class TaskHandlingMessage implements Runnable {
         }    
     }
     
-    private void sqlSelect(String[] params )
+    private void filterForWhereClause(String[] params )
     {
     	if(params.length < 3)
 		{

@@ -28,7 +28,7 @@ import lunarion.cluster.coordinator.adaptor.converter.RecordConverter;
 import lunarion.node.remote.protocol.RemoteResult;
 import lunarion.node.requester.LunarDBClient;
 
-public class ResultSet {
+public class LResultSet {
 
 	private LunarDBClient l_client ;
 	private RemoteResult r_result;
@@ -50,7 +50,7 @@ public class ResultSet {
 	
   	  
 	
-	public ResultSet(LunarDBClient _client, RemoteResult _result)
+	public LResultSet(LunarDBClient _client, RemoteResult _result)
 	{
 		this.l_client = _client;
 		this.r_result = _result;
@@ -94,6 +94,11 @@ public class ResultSet {
 	{ 
 		//return current_rec_id.incrementAndGet() < db_inst.recsCount(table_name);
 		return current_rec_id.incrementAndGet() < total_results;
+	}
+	
+	public void close() throws InterruptedException
+	{
+		r_result.closeQuery();
 	}
 	
 	public static void main(String[] args) {

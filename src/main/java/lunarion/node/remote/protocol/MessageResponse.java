@@ -86,10 +86,15 @@ public class MessageResponse  extends Object{
 		this.params = _params;
 	}
 	
-	public void setParams(String db, String table, ArrayList<Record32KBytes> _params)
+	public void setParamsFromNode(String db, String table, ArrayList<Record32KBytes> _params)
 	{
 		return;
 	}
+	public void setParamsFromCoordinator(String db, String table,  ArrayList<String> _params)
+	{
+		return;
+	}
+	
 	
 	public String[] getParams()
 	{
@@ -286,7 +291,8 @@ public class MessageResponse  extends Object{
 		
 		if(cmd == command.ftQuery || cmd == command.rgQuery 
 				|| cmd == command.ptQuery
-				|| cmd == command.filterForWhereClause)
+				|| cmd == command.filterForWhereClause
+				|| cmd == command.sqlSelect)
 		{
 			return Integer.parseInt(this.params[3]);
 		}
@@ -313,7 +319,8 @@ public class MessageResponse  extends Object{
 		 */
 		if(cmd  == command.ftQuery || cmd  == command.rgQuery 
 				|| cmd  == command.ptQuery
-				|| cmd  == command.filterForWhereClause)
+				|| cmd  == command.filterForWhereClause
+				|| cmd == command.sqlSelect)
 		{
 			return this.params[2];
 		}

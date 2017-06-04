@@ -58,9 +58,11 @@ import LCG.StorageEngin.IO.L1.IOStreamNative;
 import io.netty.channel.ChannelFuture;
 import lunarion.cluster.coordinator.adaptor.LunarDBSchema;
 import lunarion.db.local.shell.CMDEnumeration;
+import lunarion.db.local.shell.CMDEnumeration.command;
 import lunarion.node.LunarNode;
 import lunarion.node.logger.LoggerFactory;
 import lunarion.node.logger.Timer;
+import lunarion.node.remote.protocol.CodeSucceed;
 import lunarion.node.remote.protocol.MessageResponse;
 import lunarion.node.remote.protocol.RemoteResult;
 import lunarion.node.requester.LunarDBClient;
@@ -89,7 +91,7 @@ public class Resource {
 	private List<InstanceConfig> INSTANCE_CONFIG_LIST = new ArrayList<InstanceConfig>(); 
 	
 	private String meta_files_path;
-	private Logger coordinator_logger = null; 
+	private Logger resource_logger = null; 
 	private String meta_file_suffix = ".meta.info";
 	
 	private HelixAdmin admin;
@@ -103,7 +105,7 @@ public class Resource {
 	/* table name, metadata for latest info */
 	HashMap<String, TablePartitionMeta> table_meta_map = new HashMap<String, TablePartitionMeta>(); 
 	
-	
+	 
 	//String latest_partition_name = null;/* the maximum partition currently*/
 	//AtomicInteger rec_count_in_current_partition= new AtomicInteger(0);/* the record count in the latest partition*/
 	
@@ -154,16 +156,16 @@ public class Resource {
 		NUM_PARTITIONS = _num_partitions;
 		NUM_REPLICAS = _num_replicas;
 		max_recs_per_partition.set(_max_rec_per_partition);
-		coordinator_logger = LoggerFactory.getLogger(_cluster_name+"_"+resource_name);  
+		resource_logger = LoggerFactory.getLogger(_cluster_name+"_"+resource_name);  
 		
-		coordinator_logger.info(Timer.currentTime() + " [INFO]: coordinator for database " + resource_name + " in the cluster: " +  _cluster_name + " is starting now. ");
+		resource_logger.info(Timer.currentTime() + " [INFO]: coordinator for database " + resource_name + " in the cluster: " +  _cluster_name + " is starting now. ");
 	 	
 		meta_files_path = _meta_files_path;
 		
 		File dir = new File(meta_files_path);
     	if(!dir.isDirectory())
     	{
-    		coordinator_logger.info(Timer.currentTime() 
+    		resource_logger.info(Timer.currentTime() 
     							+ "[COORDINATOR EXCEPTION]:the root directory " + meta_files_path + " for global metadata is wrong, initate with a correct directory" );
     	 	
     		throw new IOException("[COORDINATOR EXCEPTION]:the root directory " + meta_files_path + " for global metadata is wrong, initate with a correct directory");
@@ -212,7 +214,7 @@ public class Resource {
 				return;
 		}
 
-		coordinator_logger.info(Timer.currentTime() + " [SUCCEED]: coordinator for database " + resource_name + " in the cluster: " +  _cluster_name + " started successfully. ");
+		resource_logger.info(Timer.currentTime() + " [SUCCEED]: coordinator for database " + resource_name + " in the cluster: " +  _cluster_name + " started successfully. ");
 	 	
 	}
 	
@@ -405,7 +407,13 @@ public class Resource {
 	    		rc = createTable(params);
 	    		break;
 	    	case addFulltextColumn:
-	    		rc = addFulltextColumn(params);
+	    		rc = addFunctionalColumn(cmd, params);
+	    		break;
+	    	case addAnalyticColumn:
+	    		rc = addFunctionalColumn(cmd, params);
+	    		break;
+	    	case addStorableColumn:
+	    		rc = addFunctionalColumn(cmd, params);
 	    		break;
 	    	case insert: 
 	    		rc = insert(params);
@@ -421,13 +429,12 @@ public class Resource {
 	    	case fetchLog:
 	    		rc = fetchLog(params);
 	    		break; 
-	    	case filterForWhereClause:
+	    	case sqlSelect:
 	    		/*
-	    		 * for sql select, params is:
-	    		 * params[0]: db name;
-	    		 * params[1]: select statement, e.g. select a, b, c from table_name where a<100 and c like 'what the fuck'
+	    		 * for sql select, params is: 
+	    		 * params[0]: select statement, e.g. select a, b, c from table_name where a<100 and c like 'what the fuck'
 	    		 */
-	    		rc = sqlSelect(params[1]);
+	    		rc = sqlSelect(params[0]);
 	    		break;
 	    	default:
 	        		break;
@@ -572,13 +579,13 @@ public class Resource {
 				 
 				rc.setFalse();
 				
-				coordinator_logger.info(Timer.currentTime() + " [EXCEPTION]: fail in creating table: " + table_name 
+				resource_logger.info(Timer.currentTime() + " [EXCEPTION]: fail in creating table: " + table_name 
 																+ ", the table metadata file can not be created.");
 			 	
 			}
 		}
 		else
-			coordinator_logger.info(Timer.currentTime() + " [ERROR]: fail to create table: " + table_name );
+			resource_logger.info(Timer.currentTime() + " [ERROR]: fail to create table: " + table_name );
 			
 		return rc;
 	}
@@ -631,7 +638,7 @@ public class Resource {
 				 }  
 	        	if(resp_from_svr == null)
 	        	{
-	        		coordinator_logger.info(Timer.currentTime() 
+	        		resource_logger.info(Timer.currentTime() 
 							+ "[COORDINATOR EXCEPTION]: @Resource.listTables can not get tables from database " + this.resource_name  );
 	        		return null;
 	 	
@@ -748,7 +755,7 @@ public class Resource {
 	        			table_i_meta.updateMeta(current_partition, rec_count_in_current_partition);  
 		    		}catch(Exception e) {
 		    			System.out.println(e);
-		    			coordinator_logger.info(Timer.currentTime() + " [EXCEPTION]: fail to update partition " + table_i_meta.getLatestPartition() + " metadata");
+		    			resource_logger.info(Timer.currentTime() + " [EXCEPTION]: fail to update partition " + table_i_meta.getLatestPartition() + " metadata");
 		    		 	
 		    		}
 	    		}
@@ -781,7 +788,7 @@ public class Resource {
 	        			 
 	        		}catch(Exception e) {
 	        			System.out.println(e);
-	        			coordinator_logger.info(Timer.currentTime() + " [EXCEPTION]: fail to update partition " + table_i_meta.getLatestPartition() + " metadata");
+	        			resource_logger.info(Timer.currentTime() + " [EXCEPTION]: fail to update partition " + table_i_meta.getLatestPartition() + " metadata");
 		    		 	
 	        		}
 	        		
@@ -793,12 +800,27 @@ public class Resource {
 		return patchResponseFromNodes(responses);
 	} 
 	
-	private ResponseCollector addFulltextColumn(String[] params )
+	/*
+	 * @TaskHandlingMessage.addFunctionalColumn
+	 */
+	private ResponseCollector addFunctionalColumn(CMDEnumeration.command cmd, String[] params )
 	{
-		/*
-		 * <table name, remote result>
-		 */
-		ConcurrentHashMap<String, RemoteResult> response_map = new ConcurrentHashMap<String, RemoteResult>();
+		
+		if(cmd == command.addAnalyticColumn && params.length < 4)
+    	{
+    		System.err.println("[NODE ERROR]: addAnalyticColumn needs at least 4 parameters: db name, table name, column name and column type");
+    		resource_logger.info("[NODE ERROR]: addAnalyticColumn needs at least 4 parameters: db name, table name, column name and column type");
+			 	 
+			return null;
+    	}
+		if(params.length < 3 )
+		{
+			System.err.println("[NODE ERROR]: addFulltextColumn needs at least 3 parameters: db name, table name and column name");
+			resource_logger.info("[NODE ERROR]: addFulltextColumn needs at least 3 parameters: db name, table name and column name");
+			 
+			return null;
+		}
+
 		List<Future<RemoteResult>> responses = new ArrayList<Future<RemoteResult>>();
 		
 		Iterator<String> keys = master_map.keySet().iterator();
@@ -810,14 +832,28 @@ public class Resource {
 			{  
 				String instance_name = master_map.get(partition_name);
 				LunarDBClient client = instance_connection_map.get(instance_name);
-				
-				CMDEnumeration.command cmd = CMDEnumeration.command.addFulltextColumn; 
-	        	
-				String[] new_param = new String[params.length];
-				new_param[0] = params[0];
-				new_param[1] = controller_consts.patchNameWithPartitionNumber(params[1], partition);
-				new_param[2] = params[2];
-	        	
+				String[] new_param = null;
+				switch(cmd)
+				{
+					case addFulltextColumn:
+					case addStorableColumn:
+					{
+						new_param = new String[params.length];
+						new_param[0] = params[0];
+						new_param[1] = controller_consts.patchNameWithPartitionNumber(params[1], partition);
+						new_param[2] = params[2];
+					}
+					break;
+					case addAnalyticColumn:
+					{
+						new_param = new String[params.length];
+						new_param[0] = params[0];
+						new_param[1] = controller_consts.patchNameWithPartitionNumber(params[1], partition);
+						new_param[2] = params[2];
+						new_param[3] = params[3];
+					}
+					break; 
+				}
 	        	TaskSendReqestToNode tsqtn = new TaskSendReqestToNode( client,cmd,new_param );
 	        	 
 	        	Future<RemoteResult> resp = thread_executor.submit(tsqtn);
@@ -828,6 +864,7 @@ public class Resource {
 		return patchResponseFromNodes(responses);
 	}
 	
+	 
 	private ResponseCollector ftQuery(String[] params )
 	{
 		/*

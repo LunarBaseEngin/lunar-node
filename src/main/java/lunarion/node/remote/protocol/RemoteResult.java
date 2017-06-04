@@ -39,7 +39,8 @@ public class RemoteResult  {
 	{
 		if(message.getCMD() == command.ftQuery || message.getCMD() == command.rgQuery 
 												|| message.getCMD() == command.ptQuery
-												|| message.getCMD() == command.filterForWhereClause)
+												|| message.getCMD() == command.filterForWhereClause
+												|| message.getCMD() == command.sqlSelect)
 		{
 			 String[] params = new String[5];
 			 
@@ -67,13 +68,14 @@ public class RemoteResult  {
 	{
 		if(message.getCMD() == command.ftQuery || message.getCMD() == command.rgQuery 
 				|| message.getCMD() == command.ptQuery
-				|| message.getCMD() == command.filterForWhereClause)
+				|| message.getCMD() == command.filterForWhereClause
+				|| message.getCMD() == command.sqlSelect)
 		{
 			String[] params = new String[3];
 			 
 			params[0] = this.message.getParams()[0]; /* db name */
 			params[1] = this.message.getParams()[1]; /* table name */
-			params[2] = this.message.getParams()[2]; /* intermediate query result uuid */
+			params[2] = this.message.getIntermediateResultUUID() ; /* intermediate query result uuid */
 		 
 			MessageResponse resp_from_svr = client.internalQuery(command.closeQueryResult, params);
 			return resp_from_svr ; 

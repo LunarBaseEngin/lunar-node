@@ -111,7 +111,7 @@ public class sendRequestToMaster_querySqlSelect {
 		 
 	     Thread.sleep(10000);
 	     co.printState("State after adding the 1 nodes: ", resource_name);
-		 CMDEnumeration.command cmd = CMDEnumeration.command.filterForWhereClause;
+		 CMDEnumeration.command cmd = CMDEnumeration.command.sqlSelect;
 		 
 		 /*
 		  * like
@@ -122,9 +122,8 @@ public class sendRequestToMaster_querySqlSelect {
 
 		 String query2 = "select \"content\" from \"node_table\" as S ";
 
-		 String[] params = new String[2];
-		 params[0] = "RTSeventhDB";
-		 params[1] = query2; 
+		 String[] params = new String[1]; 
+		 params[0] = query2; 
 		 
 	 	
 		 /*
@@ -135,7 +134,10 @@ public class sendRequestToMaster_querySqlSelect {
 		 ArrayList<String> recs = rc.fetchRecords(null, 0, 100);
 		 for(String rec : recs)
 			 System.out.println(rec);
-		 */
+		  
+		  */
+		 
+		 
 		 long startTime=System.currentTimeMillis();  
 		 ResultSet rs = res.executeSqlSelect(query0);
 		 long endTime=System.currentTimeMillis();  

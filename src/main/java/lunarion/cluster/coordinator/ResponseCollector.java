@@ -19,6 +19,7 @@
 package lunarion.cluster.coordinator;
 
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -144,7 +145,7 @@ public class ResponseCollector {
 	}
 	
 	
-	private ArrayList<String> fetchSqlRecords(int[] column_index, long from, int count)
+	private ArrayList<String> fetchSqlRecords(int[] column_index, long from, int count) throws SQLException
 	{
 		ArrayList<String> records  = new ArrayList<String>(); 
 		if(from > Integer.MAX_VALUE)
@@ -154,11 +155,21 @@ public class ResponseCollector {
 		}
 		if(column_index == null || column_index.length<=0)
 		{
-			System.err.println("[COORDINATOR ERROR]: sql result set has to know column indexes to patch results.");
-			return null;
+			ResultSetMetaData rsm = sql_select_result_set.getMetaData();  
+			int col = rsm.getColumnCount();  
+			column_index = new int[col];
+			/* 
+			String col_name[] = new String[col];
+			
+			 for (int i = 0; i < col; i++) 
+			 {  
+				 col_name[i] = rsm.getColumnName( i + 1 );  
+			 }
+			 */ 
 		}
 		 
-			//if( sql_select_result_set.absolute((int)from))
+		
+		//if( sql_select_result_set.absolute((int)from))
 			//{
 			int i = -1;
 				try {
@@ -190,14 +201,14 @@ public class ResponseCollector {
 	public ArrayList<String> fetchRecords(int[] _column_index, long from, int count)
 	{
 		if(is_sql_result)
-		{
-			int[] column_index = _column_index;
-			if(column_index == null || column_index.length == 0)
-			{
-				column_index = new int[1];
-				column_index[0] = 1;
+		{  
+			try {
+				return fetchSqlRecords( _column_index, from, count);
+			} catch (SQLException e) {
+				 
+				e.printStackTrace();
+				return null;
 			}
-			return fetchSqlRecords( column_index, from, count);
 		}
 		else
 		{ 	 

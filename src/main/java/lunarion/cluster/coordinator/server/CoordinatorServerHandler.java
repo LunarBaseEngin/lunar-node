@@ -23,6 +23,8 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.log4j.Logger;
 
@@ -40,6 +42,7 @@ import lunarion.cluster.coordinator.ResponseCollector;
 import lunarion.db.local.shell.CMDEnumeration;
 import lunarion.node.TaskHandlingMessage;
 import lunarion.node.EDF.NodeTaskCenter;
+import lunarion.node.remote.protocol.CodeSucceed;
 import lunarion.node.remote.protocol.MessageRequest;
 import lunarion.node.remote.protocol.MessageResponse;
 
@@ -48,12 +51,16 @@ public class CoordinatorServerHandler extends ChannelInboundHandlerAdapter {
 
 	private Coordinator co; 
 	private final Logger logger; 
+	
+	private final int parallel = Runtime.getRuntime().availableProcessors() ; 
+	protected  ExecutorService thread_executor = Executors.newFixedThreadPool(parallel); 
+	
 	/*
 	 * <request_uuid, ResponseCollector>
 	 */
 			
 	private ConcurrentHashMap<String, ResponseCollector> response_map = new ConcurrentHashMap<String, ResponseCollector>();
-	private ConcurrentHashMap<String, ResultSet> sql_result_map = new ConcurrentHashMap<String, ResultSet>();
+	//private ConcurrentHashMap<String, ResultSet> sql_result_map = new ConcurrentHashMap<String, ResultSet>();
 			    
 	public CoordinatorServerHandler(Coordinator _co,  Logger _logger ) 
 	{
@@ -71,72 +78,23 @@ public class CoordinatorServerHandler extends ChannelInboundHandlerAdapter {
 		    		 
 		    		MessageRequest request = new MessageRequest();
 		    		request.read(buf); 
-		        	 
+		        	/* 
 		    		System.out.println("Coordinator received command: "+ request.getCMD());
 		    		System.out.println("Coordinator received UUID: "+ request.getUUID());
 		    		for(int i=0;i<request.getParams().length;i++)
 		    		{
 		    			System.out.println("Coordinator received: "+ request.getParams()[i]);
 		    		}
-		    		
+		    		*/
 		    		Resource res = co.getResource(request.getParams()[0]); 
 		    		 
-		    		ResponseCollector rc = null;
-			    		
-		    			rc = res.sendRequest(request.getCMD(), request.getParams());
-		    			if(CMDEnumeration.needNotify(request.getCMD()))
-			    			res.notifySlavesUpdate(rc);
-			    		 
-			    		rc.printResponse();
-			    		if(ctx!=null)
-			    		{
-			    			MessageResponse resp = new MessageResponse();
-			    			resp.setCMD(request.getCMD());
-			    			resp.setUUID(request.getUUID());
-			    			resp.setSucceed(rc.isSucceed()); 
-			    			
-			    			String[] resp_uuid = new String[1];
-			    			resp_uuid[0] = UUID.randomUUID().toString();
-			    			
-			    			resp.setParams(resp_uuid);	
-			    			response_map.put(resp_uuid[0], rc);
-			    			 int len = resp.size();
-			                 ByteBuf response_buff = Unpooled.buffer(4+len);
-			                 response_buff.writeInt(len);
-			                 resp.write(response_buff);
-			               
-			             	ctx.writeAndFlush(response_buff).addListener(new ChannelFutureListener() {
-			                     public void operationComplete(ChannelFuture channelFuture) throws Exception {
-			                         System.out.println("[COORDINATOR INFO]: coordinator responsed the request with message id:" + request.getUUID());
-			                     }
-			                 });
-			    	    }
+		    		
+		    		TaskRedirectMessage recvTask = new TaskRedirectMessage(request , 
+		    				res, 
+							ctx, 
+							logger, 
+							response_map); 
 		    	 
-		    		
-		    		
-					 
-					 
-					/* 
-		    		TaskHandlingMessage recvTask = new TaskHandlingMessage(request , 
-		    																node_tc.getActiveServer(), 
-		    																ctx, 
-		    																logger, 
-		    																result_map);
-		            */
-		           
-		          
-		    		/*
-		        	MessageSource response = new MessageSource();
-		            response.setCMD(request.getCMD());
-		            response.setUUID(request.getUUID());
-		            response.setParams(request.getParams());
-		        	int len = response.size();
-		            ByteBuf response_buff = Unpooled.buffer(4+len);
-		            response_buff.writeInt(len);
-		            response.write(response_buff);
-		          
-		        	ctx.writeAndFlush(response_buff);
-		        	*/
 		        }
 		        finally
 		        {

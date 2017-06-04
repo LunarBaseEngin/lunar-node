@@ -206,7 +206,7 @@ public class CMDEnumeration {
 	    		break; 
 	    	case 30:
 	    		cmd = CMDEnumeration.command.closeQueryResult;
-	    		break;
+	    		break; 
 	    	case 31:
 	    		cmd = CMDEnumeration.command.sqlSelect;
 	    		break;
