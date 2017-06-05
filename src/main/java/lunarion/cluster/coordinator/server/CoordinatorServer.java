@@ -101,6 +101,11 @@ public class CoordinatorServer {
 		return co.getResource(resource_name);
 	}
 	
+	public void addNode(String resource_name, String node_ip, int port) throws Exception
+	{
+		co.addNodeToResource(resource_name, node_ip, port);
+	}
+	
 	public void startServer(String _zk_addr, 
 							String _cluster_name, 
 							String _res_name, 
@@ -185,7 +190,7 @@ public class CoordinatorServer {
                     .childOption(ChannelOption.SO_KEEPALIVE, true);
 
 		Channel ch = bootstrap.bind(port).sync().channel();
-		System.err.println(Timer.currentTime() +  " coordinator server channel binded at port: " + port + '.');
+		System.err.println(Timer.currentTime() +  "[INFO]: coordinator server channel binded at port: " + port + '.');
 		logger.info(Timer.currentTime() + " [COORDINATOR INFO]:  coordinator server channel binded at port: " + port + '.');     
 		ch.closeFuture().sync();
             /*

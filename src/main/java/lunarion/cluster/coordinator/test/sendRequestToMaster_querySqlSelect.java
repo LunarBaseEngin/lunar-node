@@ -143,6 +143,7 @@ public class sendRequestToMaster_querySqlSelect {
 		 long endTime=System.currentTimeMillis();  
 		 
 		 ResultSetMetaData rsm = rs.getMetaData();  
+		 
 		 int col = rsm.getColumnCount();  
 		 String col_name[] = new String[col];
 		 
