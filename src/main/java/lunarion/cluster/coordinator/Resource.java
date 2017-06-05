@@ -432,9 +432,11 @@ public class Resource {
 	    	case sqlSelect:
 	    		/*
 	    		 * for sql select, params is: 
-	    		 * params[0]: select statement, e.g. select a, b, c from table_name where a<100 and c like 'what the fuck'
+	    		 * params[0]: db name;
+	    		 * 
+	    		 * params[1]: select statement, e.g. select a, b, c from table_name where a<100 and c like 'what the fuck'
 	    		 */
-	    		rc = sqlSelect(params[0]);
+	    		rc = sqlSelect(params[1]);
 	    		break;
 	    	default:
 	        		break;

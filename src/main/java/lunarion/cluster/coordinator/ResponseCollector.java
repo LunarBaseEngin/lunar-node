@@ -158,23 +158,26 @@ public class ResponseCollector {
 			ResultSetMetaData rsm = sql_select_result_set.getMetaData();  
 			int col = rsm.getColumnCount();  
 			column_index = new int[col];
+			for (int i = 0; i < col; i++) 
+			{  
+				column_index[i] =  i + 1 ;  
+			}
 			/* 
-			String col_name[] = new String[col];
-			
-			 for (int i = 0; i < col; i++) 
-			 {  
+			String col_name[] = new String[col]; 
+			for (int i = 0; i < col; i++) 
+			{  
 				 col_name[i] = rsm.getColumnName( i + 1 );  
-			 }
-			 */ 
+			}
+			 */
 		}
 		 
 		
 		//if( sql_select_result_set.absolute((int)from))
-			//{
+		//{
 			int i = -1;
-				try {
-					while(sql_select_result_set.next())
-					{
+			try {
+				while(sql_select_result_set.next())
+				{
 						i++;
 						if(i>=from && i < from+count)
 						{
@@ -188,12 +191,12 @@ public class ResponseCollector {
 							records.add(rec);
 						}
 						
-					}
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} 
-				return records;
+				}
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} 
+			return records;
 			//} 
 	}
 	

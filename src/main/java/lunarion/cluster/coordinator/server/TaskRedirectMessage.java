@@ -164,7 +164,7 @@ public class TaskRedirectMessage implements Runnable {
 			rc = db_resource.sendRequest(cmd, params); 
 			String[] result_with_intermediate_uuid = new String[5];
 			result_with_intermediate_uuid[0] = db_resource.getDBName();
-			result_with_intermediate_uuid[table_name_index] = "";
+			result_with_intermediate_uuid[table_name_index] = MessageResponse.getNullStr();
 			result_with_intermediate_uuid[intermediate_result_uuid_index] = UUID.randomUUID().toString();
 			result_with_intermediate_uuid[3] = ""+rc.resultCount();
 			result_with_intermediate_uuid[4] = "0";
@@ -189,13 +189,38 @@ public class TaskRedirectMessage implements Runnable {
 			long from =  Long.parseLong(params[3]);
 			int count = Integer.parseInt(params[4]); 
 			rc = response_map.get(intermediate_uuid);
-			ArrayList<String> recs = rc.fetchRecords(null, from, count);
-			response = new MessageResponseQuery();
+			if(rc != null)
+			{
+				ArrayList<String> recs = rc.fetchRecords(null, from, count);
+				if(!recs.isEmpty())
+				{
+					response = new MessageResponseQuery();
+					response.setUUID(request.getUUID());
+					response.setCMD(request.getCMD());
+					response.setSucceed(rc.isSucceed()); 
+					response.setParamsFromCoordinator(db_resource.getDBName(), MessageResponseQuery.getNullStr(), recs);
+					return;
+				}
+				else
+				{
+					response = new MessageResponse();
+					response.setUUID(request.getUUID());
+					response.setCMD(request.getCMD());
+					response.setSucceed(false); 
+					String[] resp = new String[1];
+				  	resp[0] = CodeSucceed.nomore_records_in_resultset; 
+				  	response.setParams(resp);  
+					return;
+				}
+			}
+			 
+			response = new MessageResponse();
 			response.setUUID(request.getUUID());
-		    response.setCMD(request.getCMD());
-		    response.setSucceed(rc.isSucceed()); 
-		    
-		    response.setParamsFromCoordinator(db_resource.getDBName(), MessageResponseQuery.getNullStr(), recs);
+			response.setCMD(request.getCMD());
+			response.setSucceed(false); 
+			String[] resp = new String[1];
+			resp[0] = CodeSucceed.does_not_has_null_result_uuid; 
+			response.setParams(resp);   
 		}
 		break;
 		case closeQueryResult:

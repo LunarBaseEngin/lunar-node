@@ -28,7 +28,7 @@ import lunarion.db.driver.sql.Statement;
 public class TestSqlQuery {
 
 	public static void main(String[] args) {
-		String url = "jdbc:lunarion:thin:@localhost:160001";
+		String url = "jdbc:lunarion:thin:@localhost:60001:RTSeventhDB";
 		
 		String user = "";
 		String pw = "";

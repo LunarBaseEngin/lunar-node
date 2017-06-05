@@ -38,6 +38,7 @@ import org.apache.log4j.Logger;
 import LCG.DB.API.LunarDB;
 import LCG.FSystem.Def.DBFSProperties;
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.AdaptiveRecvByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
@@ -101,6 +102,10 @@ public class CoordinatorServer {
 		return co.getResource(resource_name);
 	}
 	
+	public void printState(String prompt, String resource_name)
+	{
+		co.printState(prompt, resource_name);
+	}
 	public void addNode(String resource_name, String node_ip, int port) throws Exception
 	{
 		co.addNodeToResource(resource_name, node_ip, port);
@@ -129,7 +134,7 @@ public class CoordinatorServer {
 	    
 	    logger.info(Timer.currentTime() + " [INFO]: coordinator is starting for cluster " + _cluster_name);
 	 	 
-	    co = new Coordinator();
+	    co = Coordinator.getInstance();
 	    co.init(zkAddr,cluster_name, cc);
 	    co.startZookeeper();
 	    co.setup();
@@ -184,6 +189,7 @@ public class CoordinatorServer {
 		ServerBootstrap bootstrap = new ServerBootstrap();
 		bootstrap.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
+                    .childOption(ChannelOption.RCVBUF_ALLOCATOR, new AdaptiveRecvByteBufAllocator(64, 1024, 65536*512)) 
                     //.childHandler(new ChildChannelHandler())
                     .childHandler(new CoordinatorServerChannelInitializer(co, logger))
                     .option(ChannelOption.SO_BACKLOG, 1024) 

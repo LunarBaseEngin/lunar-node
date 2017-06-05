@@ -99,6 +99,13 @@ public class QueryResultEnumerator<E> implements Enumerator<E> {
 			else
 			{
 				current_cached = cached_recs.size();
+				if(current_cached == 0 || (current_rec_id.get() - cached_from ) >= current_cached)
+				{
+					current = null;
+					 
+					return current;
+				}
+				
 				
 				String rec = cached_recs.get((int)(current_rec_id.get() - cached_from));
 				if(rec!=null && !rec.equals(""))

@@ -51,8 +51,11 @@ public class MessageClientWatcher {
              * since the thread of caller may dead for whatever reason, 
              * this client has to wake up and finish the job.
              */
-            condition.await(5*1000, TimeUnit.MILLISECONDS);
-            //  condition.await(); 
+           // condition.await(5*1000, TimeUnit.MILLISECONDS);
+            /*
+             * the endless waiting is for dubugging only
+             */
+            condition.await(); 
             
             if(response == null)
             {

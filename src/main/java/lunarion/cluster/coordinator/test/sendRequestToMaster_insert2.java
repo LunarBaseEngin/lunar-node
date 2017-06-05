@@ -90,9 +90,12 @@ public class sendRequestToMaster_insert2 {
 		 
 		 try
 		 { 
-			 co.addNodeToResource(resource_name, node_ip, 30001);
-			//co.addNodeToResource(resource_name, node_ip, 30002); 
-			//co.addNodeToResource(resource_name, node_ip, 30003);
+			 String[] nodes = node_ip.split(",");
+			 for(int i=0;i<nodes.length;i++)
+			 {
+					String[] node_ip_port = nodes[i].trim().split(":");
+					co.addNodeToResource(resource_name, node_ip_port[0], Integer.parseInt(node_ip_port[1].trim()) );
+			 }
 		 }
 		 catch(Exception e)
 		 {

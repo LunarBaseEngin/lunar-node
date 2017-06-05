@@ -20,6 +20,7 @@ package lunarion.db.driver.sql;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import lunarion.cluster.coordinator.Resource;
@@ -40,7 +41,7 @@ public class LResultSet {
 	private AtomicLong current_rec_id = new AtomicLong(-1);
 	  
 	 
-	final private long total_results;
+	private long total_results;
 	
 	final long maximum_cached = 1024*4;
 	final long maximum_cached_mask = (~(maximum_cached-1));
@@ -48,14 +49,16 @@ public class LResultSet {
 	String[] cached_recs = null;
 	int current_cached = 0;
 	
-  	  
+	AtomicInteger accumulated_failure = new AtomicInteger(0); 
+	final int maximum_failure = 5;
 	
 	public LResultSet(LunarDBClient _client, RemoteResult _result)
 	{
 		this.l_client = _client;
 		this.r_result = _result;
 		
-		total_results = r_result.getResultCount();
+		total_results = r_result.getResultCount() < maximum_cached ? maximum_cached: r_result.getResultCount();
+		 
 	}
 	
 	public String current() throws InterruptedException {
@@ -77,16 +80,38 @@ public class LResultSet {
 			  	
 			if (cached_recs ==null ) 
 			{  
-				current = null;  
+				current = null;
+				accumulated_failure.incrementAndGet();
+				if(accumulated_failure.get() > maximum_failure)
+				{
+					total_results = 0;
+					accumulated_failure.set(0);
+					return "";
+				}
 			}
 			else
 			{
 				current_cached = cached_recs.length;
+				if(current_cached == 0 || (current_rec_id.get() - cached_from ) >= current_cached)
+				{
+					current = null;
+					accumulated_failure.incrementAndGet();
+					if(accumulated_failure.get() > maximum_failure)
+					{
+						total_results = 0;
+						accumulated_failure.set(0);
+						return "";
+					}
+					return "";
+				} 
+				
 				
 				current = cached_recs[(int)(current_rec_id.get() - cached_from)];
 				 
 			} 
-		}  
+		}
+		if(current == null)
+			return "";
 	    return current;
 	  
 	}

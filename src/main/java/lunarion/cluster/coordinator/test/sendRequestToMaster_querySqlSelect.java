@@ -97,7 +97,14 @@ public class sendRequestToMaster_querySqlSelect {
 		 
 		 try
 		 { 
-			 co.addNodeToResource(resource_name, node_ip, 30001);
+			 String[] nodes = node_ip.split(",");
+			 for(int i=0;i<nodes.length;i++)
+			 {
+					String[] node_ip_port = nodes[i].trim().split(":");
+					co.addNodeToResource(resource_name, node_ip_port[0], Integer.parseInt(node_ip_port[1].trim()) );
+			 }
+				
+			// co.addNodeToResource(resource_name, node_ip, 30001);
 			//co.addNodeToResource(resource_name, node_ip, 30002); 
 			//co.addNodeToResource(resource_name, node_ip, 30003);
 		 }
@@ -164,7 +171,20 @@ public class sendRequestToMaster_querySqlSelect {
 			 } 	
 			 System.out.println(rec);
 		 }
-				
+		 System.out.println("========================================");
+		 rs.absolute(1);
+		 while(rs.next())
+		 {  
+			 count++;
+			 String rec = ""; 
+			 rec = rs.getString(1); 
+			 for(int kk=2;kk<col_name.length;kk++)
+			 {
+				 rec =  " | " + rs.getString(kk); 
+			 } 	
+			 System.out.println(rec);
+		 }
+			
 		 
 		 
 		 System.out.println("total： "+ count +" records");  	

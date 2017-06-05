@@ -25,6 +25,8 @@ import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.Properties;
 
+import lunarion.cluster.coordinator.Resource;
+
 public class start {
 
 	public static void main(String[] args) throws InterruptedException, IOException, SQLException {
@@ -76,8 +78,16 @@ public class start {
 			c_s.addNodeToResource(resource_name, node_ip_port[0], Integer.parseInt(node_ip_port[1].trim()) );
 		}
 		
+		c_s.updateMasters(resource_name);
+		 
+	     
+		Thread.sleep(10000);
+	    
+		c_s.printState("State after adding the " + nodes.length + " nodes: ", resource_name);
+		
 		c_s.bind(coordinator_port);
 		
+		//System.out.println("[INFO]: coordinator started listening the port:" + coordinator_port);
 			
 	}
 }

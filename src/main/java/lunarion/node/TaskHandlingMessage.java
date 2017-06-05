@@ -809,8 +809,7 @@ public class TaskHandlingMessage implements Runnable {
 			    response.setCMD(request.getCMD());
 			    response.setSucceed(true);
 				response.setParamsFromNode(db, table, recs); 
-			} catch (IOException e) {
-				 
+			} catch (IOException e) { 
 				response = new MessageResponse();
 			  	response.setUUID(request.getUUID());
 			  	response.setCMD(request.getCMD());

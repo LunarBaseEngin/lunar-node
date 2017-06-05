@@ -94,6 +94,8 @@ public class CoordinatorServerHandler extends ChannelInboundHandlerAdapter {
 							ctx, 
 							logger, 
 							response_map); 
+		    		
+		    		thread_executor.submit(recvTask);
 		    	 
 		        }
 		        finally
