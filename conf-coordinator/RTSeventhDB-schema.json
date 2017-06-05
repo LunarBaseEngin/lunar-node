@@ -8,8 +8,7 @@
       factory: 'lunarion.cluster.coordinator.adaptor.LunarDBSchemaFactory',
       operand: { 
       	flavor: 'filterable',
-        full_path:'',
-        column0: 'content'
+        full_path:'' 
       }
     }
   ]
