@@ -103,7 +103,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
         channel.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
     }
 
-    public MessageResponse sendRequest(MessageRequest request, ChannelFuture cf ) throws InterruptedException {
+    public MessageResponse sendRequest(MessageRequest request, ChannelFuture cf, int waiting_in_milliseconds ) throws InterruptedException {
         MessageClientWatcher watcher = new MessageClientWatcher(request.getUUID());
         watcher_map.put(request.getUUID(), watcher);
         
@@ -114,7 +114,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
          
         
         cf.channel().writeAndFlush(nextMessage);
-        return watcher.start();
+        return watcher.start(waiting_in_milliseconds);
         
     }
 

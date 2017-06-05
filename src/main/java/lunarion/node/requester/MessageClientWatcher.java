@@ -20,6 +20,7 @@ package lunarion.node.requester;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -35,12 +36,13 @@ public class MessageClientWatcher {
 	private Condition condition = lock.newCondition();
 	
 	//private AtomicBoolean in_waiting = new AtomicBoolean(false);
+	//private AtomicInteger waiting_time = new AtomicInteger(0);
      
     public MessageClientWatcher(String uuid) {
     	message_uuid = uuid;
     }
 
-    public MessageResponse start() throws InterruptedException {
+    public MessageResponse start(int waiting_in_milliseconds) throws InterruptedException {
         try {
             lock.lock(); 
             /*
@@ -51,11 +53,11 @@ public class MessageClientWatcher {
              * since the thread of caller may dead for whatever reason, 
              * this client has to wake up and finish the job.
              */
-           // condition.await(5*1000, TimeUnit.MILLISECONDS);
+            condition.await(waiting_in_milliseconds, TimeUnit.MILLISECONDS);
             /*
              * the endless waiting is for dubugging only
              */
-            condition.await(); 
+            //condition.await(); 
             
             if(response == null)
             {
@@ -84,7 +86,7 @@ public class MessageClientWatcher {
              * notify to interrupt the await() called in start() 
              */
             condition.signal();
-            System.out.println("send signal");
+            //System.out.println("send signal");
         } finally {
             lock.unlock();
         }

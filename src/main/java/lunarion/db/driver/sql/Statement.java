@@ -41,7 +41,7 @@ public class Statement {
     	String[] params = new String[2];
     	params[0] = db; 
     	params[1] = table_name.trim(); 
-		RemoteResult rr = client.sendRequest(cmd, params);
+		RemoteResult rr = client.sendRequest(cmd, params, 5*1000);
 		
 		return new LResultSet(client, rr);
 	}
@@ -62,7 +62,7 @@ public class Statement {
     	params[2] = column ; /* column needs to be analytical, i.e can do range query and other arithmetic operation */
     	params[3] = type	; /* column type in long */
     	
-    	RemoteResult rr = client.sendRequest(cmd, params);  
+    	RemoteResult rr = client.sendRequest(cmd, params, 5*1000);
 		
 		return new LResultSet(client, rr);
 	}
@@ -77,7 +77,7 @@ public class Statement {
 		
 		client.sendRequest(cmd, params);  
     	
-    	RemoteResult rr = client.sendRequest(cmd, params);  
+    	RemoteResult rr = client.sendRequest(cmd, params, 5*1000);
 		
 		return new LResultSet(client, rr);
 	} 
@@ -92,7 +92,7 @@ public class Statement {
 		
 		client.sendRequest(cmd, params);  
     	
-    	RemoteResult rr = client.sendRequest(cmd, params);  
+    	RemoteResult rr = client.sendRequest(cmd, params, 5*1000);
 		
 		return new LResultSet(client, rr);
 	} 
@@ -106,7 +106,7 @@ public class Statement {
     	for(int i = 0;i<recs.length;i++)
     		params[i+2] = recs[i];
     	
-		RemoteResult rr = client.sendRequest(cmd, params);
+		RemoteResult rr = client.sendRequest(cmd, params, 5*1000);
 		
 		return new LResultSet(client, rr);
 	}
@@ -118,7 +118,7 @@ public class Statement {
     	String[] params = new String[2];
     	params[0] = db; 
     	params[1] = statement;
-		RemoteResult rr = client.sendRequest(cmd, params);
+		RemoteResult rr = client.sendRequest(cmd, params, 5*1000);
 		
 		return new LResultSet(client, rr);
 	}

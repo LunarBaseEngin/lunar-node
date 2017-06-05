@@ -94,7 +94,7 @@ public class TestMultipleClient {
 	    	RemoteResult resp_from_svr = null;
 	    	
 	    	try {
-	    		resp_from_svr = client.sendRequest(cmd, arges); 
+	    		resp_from_svr = client.sendRequest(cmd, arges, 5*1000); 
 	    		
 	    		//Thread.sleep(10000);
 	    		

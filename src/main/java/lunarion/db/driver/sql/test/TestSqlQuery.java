@@ -19,6 +19,7 @@
 package lunarion.db.driver.sql.test;
 
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 
 import lunarion.db.driver.sql.LDriverManager;
 import lunarion.db.driver.sql.LResultSet;
@@ -49,8 +50,14 @@ public class TestSqlQuery {
 			 String query1 = "select \"content\" from \"node_table\" as S ";
 
 			 LResultSet rs = null;
+			 long startTime = 0;
+			 long endTime = 0;
 			 try {
+				 startTime=System.currentTimeMillis();  
 				 rs = stmt.executeQuery(query0);
+				 endTime=System.currentTimeMillis();  
+				 
+				
 			 } catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -65,6 +72,19 @@ public class TestSqlQuery {
 					e.printStackTrace();
 				}
 			 }
+			 
+			 System.out.println("sql query totally costs: " + (endTime -startTime) + " ns");
+			 try {
+				 /*
+				  * have to close to release server resource.
+				  */
+				rs.close();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			 
+			 l_connection.close();
 		}
 
 	}

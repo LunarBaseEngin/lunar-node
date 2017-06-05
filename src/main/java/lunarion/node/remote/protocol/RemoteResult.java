@@ -50,7 +50,7 @@ public class RemoteResult  {
 			 params[3] = ""+from;
 			 params[4] = ""+count;
 			 
-			 MessageResponse resp_from_svr = client.internalQuery(command.fetchQueryResultRecs, params);
+			 MessageResponse resp_from_svr = client.internalQuery(command.fetchQueryResultRecs, params, 5*1000);
 			 return resp_from_svr.getResultRecords(); 
 			
 		}
@@ -77,7 +77,7 @@ public class RemoteResult  {
 			params[1] = this.message.getParams()[1]; /* table name */
 			params[2] = this.message.getIntermediateResultUUID() ; /* intermediate query result uuid */
 		 
-			MessageResponse resp_from_svr = client.internalQuery(command.closeQueryResult, params);
+			MessageResponse resp_from_svr = client.internalQuery(command.closeQueryResult, params, 5* 1000);
 			return resp_from_svr ; 
 		}
 		

@@ -48,7 +48,7 @@ public class TestRemoteAddAnalyticColumn {
         	params[2] = "payment"	; /* column needs to be analytical, i.e can do range query and other arithmetic operation */
         	params[3] = "long"	; /* column type in long */
         	
-        	client.sendRequest(cmd, params);  
+        	client.sendRequest(cmd, params,  5*1000);  
         
         
         	/*

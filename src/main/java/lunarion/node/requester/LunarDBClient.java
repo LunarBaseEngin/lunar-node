@@ -117,15 +117,18 @@ public class LunarDBClient {
 	public void shutdown()
 	{
 		//thread_executor.shutdown();
-		 
-		connected_host_ip = null;
-		connected_port = -1;
-		connected.set(false);
-		client_handler.close();
-		group.shutdownGracefully();
+		if(connected.get())
+		{
+			connected_host_ip = null;
+			connected_port = -1;
+			connected.set(false);
+			client_handler.close();
+			group.shutdownGracefully();
+		}
+		
 	}
 	
-	public RemoteResult sendRequest(CMDEnumeration.command cmd, Object[] args) throws InterruptedException
+	public RemoteResult sendRequest(CMDEnumeration.command cmd, Object[] args, int waiting_in_milliseconds) throws InterruptedException
 	{
 		MessageRequest request = new MessageRequest();
         request.setUUID(UUID.randomUUID().toString()); 
@@ -133,7 +136,7 @@ public class LunarDBClient {
         request.setParams((String[])args);
        
         ChannelFuture cf = channel_list.get(0);
-        MessageResponse resp = client_handler.sendRequest(request, cf);
+        MessageResponse resp = client_handler.sendRequest(request, cf, waiting_in_milliseconds);
         if(resp == null)
         	return null;
         
@@ -141,7 +144,16 @@ public class LunarDBClient {
         
 	}
 	
-	public MessageResponse internalQuery(CMDEnumeration.command cmd, Object[] args) throws InterruptedException
+	public RemoteResult sendRequest(CMDEnumeration.command cmd, Object[] args ) throws InterruptedException
+	{ 
+		/*
+		 * by default waiting 5 seconds.
+		 */
+        return sendRequest( cmd, args, 5*1000);
+        		
+	}
+	
+	public MessageResponse internalQuery(CMDEnumeration.command cmd, Object[] args, int waiting_in_milliseconds) throws InterruptedException
 	{
 		MessageRequest request = new MessageRequest();
         request.setUUID(UUID.randomUUID().toString()); 
@@ -150,7 +162,7 @@ public class LunarDBClient {
        
         ChannelFuture cf = channel_list.get(0);
         //System.err.println("internal query sent");
-        return  client_handler.sendRequest(request, cf) ;
+        return  client_handler.sendRequest(request, cf, waiting_in_milliseconds) ;
         
 	}
 	

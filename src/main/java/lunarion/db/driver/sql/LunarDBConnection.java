@@ -47,5 +47,10 @@ public class LunarDBConnection {
 	{
 		return ip + ":" + port + ":" + db;
 	}
+	
+	public void close()
+	{
+		client.shutdown();
+	}
 
 }
