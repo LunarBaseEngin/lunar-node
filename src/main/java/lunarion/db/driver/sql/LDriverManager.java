@@ -44,7 +44,7 @@ public class LDriverManager {
 	
 	 
 	public static void main(String[] args) throws NumberFormatException, Exception {
-		String str = "jdbc:lunarion:thin:@127.0.0.1:300001:db_name";
+		String str = "jdbc:lunarion:thin:@127.0.0.1:60001:db_name";
 		LunarDBConnection con = LDriverManager.getConnection(str, "", "");
 		
 		System.out.println(con.toString());

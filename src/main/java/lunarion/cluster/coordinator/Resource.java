@@ -24,6 +24,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.channels.spi.SelectorProvider;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -332,7 +333,7 @@ public class Resource {
 						 }
 						 if(!already_has)
 						 {
-							 LunarDBClient client = new LunarDBClient();
+							 LunarDBClient client = new LunarDBClient(true);
 							 try {
 								client.connect(getInstantConfig(i).getHostName(), 
 										LunarNode.calcDBPort(Integer.parseInt(getInstantConfig(i).getPort())));
@@ -492,6 +493,8 @@ public class Resource {
 		
 		CMDEnumeration.command cmd = CMDEnumeration.command.notifySlavesUpdate;
 		ArrayList<String[]> list_of_tables = rc.getUpdatedTables();
+		if(list_of_tables == null)
+			return null;
 		/*
 		 * for notifySlavesUpdate, every element of list_of_tables is a 2-dim array: 
 		 * params[0]: db name;
@@ -508,23 +511,26 @@ public class Resource {
 			{
 				String partition_name = controller_consts.patchNameWithPartitionNumber(this.resource_name,partition);
 				List<String> slave_instances = slaves_map.get(partition_name);
-				for(int j=0; j< slave_instances.size();j++)
-				{
-					LunarDBClient client = instance_connection_map.get(slave_instances.get(j)); 
-					
-					System.out.println("send replication message of partition " 
-										+ partition_name 
-										+ " to slave " 
-										+ slave_instances.get(j));	
-					TaskSendReqestToNode tsrtn = new TaskSendReqestToNode( 
-																		client, 
-																		cmd, 
-																		db_and_table );
-
-					Future<RemoteResult> resp = thread_executor.submit(tsrtn);
-					responses.add(resp); 
-				}
 				
+				if(slave_instances != null)
+				{
+					for(int j=0; j< slave_instances.size();j++)
+					{
+						LunarDBClient client = instance_connection_map.get(slave_instances.get(j)); 
+						
+						System.out.println("send replication message of partition " 
+											+ partition_name 
+											+ " to slave " 
+											+ slave_instances.get(j));	
+						TaskSendReqestToNode tsrtn = new TaskSendReqestToNode( 
+																			client, 
+																			cmd, 
+																			db_and_table );
+	
+						Future<RemoteResult> resp = thread_executor.submit(tsrtn);
+						responses.add(resp); 
+					}
+				} 
 			}
 		}
 		
@@ -532,6 +538,12 @@ public class Resource {
     	
 	}
 	
+	/*
+	 * @param is as what it is required:  
+	 * {@link TaskHandlingMessage#createTable(String[] params) createTable}. 
+	 * 
+	 * @return ResponseCollector
+	 */
 	private ResponseCollector createTable(String[] params )
 	{
 		/*
@@ -567,7 +579,13 @@ public class Resource {
 		}
 		ResponseCollector rc = patchResponseFromNodes(responses);
 		String table_name = params[1]; 
-		TablePartitionMeta table_new = new TablePartitionMeta( );
+		TablePartitionMeta table_new = table_meta_map.get(table_name);
+		/*
+		 * if already has, then rewrite the metadata. 
+		 * if there has no existing meta file, create a new one.
+		 */
+		if(table_new == null)
+			table_new = new TablePartitionMeta( );
 		if(rc.isSucceed())
 		{
 			try {

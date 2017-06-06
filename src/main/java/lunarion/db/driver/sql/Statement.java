@@ -41,7 +41,7 @@ public class Statement {
     	String[] params = new String[2];
     	params[0] = db; 
     	params[1] = table_name.trim(); 
-		RemoteResult rr = client.sendRequest(cmd, params, 5*1000);
+		RemoteResult rr = client.sendRequest(cmd, params, 50*1000);
 		
 		return new LResultSet(client, rr);
 	}
@@ -74,9 +74,7 @@ public class Statement {
 		params[0] = db; /* db */
 		params[1] = table_name; /* table */
 		params[2] = column ; /* column needs to be fulltext searched */
-		
-		client.sendRequest(cmd, params);  
-    	
+	 
     	RemoteResult rr = client.sendRequest(cmd, params, 5*1000);
 		
 		return new LResultSet(client, rr);
@@ -89,9 +87,7 @@ public class Statement {
 		params[0] = db; /* db */
 		params[1] = table_name; /* table */
 		params[2] = column ; /* column needs to be stored */
-		
-		client.sendRequest(cmd, params);  
-    	
+		 
     	RemoteResult rr = client.sendRequest(cmd, params, 5*1000);
 		
 		return new LResultSet(client, rr);
@@ -118,7 +114,7 @@ public class Statement {
     	String[] params = new String[2];
     	params[0] = db; 
     	params[1] = statement;
-		RemoteResult rr = client.sendRequest(cmd, params, 5*1000);
+		RemoteResult rr = client.sendRequest(cmd, params, 500*1000);
 		
 		return new LResultSet(client, rr);
 	}

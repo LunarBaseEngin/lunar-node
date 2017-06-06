@@ -49,7 +49,9 @@ import lunarion.node.logger.Timer;
 import lunarion.node.remote.protocol.CodeSucceed;
 import lunarion.node.remote.protocol.MessageRequest;
 import lunarion.node.remote.protocol.MessageResponse;
+import lunarion.node.remote.protocol.MessageResponseForDriver;
 import lunarion.node.remote.protocol.MessageResponseQuery;
+import lunarion.node.remote.protocol.RemoteResult;
 import lunarion.node.requester.MessageClientWatcher;
 import lunarion.node.utile.ControllerConstants;
 
@@ -141,6 +143,11 @@ public class TaskRedirectMessage implements Runnable {
 		case addStorableColumn:
 		case insert:
 		{
+			if(db_resource == null)
+			{
+				responseError(CodeSucceed.db_does_not_exist);
+				return;
+			}
 			rc = db_resource.sendRequest(request.getCMD(), request.getParams());
 			if(rc == null)
 			{
@@ -148,15 +155,35 @@ public class TaskRedirectMessage implements Runnable {
 				return;
 				
 			}
-			response = new MessageResponse();
+			response = new MessageResponseForDriver();
 			response.setCMD(request.getCMD());
 			response.setUUID(request.getUUID());
 			response.setSucceed(rc.isSucceed()); 
+			ArrayList<String> resp_for_driver = new ArrayList<String>();
 			
-			String[] resp_uuid = new String[1];
-			resp_uuid[0] = UUID.randomUUID().toString();
-    			
-			response.setParams(resp_uuid);	
+			//if(request.getCMD() == CMDEnumeration.command.createTable)
+			//{	
+			 
+				//resp_for_driver.add(params[0]);
+				//resp_for_driver.add(params[1]); 
+				 
+				Iterator<String> all_table_partitions = rc.getAllPartitionTables();
+				while(all_table_partitions.hasNext())
+				{
+					String table_partition_i = all_table_partitions.next();
+					RemoteResult rr = rc.getRemoteResult(table_partition_i);
+					/*
+					 * see what returns from 
+					 * {@link TaskHandlingMessage#createTable(String[] params) createTable}. 
+					 */
+					//if(rr.isSucceed())
+						resp_for_driver.add(rr.getParams()[2]);
+					//else
+					//	resp_for_driver.add(rr.getParams()[0]);
+					 
+				}
+			//} 
+			response.setParamsFromCoordinator(db_resource.getDBName(), MessageResponseQuery.getNullStr(), resp_for_driver);  
 		}
 		break;
 		case sqlSelect: 
@@ -170,7 +197,7 @@ public class TaskRedirectMessage implements Runnable {
 			result_with_intermediate_uuid[4] = "0";
         	
         	 
-			response = new MessageResponse();
+			response = new MessageResponseForDriver();
 			response.setUUID(request.getUUID());
 		    response.setCMD(request.getCMD());
 		    response.setSucceed(true); 
@@ -185,6 +212,8 @@ public class TaskRedirectMessage implements Runnable {
 			 * @RemoteResult.fetchQueryResult( long from, int count)
 			 * 
 			 */
+			String db  = params[0];
+			String table = params[1];
 			String intermediate_uuid = params[2];
 			long from =  Long.parseLong(params[3]);
 			int count = Integer.parseInt(params[4]); 
@@ -194,7 +223,7 @@ public class TaskRedirectMessage implements Runnable {
 				ArrayList<String> recs = rc.fetchRecords(null, from, count);
 				if(!recs.isEmpty())
 				{
-					response = new MessageResponseQuery();
+					response = new MessageResponseForDriver();
 					response.setUUID(request.getUUID());
 					response.setCMD(request.getCMD());
 					response.setSucceed(rc.isSucceed()); 
@@ -203,23 +232,32 @@ public class TaskRedirectMessage implements Runnable {
 				}
 				else
 				{
+					/*
+					 * response error as @TaskHandlingMessage.fetchQueryResultRecs(String[] params)
+					 */
 					response = new MessageResponse();
 					response.setUUID(request.getUUID());
 					response.setCMD(request.getCMD());
 					response.setSucceed(false); 
-					String[] resp = new String[1];
-				  	resp[0] = CodeSucceed.nomore_records_in_resultset; 
+					String[] resp = new String[3];
+					resp[0] = db;
+					resp[1] = table;
+				  	resp[2] = CodeSucceed.nomore_records_in_resultset; 
 				  	response.setParams(resp);  
 					return;
 				}
 			}
-			 
+			/*
+			 * response error as @TaskHandlingMessage.fetchQueryResultRecs(String[] params)
+			 */ 
 			response = new MessageResponse();
 			response.setUUID(request.getUUID());
 			response.setCMD(request.getCMD());
 			response.setSucceed(false); 
-			String[] resp = new String[1];
-			resp[0] = CodeSucceed.does_not_has_null_result_uuid; 
+			String[] resp = new String[3];
+			resp[0] = db;
+			resp[1] = table;
+			resp[2] = CodeSucceed.does_not_has_null_result_uuid; 
 			response.setParams(resp);   
 		}
 		break;

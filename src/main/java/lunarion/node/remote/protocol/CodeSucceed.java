@@ -63,5 +63,8 @@ public class CodeSucceed {
 	
 	static public String unknown_cmd = "[FAILURE 00000023]: the command is unknown to lunar-node .";
 	static public String nomore_records_in_resultset = "[FAILURE 00000024]: no more records in result set.";
+	static public String insert_failed = "[FAILURE 00000025]: fail to insert all the records, the followings are the failure records.";
+	
+	static public String exception_when_fetching_query_result_records = "[FAILURE 00000026]: exception when fetching query result records.";
 	
 }

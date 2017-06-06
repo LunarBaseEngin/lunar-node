@@ -54,14 +54,28 @@ public class LunarDBClient {
 	AtomicBoolean connected = new AtomicBoolean(false);
 	String connected_host_ip = null;
 	int connected_port = -1;
+	
+	/*
+	 * if internal, then this client is used between data nodes and coordinator,
+	 * while if it is used in a driver client, internal is false; 
+	 */
+	boolean internal = true;
 	//private final int parallel = Runtime.getRuntime().availableProcessors() ;
 	   
 	//private static ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) NodeThreadPool.getExecutor(16, -1);
 	//protected ExecutorService thread_executor = Executors.newFixedThreadPool(parallel); 
-	   
+	 
+	public LunarDBClient( )
+	{
+		internal = true;
+	}
+	public LunarDBClient(boolean _internal)
+	{
+		internal = _internal;
+	}
 	public ChannelFuture connect(String host, int port) throws Exception { 
 		group = new NioEventLoopGroup();    
-		client_handler = new ClientHandler() ;
+		client_handler = new ClientHandler(internal) ;
 		
 	        try {
 	            Bootstrap client_bootstrap = new Bootstrap();

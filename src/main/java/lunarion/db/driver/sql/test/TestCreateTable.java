@@ -18,15 +18,20 @@
  */
 package lunarion.db.driver.sql.test;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 
+import lunarion.cluster.coordinator.ResponseCollector;
 import lunarion.db.driver.sql.LDriverManager;
 import lunarion.db.driver.sql.LResultSet;
 import lunarion.db.driver.sql.LunarDBConnection;
 import lunarion.db.driver.sql.Statement;
 
-public class TestSqlQuery {
+public class TestCreateTable {
 
 	public static void main(String[] args) {
 		String url = "jdbc:lunarion:thin:@localhost:60001:RTSeventhDB";
@@ -41,52 +46,53 @@ public class TestSqlQuery {
 			e.printStackTrace();
 			return;
 		}
-		
+		String table = "node_table"; 
+		String column = "content";
 		if(l_connection!=null)
 		{
 			Statement stmt = l_connection.createStatement();
-			
-			 String query0 = "select \"content\" from \"node_table\" as S where S.\"content\" like '大家' "; 
-			 String query1 = "select \"content\" from \"node_table\" as S ";
-
-			 LResultSet rs = null;
-			 long startTime = 0;
-			 long endTime = 0;
-			 try {
-				 startTime=System.currentTimeMillis();  
-				 rs = stmt.executeQuery(query1);
-				 endTime=System.currentTimeMillis();  
-				 
+			LResultSet rs = null;
+			try {
+				stmt.createTable(table);
 				
-			 } catch (InterruptedException e) {
+				rs = stmt.addFulltextColumn(table, column);
+				
+			} catch (InterruptedException e1) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
-			 }
+				e1.printStackTrace();
+			}
+			
+			long startTime = 0;
+			long endTime = 0;
 			 
-			 while(rs.next())
-			 {
-				 try {
+			 
+				 
+			endTime=System.currentTimeMillis();  
+				 
+			while(rs.next())
+			{
+				try {
 					System.out.println(rs.current());
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-			 }
+			}
 			 
-			 System.out.println("sql query totally costs: " + (endTime -startTime) + " ns");
-			 try {
+			System.out.println("sql query totally costs: " + (endTime -startTime) + " ns");
+			try {
 				 /*
 				  * have to close to release server resource.
 				  */
 				rs.close();
-				} catch (InterruptedException e) {
+			} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
-				}
+			}
 			 
-			 l_connection.close();
+			l_connection.close();
+	 
 		}
-
 	}
 
 }

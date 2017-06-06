@@ -57,7 +57,10 @@ public class LResultSet {
 		this.l_client = _client;
 		this.r_result = _result;
 		
-		total_results = r_result.getResultCount() < maximum_cached ? maximum_cached: r_result.getResultCount();
+		if(r_result == null)
+			total_results = 0;
+		else
+			total_results = r_result.getResultCount() < maximum_cached ? maximum_cached: r_result.getResultCount();
 		 
 	}
 	
@@ -123,7 +126,8 @@ public class LResultSet {
 	
 	public void close() throws InterruptedException
 	{
-		r_result.closeQuery();
+		if(r_result != null)
+			r_result.closeQuery();
 	}
 	
 	public static void main(String[] args) {

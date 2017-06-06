@@ -51,6 +51,9 @@ public class RemoteResult  {
 			 params[4] = ""+count;
 			 
 			 MessageResponse resp_from_svr = client.internalQuery(command.fetchQueryResultRecs, params, 5*1000);
+			 if(resp_from_svr == null)
+				 return null;
+			 
 			 return resp_from_svr.getResultRecords(); 
 			
 		}

@@ -35,7 +35,7 @@ public class LunarDBConnection {
 		port = _port.trim();
 		db = _db.trim();
 		
-		client = new LunarDBClient();
+		client = new LunarDBClient(false);
 		client.connect(ip, Integer.parseInt(port));
 	} 
 	

@@ -38,17 +38,17 @@ import lunarion.node.requester.LunarDBClient;
 public class MessageResponse  extends Object{
 	 
 	//private byte[] raw_byte_buf; 
-	private final int cmd_at = 0;//1 byte, 256 commands
-	private CMDEnumeration.command cmd;
-	private boolean succeed=false;
+	protected final int cmd_at = 0;//1 byte, 256 commands
+	protected CMDEnumeration.command cmd;
+	protected boolean succeed=false;
 	
-	private String delim = ReservedSymbols.remote_message_delim;
-	private static String null_str = "null"; 
-	private String message_uuid;
-	String[] params;
+	protected String delim = ReservedSymbols.remote_message_delim;
+	protected static String null_str = "null"; 
+	protected String message_uuid;
+	protected String[] params;
 	
-	private String db_name;
-	private String table_name;
+	protected String db_name;
+	protected String table_name;
  	 
 	
 	public MessageResponse( )
@@ -144,8 +144,7 @@ public class MessageResponse  extends Object{
 			 * 
 			 * ignore the first three params 
 			 */
-			if(succeed)
-			{
+			 
 				db_name = all_params[1];
 				table_name = all_params[2];
 				this.params = new String[all_params.length-3];
@@ -157,10 +156,7 @@ public class MessageResponse  extends Object{
 					else
 						this.params[i] = null;
 				}
-				return;
-			}
-			else
-				return;
+				return; 
 			
 		}
 		 
