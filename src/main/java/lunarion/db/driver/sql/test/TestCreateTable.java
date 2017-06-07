@@ -53,6 +53,7 @@ public class TestCreateTable {
 		String column4 = "product";
 		String column5 = "price";
 		String column6 = "time";
+		String column7 = "unknowncolumn";
 		
 		
 		
@@ -79,6 +80,10 @@ public class TestCreateTable {
 				System.out.println("====================================");
 				
 				rs = stmt.addAnalyticColumn(table, column5, "long");
+				rs.printParams();
+				System.out.println("====================================");
+				
+				rs = stmt.addAnalyticColumn(table, column7, "unkowntype");
 				rs.printParams();
 				System.out.println("====================================");
 				
