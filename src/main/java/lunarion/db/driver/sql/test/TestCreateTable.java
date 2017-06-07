@@ -83,7 +83,7 @@ public class TestCreateTable {
 				rs.printParams();
 				System.out.println("====================================");
 				
-				rs = stmt.addAnalyticColumn(table, column7, "unkowntype");
+				rs = stmt.addAnalyticColumn(table, column7, "unkowntypeeeeeeeee");
 				rs.printParams();
 				System.out.println("====================================");
 				

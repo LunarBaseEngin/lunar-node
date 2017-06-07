@@ -40,10 +40,10 @@ public class startOneNode {
 		 
 		String creation_conf = "/home/feiben/EclipseWorkspace/lunarbase-node/conf-datanode/creation.conf";
 		
-		int node1_port = 30001 ; 
+		int node_port = 30001 ; 
 		 
 		 
-		LunarNode ln1 = new LunarNode(node_ip, node1_port, zkAddr, data_root, cluster_name, resource_name, creation_conf);
+		LunarNode ln1 = new LunarNode(node_ip, node_port, zkAddr, data_root, cluster_name, resource_name, creation_conf);
 		
 		TaskAddNode tan1 = new TaskAddNode(ln1);
 		startOneNode.thread_executor.submit(tan1);
