@@ -66,5 +66,6 @@ public class CodeSucceed {
 	static public String insert_failed = "[FAILURE 00000025]: fail to insert all the records, the followings are the failure records.";
 	
 	static public String exception_when_fetching_query_result_records = "[FAILURE 00000026]: exception when fetching query result records.";
+	static public String add_analytic_column_with_unsupported_datatype_failed = "[FAILURE 00000027]: fail to add analytic column with unsupported data type.";
 	
 }

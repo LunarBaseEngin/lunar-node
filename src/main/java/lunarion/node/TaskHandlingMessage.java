@@ -340,7 +340,7 @@ public class TaskHandlingMessage implements Runnable {
      * params[0]: db name;
      * params[1]: table name;
      * params[2]: column name;
-     * params[2]: column type, for command.addAnalyticColumn;
+     * params[3]: column type, for command.addAnalyticColumn;
      * 
      * Response:
      * resp[0] = db;

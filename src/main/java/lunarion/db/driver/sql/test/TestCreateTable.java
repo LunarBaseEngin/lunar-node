@@ -47,7 +47,15 @@ public class TestCreateTable {
 			return;
 		}
 		String table = "node_table"; 
-		String column = "content";
+		String column1 = "content";
+		String column2 = "name";
+		String column3 = "age";
+		String column4 = "product";
+		String column5 = "price";
+		String column6 = "time";
+		
+		
+		
 		if(l_connection!=null)
 		{
 			Statement stmt = l_connection.createStatement();
@@ -55,7 +63,32 @@ public class TestCreateTable {
 			try {
 				stmt.createTable(table);
 				
-				rs = stmt.addFulltextColumn(table, column);
+				rs = stmt.addFulltextColumn(table, column1);
+				rs.printParams();
+				System.out.println("====================================");
+				rs = stmt.addAnalyticColumn(table, column2, "varchar");
+				rs.printParams();
+				System.out.println("====================================");
+				
+				rs = stmt.addAnalyticColumn(table, column3, "long");
+				rs.printParams();
+				System.out.println("====================================");
+				
+				rs = stmt.addAnalyticColumn(table, column4, "varchar");
+				rs.printParams();
+				System.out.println("====================================");
+				
+				rs = stmt.addAnalyticColumn(table, column5, "long");
+				rs.printParams();
+				System.out.println("====================================");
+				
+				/*
+				 * translate time to long.
+				 */
+				rs = stmt.addAnalyticColumn(table, column6, "long");
+				rs.printParams();
+				System.out.println("====================================");
+				
 				
 			} catch (InterruptedException e1) {
 				// TODO Auto-generated catch block

@@ -42,6 +42,7 @@ import lunarion.cluster.coordinator.ResponseCollector;
 import lunarion.db.local.shell.CMDEnumeration;
 import lunarion.node.TaskHandlingMessage;
 import lunarion.node.EDF.NodeTaskCenter;
+import lunarion.node.logger.Timer;
 import lunarion.node.remote.protocol.CodeSucceed;
 import lunarion.node.remote.protocol.MessageRequest;
 import lunarion.node.remote.protocol.MessageResponse;
@@ -116,8 +117,10 @@ public class CoordinatorServerHandler extends ChannelInboundHandlerAdapter {
 		    @Override
 		    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
 		            throws Exception {
-		        System.out.println("Exception caught @exceptionCaught..");
+		        System.out.println("[EXCEPTION]: coordinator has Exception caught @exceptionCaught");
 		        ctx.close();
+		        logger.info(Timer.currentTime() + " [EXCEPTION]: coordinator has Exception caught @exceptionCaught");
+			 	
 		    }
 		    
 		    public static void main(String[] args) {

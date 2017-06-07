@@ -72,7 +72,7 @@ public class Statement {
     	params[2] = column ; /* column needs to be analytical, i.e can do range query and other arithmetic operation */
     	params[3] = type	; /* column type in long */
     	
-    	RemoteResult rr = client.sendRequest(cmd, params, 5*1000);
+    	RemoteResult rr = client.sendRequest(cmd, params, 15*1000);
 		
 		return new LResultSet(client, rr);
 	}
@@ -85,7 +85,7 @@ public class Statement {
 		params[1] = table_name; /* table */
 		params[2] = column ; /* column needs to be fulltext searched */
 	 
-    	RemoteResult rr = client.sendRequest(cmd, params, 5*1000);
+    	RemoteResult rr = client.sendRequest(cmd, params, 15*1000);
 		
 		return new LResultSet(client, rr);
 	} 
@@ -98,7 +98,7 @@ public class Statement {
 		params[1] = table_name; /* table */
 		params[2] = column ; /* column needs to be stored */
 		 
-    	RemoteResult rr = client.sendRequest(cmd, params, 5*1000);
+    	RemoteResult rr = client.sendRequest(cmd, params, 15*1000);
 		
 		return new LResultSet(client, rr);
 	} 
@@ -112,7 +112,7 @@ public class Statement {
     	for(int i = 0;i<recs.length;i++)
     		params[i+2] = recs[i];
     	
-		RemoteResult rr = client.sendRequest(cmd, params, 5*1000);
+		RemoteResult rr = client.sendRequest(cmd, params, 15*1000);
 		
 		return new LResultSet(client, rr);
 	}

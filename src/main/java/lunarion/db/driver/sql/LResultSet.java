@@ -128,8 +128,14 @@ public class LResultSet {
 	{
 		if(r_result != null)
 			r_result.closeQuery();
-	}
+	} 
 	
+	public void printParams()
+	{
+		String[] pa = r_result.getParams();
+		for(int i=0;i<pa.length;i++)
+			System.out.println(pa[i]);
+	}
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 

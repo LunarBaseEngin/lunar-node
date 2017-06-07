@@ -145,13 +145,33 @@ public class TaskRedirectMessage implements Runnable {
 		{
 			if(db_resource == null)
 			{
-				responseError(CodeSucceed.db_does_not_exist);
+				responseError(params[0], params[1], CodeSucceed.db_does_not_exist);
 				return;
+			}
+			if(request.getCMD() == CMDEnumeration.command.addAnalyticColumn)
+			{
+				/*
+				 * @TaskHandlingMessage.addFunctionalColumn()
+				 */
+				if(params.length < 4)
+				{	
+					System.err.println("[COORDINATOR ERROR]: addAnalyticColumn needs at least 4 parameters: db name, table name, column name and column type");
+					responseError(params[0],params[1], CodeSucceed.wrong_parameter_count);
+					return;
+				}
+				String column_type =  params[3];
+				if(!DataTypeSupported.supported(column_type))
+				{
+					System.err.println("[COORDINATOR ERROR]: addAnalyticColumn fail to add analytic column with unsupported data type");
+					responseError(params[0],params[1], CodeSucceed.add_analytic_column_with_unsupported_datatype_failed);
+					return;
+				}
+					
 			}
 			rc = db_resource.sendRequest(request.getCMD(), request.getParams());
 			if(rc == null)
 			{
-				responseError(CodeSucceed.wrong_parameter_count);
+				responseError(params[0], params[1], CodeSucceed.wrong_parameter_count);
 				return;
 				
 			}
@@ -234,31 +254,16 @@ public class TaskRedirectMessage implements Runnable {
 				{
 					/*
 					 * response error as @TaskHandlingMessage.fetchQueryResultRecs(String[] params)
-					 */
-					response = new MessageResponse();
-					response.setUUID(request.getUUID());
-					response.setCMD(request.getCMD());
-					response.setSucceed(false); 
-					String[] resp = new String[3];
-					resp[0] = db;
-					resp[1] = table;
-				  	resp[2] = CodeSucceed.nomore_records_in_resultset; 
-				  	response.setParams(resp);  
+					 */ 
+				  	responseError(db, table, CodeSucceed.nomore_records_in_resultset);
 					return;
 				}
 			}
 			/*
 			 * response error as @TaskHandlingMessage.fetchQueryResultRecs(String[] params)
 			 */ 
-			response = new MessageResponse();
-			response.setUUID(request.getUUID());
-			response.setCMD(request.getCMD());
-			response.setSucceed(false); 
-			String[] resp = new String[3];
-			resp[0] = db;
-			resp[1] = table;
-			resp[2] = CodeSucceed.does_not_has_null_result_uuid; 
-			response.setParams(resp);   
+			responseError(db, table, CodeSucceed.does_not_has_null_result_uuid); 
+			 
 		}
 		break;
 		case closeQueryResult:
@@ -269,7 +274,11 @@ public class TaskRedirectMessage implements Runnable {
 			if(params.length <3 )
 			{
 				System.err.println("[NODE ERROR]: wrong parameters for closing a query result.");
-				responseError(CodeSucceed.wrong_parameter_count);
+				if(db_resource == null)
+					responseError(MessageResponse.getNullStr(), MessageResponse.getNullStr(), CodeSucceed.wrong_parameter_count);
+				else
+					responseError(db_resource.getDBName(), MessageResponse.getNullStr(), CodeSucceed.wrong_parameter_count);
+				
 				return ;
 			}
 			String db = params[0];
@@ -324,14 +333,16 @@ public class TaskRedirectMessage implements Runnable {
      
     } 
       
-	private void responseError(String error_code)
+	private void responseError(String db, String table, String error_code)
     {
     	response = new MessageResponse();
 	  	response.setUUID(request.getUUID());
 	  	response.setCMD(request.getCMD());
 	  	response.setSucceed(false); 
-	  	String[] resp = new String[1];
-	  	resp[0] = error_code;
+	  	String[] resp = new String[3];
+	  	resp[0] = db;
+	  	resp[1] = table; 
+	  	resp[2] = error_code;
 	  	response.setParams(resp); 
     } 
     
