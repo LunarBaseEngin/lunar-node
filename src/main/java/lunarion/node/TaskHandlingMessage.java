@@ -30,7 +30,8 @@ import LCG.DB.API.LunarDB;
 import LCG.DB.API.LunarTable;
 import LCG.DB.API.DBStatus.DBRuntimeStatus;
 import LCG.DB.API.Result.FTQueryResult;
-import LCG.DB.Local.NLP.FullText.Lexer.TokenizerForSearchEngine; 
+import LCG.DB.Local.NLP.FullText.Lexer.TokenizerForSearchEngine;
+import LCG.MemoryIndex.IndexTypes;
 import LCG.RecordTable.StoreUtile.Record32KBytes;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -439,7 +440,14 @@ public class TaskHandlingMessage implements Runnable {
 	            		boolean ok = false;
 	            		
 	            		try {
-							ok = tt.addSearchable(column_type, column);
+	            			if(column_type.equalsIgnoreCase(IndexTypes.getTypeString(IndexTypes.DataTypes.STRING))
+	            					|| column_type.equalsIgnoreCase(IndexTypes.getTypeString(IndexTypes.DataTypes.TEXT)))
+	            			{ 
+	            				TokenizerForSearchEngine t_e = new TokenizerForSearchEngine(); 
+	    	            		tt.registerTokenizer(t_e); 
+	            			} 
+	            			ok = tt.addSearchable(column_type, column);
+	            			
 						} catch (IOException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();

@@ -47,11 +47,21 @@ public class Statement {
 	}
 	
 	/*
-	 * type:
-	 * long
-	 * int(to do)
-	 * varchar(to do)
-	 * time(to do)
+	 * @params type:
+	 * text: will be treated as a fulltext column that we can query by keywords. 
+	 * 		e.g. select * from table_1 where content like 'ok + today, book'
+	 * 		Lunarbase uses its own search engine to enhance the query capability with keywords in sql.
+	 * 
+	 * string: same as text.
+	 * 
+	 * varchar: typically used as columns like name, favorite, title, which are searchable by their values.
+	 * 		e.g. select * from table_1 where name = 'michael'
+	 * 
+	 * long: supports point query and range query.
+	 * 		e.g. select * from table_1 where age < 90 and salary > 10000
+	 * 
+	 * int(to do) 
+	 * time(to do): will be transformed to a long for range query.
 	 */
 	public LResultSet addAnalyticColumn(String table_name, String column, String type) throws InterruptedException
 	{
