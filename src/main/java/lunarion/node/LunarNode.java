@@ -102,8 +102,12 @@ public class LunarNode {
 		resource_name = _resource_name;
 		 LunarDB db_node_instance = new LunarDB();
 		db_name = resource_name;
-				
-		db_root_path = _data_root+"/"+_cluster_name +"/" + node_name +"/" ;
+		
+		if(_data_root.endsWith("/"))
+			db_root_path = _data_root+_cluster_name +"/" + node_name +"/" ;
+		else
+			db_root_path = _data_root+"/"+_cluster_name +"/" + node_name +"/" ;
+		
 		new File(db_root_path).mkdirs();
 		
 		if(!db_node_instance.createDB(db_root_path, _db_creation_conf_file))

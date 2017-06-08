@@ -34,7 +34,7 @@ public class start {
 		Properties prop1 = new Properties();     
 		
 		if (args.length < 1) {
-			System.err.println("[USAGE]: start configure_file");
+			System.err.println("[USAGE]: start coordinator configure_file");
 			System.err.println("[EXAMPLE]: start ./conf-coordinator/coordinator.conf");
 			System.err.println("[TRY]: try to find the configure file at ./conf-coordinator/");
 			try {
@@ -60,7 +60,7 @@ public class start {
 		String resource_name  =  prop1.getProperty("RESOURCE_NAME").trim();//RTSeventhDB
 		int num_partition = Integer.parseInt(prop1.getProperty("PARTITION_NUM").trim());//6
 		int num_replicas = Integer.parseInt(prop1.getProperty("REPLICAS_NUM").trim());//2
-		String node_ip = prop1.getProperty("NODE_IP");//data node address, can be localhost or an ip
+		String data_nodes_ips = prop1.getProperty("DATA_NODES").trim();//data nodes addresses, can be localhost or an ip
 		int max_rec_per_partition = Integer.parseInt(prop1.getProperty("MAX_REC_PER_PARITION").trim());
 		String meta_file = prop1.getProperty("METADATA_FILE").trim();
 		String model_file = prop1.getProperty("MODEL_FILE").trim();
@@ -71,11 +71,11 @@ public class start {
 		c_s.startServer(zkAddr, cluster_name, resource_name, num_partition, num_replicas, max_rec_per_partition, meta_file, model_file);
 		
 		
-		String[] nodes = node_ip.split(",");
+		String[] nodes = data_nodes_ips.split(",");
 		for(int i=0;i<nodes.length;i++)
 		{
 			String[] node_ip_port = nodes[i].trim().split(":");
-			c_s.addNodeToResource(resource_name, node_ip_port[0], Integer.parseInt(node_ip_port[1].trim()) );
+			c_s.addNodeToResource(resource_name, node_ip_port[0].trim(), Integer.parseInt(node_ip_port[1].trim()) );
 		}
 		
 		c_s.updateMasters(resource_name);

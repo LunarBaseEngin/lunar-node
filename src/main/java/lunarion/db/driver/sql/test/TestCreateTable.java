@@ -85,7 +85,7 @@ public class TestCreateTable {
 				
 				rs = stmt.addAnalyticColumn(table, column7, "unkowntypeeeeeeeee");
 				rs.printParams();
-				System.out.println("====================================");
+				System.err.println("test unsupported column data type ====================================");
 				
 				/*
 				 * translate time to long.
