@@ -443,10 +443,11 @@ public class TaskHandlingMessage implements Runnable {
 	            			if(column_type.equalsIgnoreCase(IndexTypes.getTypeString(IndexTypes.DataTypes.STRING))
 	            					|| column_type.equalsIgnoreCase(IndexTypes.getTypeString(IndexTypes.DataTypes.TEXT)))
 	            			{ 
+	            				ok = tt.addSearchable(column_type, column);
+		            			
 	            				TokenizerForSearchEngine t_e = new TokenizerForSearchEngine(); 
-	    	            		tt.registerTokenizer(t_e); 
+	    	            		tt.registerTokenizer(column, t_e); 
 	            			} 
-	            			ok = tt.addSearchable(column_type, column);
 	            			
 						} catch (IOException e) {
 							// TODO Auto-generated catch block
@@ -502,7 +503,7 @@ public class TaskHandlingMessage implements Runnable {
 	             		}
 	             		 
 	            		TokenizerForSearchEngine t_e = new TokenizerForSearchEngine(); 
-	            		tt.registerTokenizer(t_e);
+	            		tt.registerTokenizer(column, t_e);
 	                    
 	            		TableOperationLogger.logAddingFulltextColumn( db, table, column, l_DB);
 	            	}
@@ -573,22 +574,21 @@ public class TaskHandlingMessage implements Runnable {
         LunarTable t_table = l_DB.getTable(table);
         if(t_table == null)
         {
-        	response = new MessageResponse();
-		  	response.setUUID(request.getUUID());
-		  	response.setCMD(request.getCMD());
-		  	response.setSucceed(false); 
-		  	String[] resp = new String[1];
-		  	resp[0] = CodeSucceed.table_does_not_exist;
-		  	response.setParams(resp); 
+        	responseError(db, table, CodeSucceed.table_does_not_exist); 
         	return ;
-        }
-        
-		TokenizerForSearchEngine t_e = new TokenizerForSearchEngine(); 
-		t_table.registerTokenizer(t_e); 
+        } 
+		
 		
 		Record32KBytes[] results = l_DB.insertRecord(table, recs_insert);
 		boolean suc = true;  	
-		  	
+		
+		try {
+			t_table.save();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		//String[] result_str = new String[results.length];
 		ArrayList<String> failed_rec = new ArrayList<String>();
 		int failed = 0;

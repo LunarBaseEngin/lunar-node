@@ -91,7 +91,7 @@ public class TestWordNeoralNetwork {
 		 */
 		tt.addFulltextSearchable(column);
 		TokenizerForSearchEngine t_e = new TokenizerForSearchEngine(); 
-		tt.registerTokenizer(t_e); 
+		tt.registerTokenizer(column, t_e); 
 		
         trainCorpus( model_file, l_db, table, column);
        // testModel(model_file);

@@ -174,6 +174,19 @@ public class LunarDBServerStandAlone {
 			i_db.openDB(db_root);
 			logger.info(Timer.currentTime() + " [NODE INFO]: database: " + i_db.dbName() + " is running now." );  
             
+			Iterator<String> tables = i_db.listTable();
+			while(tables.hasNext())
+			{
+				String tt = tables.next();
+				Iterator<String> ft_cols = i_db.getTable(tt).getFulltextColumns();
+				while(ft_cols.hasNext())
+				{
+					TokenizerForSearchEngine t_e = new TokenizerForSearchEngine(); 
+					i_db.getTable(tt).registerTokenizer(ft_cols.next(), t_e); 
+				}
+			}
+			
+			
 			DBReplicator replica = new DBReplicator(i_db);
 			logger.info(Timer.currentTime() + " [NODE INFO]: database: " + i_db.dbName() + " has its replicator running now." );  
             

@@ -108,7 +108,7 @@ public class TestPrepareCorpus {
 		 */
 		tt.addFulltextSearchable(column);
 		TokenizerForSearchEngine t_e = new TokenizerForSearchEngine(); 
-		tt.registerTokenizer(t_e); 
+		tt.registerTokenizer(column, t_e); 
 			
 		loadCorpus(corpus_file, l_db, table, column);
 		
