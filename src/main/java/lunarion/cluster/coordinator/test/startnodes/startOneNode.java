@@ -37,8 +37,8 @@ public class startOneNode {
 		Properties prop1 = new Properties();     
 		
 		if (args.length < 1) {
-			System.err.println("[USAGE]: start data node configure_file");
-			System.err.println("[EXAMPLE]: start ./conf-datanode/coordinator.conf");
+			System.err.println("[USAGE]: start data_node_configure_file");
+			System.err.println("[EXAMPLE]: startOneNode ./conf-datanode/datanode.conf");
 			System.err.println("[TRY]: try to find the configure file at ./conf-datanode/");
 			try {
 				//InputStream in = new BufferedInputStream (new FileInputStream("/home/lunarbase/TestSpace/Controller/db_message.properties"));

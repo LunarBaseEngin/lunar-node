@@ -34,7 +34,7 @@ public class start {
 		Properties prop1 = new Properties();     
 		
 		if (args.length < 1) {
-			System.err.println("[USAGE]: start coordinator configure_file");
+			System.err.println("[USAGE]: start coordinator_configure_file");
 			System.err.println("[EXAMPLE]: start ./conf-coordinator/coordinator.conf");
 			System.err.println("[TRY]: try to find the configure file at ./conf-coordinator/");
 			try {
