@@ -63,7 +63,9 @@ public class Statement {
 	 * int(to do) 
 	 * time(to do): will be transformed to a long for range query.
 	 */
-	public LResultSet addAnalyticColumn(String table_name, String column, String type) throws InterruptedException
+	// replaced by indexColumn to clarify its functionality to programmers.
+	 
+	public LResultSet indexColumn(String table_name, String column, String type) throws InterruptedException
 	{
 		CMDEnumeration.command cmd = CMDEnumeration.command.addAnalyticColumn;
     	String[] params = new String[4];
@@ -76,6 +78,7 @@ public class Statement {
 		
 		return new LResultSet(client, rr);
 	}
+	
 	
 	public LResultSet addFulltextColumn(String table_name, String column ) throws InterruptedException
 	{  

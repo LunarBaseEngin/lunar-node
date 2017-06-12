@@ -67,30 +67,30 @@ public class TestCreateTable {
 				rs = stmt.addFulltextColumn(table, column1);
 				rs.printParams();
 				System.out.println("====================================");
-				rs = stmt.addAnalyticColumn(table, column2, "varchar");
+				rs = stmt.indexColumn(table, column2, "varchar");
 				rs.printParams();
 				System.out.println("====================================");
 				
-				rs = stmt.addAnalyticColumn(table, column3, "long");
+				rs = stmt.indexColumn(table, column3, "long");
 				rs.printParams();
 				System.out.println("====================================");
 				
-				rs = stmt.addAnalyticColumn(table, column4, "varchar");
+				rs = stmt.indexColumn(table, column4, "varchar");
 				rs.printParams();
 				System.out.println("====================================");
 				
-				rs = stmt.addAnalyticColumn(table, column5, "long");
+				rs = stmt.indexColumn(table, column5, "long");
 				rs.printParams();
 				System.out.println("====================================");
 				
-				rs = stmt.addAnalyticColumn(table, column7, "unkowntypeeeeeeeee");
+				rs = stmt.indexColumn(table, column7, "unkowntypeeeeeeeee");
 				rs.printParams();
 				System.err.println("test unsupported column data type ====================================");
 				
 				/*
 				 * translate time to long.
 				 */
-				rs = stmt.addAnalyticColumn(table, column6, "long");
+				rs = stmt.indexColumn(table, column6, "long");
 				rs.printParams();
 				System.out.println("====================================");
 				
