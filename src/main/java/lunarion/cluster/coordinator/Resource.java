@@ -85,19 +85,19 @@ DataPartition_5			S			M			S
  * All the partitions together calls a resource.
  */
 public class Resource {
-	private AtomicInteger	NUM_NODES = new AtomicInteger(0);
-	private String resource_name ;
-	private int NUM_PARTITIONS = 6;
-	private int NUM_REPLICAS = 2;
-	private List<InstanceConfig> INSTANCE_CONFIG_LIST = new ArrayList<InstanceConfig>(); 
+	protected AtomicInteger	NUM_NODES = new AtomicInteger(0);
+	protected String resource_name ;
+	protected int NUM_PARTITIONS = 6;
+	protected int NUM_REPLICAS = 2;
+	protected List<InstanceConfig> INSTANCE_CONFIG_LIST = new ArrayList<InstanceConfig>(); 
 	
-	private String meta_files_path;
-	private Logger resource_logger = null; 
-	private String meta_file_suffix = ".meta.info";
+	protected String meta_files_path;
+	protected Logger resource_logger = null; 
+	protected String meta_file_suffix = ".meta.info";
 	
-	private HelixAdmin admin;
-	private String cluster_name;
-	private ControllerConstants controller_consts = new ControllerConstants();
+	protected HelixAdmin admin;
+	protected String cluster_name;
+	protected ControllerConstants controller_consts = new ControllerConstants();
 	
 	Connection sql_engine_connection = null;;
 	
@@ -118,7 +118,7 @@ public class Resource {
 	 * e.g.
 	 * <192.168.0.1_30001, LunarDBClient>
 	 */
-	private HashMap<String, LunarDBClient> instance_connection_map = new HashMap<String, LunarDBClient>(); 
+	protected HashMap<String, LunarDBClient> instance_connection_map = new HashMap<String, LunarDBClient>(); 
 	/*
 	 * <partition_name, LunarDBClient>
 	 */
@@ -129,18 +129,18 @@ public class Resource {
 	 * e.g.
 	 * <RTSeventhDB_1, 192.168.0.1_30003>
 	 */
-	private HashMap<String, String> master_map = new HashMap<String, String>(); 
+	protected HashMap<String, String> master_map = new HashMap<String, String>(); 
 	/*
 	 * <partition_name, array_list_of_slave_instance_names>
 	 * e.g.
 	 * <RTSeventhDB_1, (192.168.0.1_30000, 192.168.0.1_30001>
 	 */
-	private HashMap<String, ArrayList<String>> slaves_map = new HashMap<String, ArrayList<String>>(); 
+	protected HashMap<String, ArrayList<String>> slaves_map = new HashMap<String, ArrayList<String>>(); 
 	
 	
 	//Iterator<String> tables_in_resource;
 	
-	private final int parallel = Runtime.getRuntime().availableProcessors() ;
+	protected final int parallel = Runtime.getRuntime().availableProcessors() ;
 	   
 	protected ExecutorService thread_executor = Executors.newFixedThreadPool(parallel); 
 	   
@@ -447,7 +447,7 @@ public class Resource {
 		
 	}
 	
-	private ResponseCollector patchResponseFromNodes(List<Future<RemoteResult>> responses)
+	protected ResponseCollector patchResponseFromNodes(List<Future<RemoteResult>> responses)
 	{
 		/*
 		 * <table name, remote result>
@@ -544,7 +544,7 @@ public class Resource {
 	 * 
 	 * @return ResponseCollector
 	 */
-	private ResponseCollector createTable(String[] params )
+	protected ResponseCollector createTable(String[] params )
 	{
 		/*
 		 * params[0]: db
@@ -719,7 +719,7 @@ public class Resource {
 		 
 	} 
 	
-	private ResponseCollector insert(String[] params)
+	protected ResponseCollector insert(String[] params)
 	{
 		/*
 		 * <table name, remote result>
@@ -772,7 +772,8 @@ public class Resource {
 	        		responses.add(resp); 
 	        		
 	        		try { 
-	        			table_i_meta.updateMeta(current_partition, rec_count_in_current_partition);  
+	        			long total_recs =  (max_recs_per_partition.get()*current_partition + rec_count_in_current_partition.get());
+	        			table_i_meta.updateMeta(current_partition, rec_count_in_current_partition, total_recs);  
 		    		}catch(Exception e) {
 		    			System.out.println(e);
 		    			resource_logger.info(Timer.currentTime() + " [EXCEPTION]: fail to update partition " + table_i_meta.getLatestPartition() + " metadata");
@@ -800,11 +801,14 @@ public class Resource {
 	    			rec_count_in_current_partition.set(0);
 	                 
 	    			remain_recs -= need_to_insert;
-	    			index += need_to_insert; 
-	    			
+	    			index += need_to_insert;  
 	    			current_partition++;
-	        		try { 
-	        			table_i_meta.updateMeta(current_partition, rec_count_in_current_partition);  
+	    			
+	    			long total_recs =  (max_recs_per_partition.get()*current_partition + rec_count_in_current_partition.get());
+	    			
+	    			
+	    			try { 
+	        			table_i_meta.updateMeta(current_partition, rec_count_in_current_partition, total_recs);  
 	        			 
 	        		}catch(Exception e) {
 	        			System.out.println(e);
@@ -823,7 +827,7 @@ public class Resource {
 	/*
 	 * @TaskHandlingMessage.addFunctionalColumn
 	 */
-	private ResponseCollector addFunctionalColumn(CMDEnumeration.command cmd, String[] params )
+	protected ResponseCollector addFunctionalColumn(CMDEnumeration.command cmd, String[] params )
 	{
 		
 		if(cmd == command.addAnalyticColumn && params.length < 4)
@@ -885,7 +889,7 @@ public class Resource {
 	}
 	
 	 
-	private ResponseCollector ftQuery(String[] params )
+	protected ResponseCollector ftQuery(String[] params )
 	{
 		/*
 		 * <table name, remote result>
@@ -933,7 +937,7 @@ public class Resource {
 		return patchResponseFromNodes(responses);
 	}
 	
-	private ResponseCollector fetchLog(String[] params)
+	protected ResponseCollector fetchLog(String[] params)
 	{
 		/*
 		 * <table name, remote result>
@@ -977,7 +981,7 @@ public class Resource {
 		return patchResponseFromNodes(responses);
 	}
 	
-	private ResponseCollector fetchRecords(String[] params, boolean if_desc)
+	protected ResponseCollector fetchRecords(String[] params, boolean if_desc)
 	{
 		return fetchRecords(params[0], 
 							params[1], 
@@ -1136,7 +1140,7 @@ public class Resource {
 		return patchResponseFromNodes(responses);
 	}
 	
-	private ResponseCollector sqlSelect(String statement)
+	protected ResponseCollector sqlSelect(String statement)
 	{   
 		
 		ResultSet result = executeSqlSelect(statement);

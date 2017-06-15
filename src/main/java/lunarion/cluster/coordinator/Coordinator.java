@@ -36,8 +36,7 @@ import org.apache.helix.controller.HelixControllerMain;
 import org.apache.helix.manager.zk.ZKHelixAdmin;
 import org.apache.helix.model.ExternalView; 
 import org.apache.helix.model.StateModelDefinition;
-
-import lunarion.cluster.coordinator.server.CoordinatorServer; 
+ 
 import lunarion.node.utile.ControllerConstants;
 import lunarion.node.utile.Screen; 
 
@@ -75,7 +74,8 @@ public class Coordinator {
 	/*
 	 * <resource_name, Resource>
 	 */
-	private HashMap<String, Resource> resource_list = new HashMap<String, Resource>(); 
+	//private HashMap<String, Resource> resource_list = new HashMap<String, Resource>(); 
+	private HashMap<String, ResourceFullyDistributed> resource_list = new HashMap<String, ResourceFullyDistributed>(); 
 	
 	//private static List<LunarNode> NODE_LIST;
 	private HelixAdmin admin;
@@ -158,7 +158,7 @@ public class Coordinator {
 	public void addResource( String _resource_name, int _num_partitions, int _num_replicas, int _max_rec_per_partition, 
 							String _meta_file, String _model_file) throws IOException
 	{
-		Resource res = new Resource( admin, 
+		ResourceFullyDistributed res = new ResourceFullyDistributed( admin, 
 				CLUSTER_NAME, 
 				_resource_name, 
 				_num_partitions, 

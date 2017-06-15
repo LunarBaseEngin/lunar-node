@@ -538,13 +538,15 @@ public class TaskHandlingMessage implements Runnable {
      * if succeed:
      * resp[0] = db;
      * resp[1] = table;
-     * resp[2] = CodeSucceed.insert_succeed;
+     * resp[2] = total result;
+     * resp[3] = CodeSucceed.insert_succeed;
      * 
      * else
      * resp[0] = db;
      * resp[1] = table;
-     * resp[2] = CodeSucceed.insert_failed;
-     * params[2 ... n]: records that failed; 
+     * resp[2] = total result;
+     * resp[3] = CodeSucceed.insert_failed;
+     * params[3 ... n]: records that failed; 
      */
     private void insert(String[] params)
     {
@@ -580,6 +582,7 @@ public class TaskHandlingMessage implements Runnable {
 		
 		
 		Record32KBytes[] results = l_DB.insertRecord(table, recs_insert);
+		int total_rec = l_DB.recordsCount(table);
 		boolean suc = true;  	
 		
 		try {
@@ -606,21 +609,23 @@ public class TaskHandlingMessage implements Runnable {
 		String[] resp_param = null;
 		if(failed_rec.size()>0)
 		{
-			resp_param = new String[failed_rec.size()+3];
+			resp_param = new String[failed_rec.size()+4];
 			resp_param[0] = db;
 			resp_param[table_name_index] = table;
-			resp_param[2] = CodeSucceed.insert_failed; 
+			resp_param[2] = total_rec +""; 
+			resp_param[3] = CodeSucceed.insert_failed; 
 			for(int k=0;k<failed_rec.size();k++)
 			{
-				resp_param[k+1] = failed_rec.get(k);  
+				resp_param[k+4] = failed_rec.get(k);  
 			}
 		}
 		else
 		{
-			resp_param = new String[3];
+			resp_param = new String[4];
 			resp_param[0] = db;
 			resp_param[table_name_index] = table;
-			resp_param[2] = CodeSucceed.insert_succeed;
+			resp_param[2] = total_rec +""; 
+			resp_param[3] = CodeSucceed.insert_succeed;
 		}
 		if(suc)
 		{

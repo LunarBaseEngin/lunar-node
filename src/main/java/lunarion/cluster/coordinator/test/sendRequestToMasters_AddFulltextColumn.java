@@ -50,7 +50,7 @@ public class sendRequestToMasters_AddFulltextColumn {
 		String resource_name  =  prop1.getProperty("RESOURCE_NAME").trim();//RTSeventhDB
 		int num_partition = Integer.parseInt(prop1.getProperty("PARTITION_NUM").trim());//6
 		int num_replicas = Integer.parseInt(prop1.getProperty("REPLICAS_NUM").trim());//2
-		String node_ip = prop1.getProperty("NODE_IP");//data node address, can be localhost or an ip
+		String node_ip = prop1.getProperty("DATA_NODES");//data node address, can be localhost or an ip
 		int max_rec_per_partition = Integer.parseInt(prop1.getProperty("MAX_REC_PER_PARITION").trim());
 		String meta_file = prop1.getProperty("METADATA_FILE").trim();
 		String model_file = prop1.getProperty("MODEL_FILE").trim();

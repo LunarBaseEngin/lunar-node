@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import lunarion.node.utile.ControllerConstants;
 
@@ -40,10 +41,16 @@ public class TablePartitionMeta {
 	//FileOutputStream o_file ; 
 	RandomAccessFile o_file;
 	AtomicInteger rec_count_in_current_partition ;
+	AtomicLong total_rec_count ;
+	
 	
 	String latest_partition ;  /* =table_name + \"_\" + latest_partition_number*/
 	String table_name;
 	AtomicInteger latest_partition_number;
+	
+	final String prop_current_partition = "CURRENT_PARITION"; 
+	final String prop_rec_in_current_partition = "REC_COUNT_IN_CURRENT";
+	final String prop_totla_rec = "TOTAL_RECS";
 	public TablePartitionMeta()
 	{
 		
@@ -56,16 +63,20 @@ public class TablePartitionMeta {
 			BufferedInputStream inn = new BufferedInputStream (new FileInputStream(_meta_file_name)); 
 			prop.load(inn); 
 			inn.close();
-			latest_partition = prop.getProperty("CURRENT_PARITION") ;//正在使用的分区
-			String count = prop.getProperty("REC_COUNT");
-			if(latest_partition != null && count != null)
+			latest_partition = prop.getProperty(prop_current_partition) ;//正在使用的分区
+			String count_in_current_partition = prop.getProperty(prop_rec_in_current_partition);
+			String total_recs = prop.getProperty(prop_totla_rec);
+			
+			if(latest_partition != null && count_in_current_partition != null && total_recs != null)
 			{
 				latest_partition = latest_partition.trim();
 				table_name = ControllerConstants.parseTableName(latest_partition);
 				latest_partition_number = new AtomicInteger(ControllerConstants.parsePartitionNumber(latest_partition));
 				
 				rec_count_in_current_partition = new AtomicInteger(0);
-				rec_count_in_current_partition.set(Integer.parseInt(count.trim()));//分区中记录数
+				rec_count_in_current_partition.set(Integer.parseInt(count_in_current_partition.trim()));//分区中记录数
+				
+				total_rec_count = new AtomicLong(0);
 				
 				//o_file = new FileOutputStream(_meta_file_name, false);/* true for appending mode */
 				o_file = new RandomAccessFile(_meta_file_name, "rw");  
@@ -95,15 +106,18 @@ public class TablePartitionMeta {
 		}
 	}
 	
-	private String[] makeProperties(String partition, int count)
+	private String[] makeProperties(String partition, int count_in_current, long total_recs)
 	{
-		prop.setProperty("CURRENT_PARITION", latest_partition);
-    	prop.setProperty("REC_COUNT", rec_count_in_current_partition +"");  
+		prop.setProperty(prop_current_partition, latest_partition);
+    	prop.setProperty(prop_rec_in_current_partition, rec_count_in_current_partition +"");  
+    	prop.setProperty(prop_totla_rec, total_rec_count +"");  
     	
     	
-		String[] pp = new String[2];
-		pp[0] = "CURRENT_PARITION" + "=" + partition + "\r\n";
-		pp[1] = "REC_COUNT" + "=" + count + "\r\n"; 
+		String[] pp = new String[3];
+		pp[0] = prop_current_partition + "=" + partition + "\r\n";
+		pp[1] = prop_rec_in_current_partition + "=" + count_in_current + "\r\n"; 
+		pp[2] = prop_totla_rec + "=" + total_recs + "\r\n"; 
+		
 		return pp;
     	
 	}
@@ -130,20 +144,22 @@ public class TablePartitionMeta {
 		table_name = _table;
 		latest_partition_number = new AtomicInteger(0); 
 		rec_count_in_current_partition = new AtomicInteger(0);  
+		total_rec_count = new AtomicLong(0);  
 		
 		//prop.setProperty("CURRENT_PARITION", latest_partition);
     	//prop.setProperty("REC_COUNT", rec_count_in_current_partition +"");  
     	//prop.store(o_file, "properties updated");
     	//o_file.flush();
     	
-    	String[] prop = makeProperties(latest_partition, rec_count_in_current_partition.get())  ;
+    	String[] prop = makeProperties(latest_partition, rec_count_in_current_partition.get(), total_rec_count.get())  ;
     	o_file.setLength(0);
     	//o_file.seek(0);
     	o_file.write(prop[0].getBytes());
     	o_file.write(prop[1].getBytes());
+    	o_file.write(prop[2].getBytes());
 	}
 	
-	public void updateMeta(int _latest_partition_number, AtomicInteger rec_count_in_latest_partition) throws IOException
+	public void updateMeta(int _latest_partition_number, AtomicInteger rec_count_in_latest_partition, long total_recs) throws IOException
 	{
 		latest_partition = ControllerConstants.patchNameWithPartitionNumber(table_name, _latest_partition_number) ; 
 	
@@ -151,15 +167,16 @@ public class TablePartitionMeta {
 		
 		latest_partition_number.set(_latest_partition_number) ;
 		 
-    	  
+		total_rec_count.set(total_recs );  
     	//prop.store(o_file, "properties updated");
     	//o_file.flush();
     	
-    	String[] prop = makeProperties(latest_partition, rec_count_in_current_partition.get())  ;
+    	String[] prop = makeProperties(latest_partition, rec_count_in_current_partition.get(), total_recs ) ;
     	o_file.setLength(0);
     	//o_file.seek(0);
     	o_file.write(prop[0].getBytes());
     	o_file.write(prop[1].getBytes());
+    	o_file.write(prop[2].getBytes());
 	}
 	public int getLatestPartitionNumber()
 	{
@@ -180,10 +197,16 @@ public class TablePartitionMeta {
 		return this.rec_count_in_current_partition;
 	}
 	
+	public AtomicLong getTotalRecs()
+	{
+		return this.total_rec_count;
+	}
+	
 	public void printMeta()
 	{ 
-		System.out.println("CURRENT_PARITION" + ":" + prop.getProperty("CURRENT_PARITION"));
-		System.out.println("REC_COUNT" + ":" + prop.getProperty("REC_COUNT"));
+		System.out.println(prop_current_partition + ":" + prop.getProperty(prop_current_partition));
+		System.out.println(prop_rec_in_current_partition + ":" + prop.getProperty(prop_rec_in_current_partition)); 
+		System.out.println(prop_totla_rec + ":" + prop.getProperty(prop_totla_rec));  
 	}
 	public void close()
 	{ 
@@ -203,7 +226,7 @@ public class TablePartitionMeta {
 		tm.printMeta();
 		
 		System.out.println("after update ===================" );
-		tm.updateMeta(122200, new AtomicInteger(1));
+		tm.updateMeta(122200, new AtomicInteger(1), 10000000 );
 		tm.printMeta();
 
 	}

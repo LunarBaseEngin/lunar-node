@@ -21,6 +21,7 @@ package lunarion.node.remote.protocol;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.StringTokenizer;
 import java.util.concurrent.Callable;
 
 import LCG.EnginEvent.Event;
@@ -130,8 +131,18 @@ public class MessageResponse  extends Object{
 			e.printStackTrace();
 		}
 		//String str = new String(message_byte_buf.array(), 2, message_byte_buf.readableBytes() -2 );
-		String[] all_params = str.split(delim);
-		message_uuid = all_params[0]; 
+		//String[] all_params = str.split(delim);
+		 
+		StringTokenizer stringTokenizer = new StringTokenizer(str, delim);  
+		String[] all_params = new String[stringTokenizer.countTokens()];
+		int ccc = 0;
+        while (stringTokenizer.hasMoreElements()) {  
+            String eachLinkInfo = (String) stringTokenizer.nextElement();  
+            all_params[ccc] = eachLinkInfo;
+            ccc++;
+        }  
+		 
+        message_uuid = all_params[0]; 
 		
 		if(cmd == command.fetchQueryResultRecs 
 				|| cmd == command.fetchRecordsASC 
@@ -147,6 +158,7 @@ public class MessageResponse  extends Object{
 			 
 				db_name = all_params[1];
 				table_name = all_params[2];
+			
 				this.params = new String[all_params.length-3];
 				//System.arraycopy(all_params, 1, this.params, 0, all_params.length-1);
 				for(int i=0;i<this.params.length;i++)
@@ -298,7 +310,7 @@ public class MessageResponse  extends Object{
 			//return Integer.parseInt(this.params[0]);
 			return this.params.length;
 		}
-		if(cmd == CMDEnumeration.command.recsCount)
+		if(cmd == CMDEnumeration.command.recsCount || cmd == CMDEnumeration.command.insert)
 		{
 			return Integer.parseInt(this.params[2]);
 		}
