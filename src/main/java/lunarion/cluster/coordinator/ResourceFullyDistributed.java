@@ -161,7 +161,7 @@ public class ResourceFullyDistributed extends Resource{
 					return null;
 				}
 				
-            	int remain_in_this_piece_this_partition = ((rec_count_in_current_partition.get()+this.data_piece-1) & this.data_piece_mask)
+            	int remain_in_this_piece_this_partition = ((rec_count_in_current_partition.get()+this.data_piece ) & this.data_piece_mask)
     					-  rec_count_in_current_partition.get() ;
 
             	
