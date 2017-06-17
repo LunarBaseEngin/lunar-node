@@ -108,7 +108,8 @@ public class sendRequestToMaster_insert2 {
 	     Thread.sleep(10000);
 	     co.printState("State after adding the 3 nodes: ", resource_name);
 		 CMDEnumeration.command cmd = CMDEnumeration.command.insert;
-		 int length = 1000;
+		 /* test length = 1000, 5000 */
+		 int length = 5000;
 		 long time_per1000=0;
 		 String[] params = new String[length];
 		 params[0] = "RTSeventhDB";
@@ -126,7 +127,7 @@ public class sendRequestToMaster_insert2 {
 					//System.out.println(StringFilter(line)+i);
 					params[i] = "{content=[\" this is the test content " +line+".\"]}";
 					i++;
-					if(i%1000==0) {
+					if(i%length==0) {
 						long startTime=System.currentTimeMillis(); 
 						ResponseCollector rc = res.sendRequest(cmd, params);
 						long endTime=System.currentTimeMillis(); 

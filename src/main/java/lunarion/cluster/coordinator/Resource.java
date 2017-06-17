@@ -52,10 +52,7 @@ import org.apache.helix.model.InstanceConfig;
 import org.apache.log4j.Logger;
 import org.omg.CORBA.portable.InputStream;
 
-import LCG.FSystem.Manifold.LFSDirStore;
-import LCG.FSystem.Manifold.NameFilter;
-import LCG.StorageEngin.IO.L1.IOStream;
-import LCG.StorageEngin.IO.L1.IOStreamNative;
+ 
 import io.netty.channel.ChannelFuture;
 import lunarion.cluster.coordinator.adaptor.LunarDBSchema;
 import lunarion.db.local.shell.CMDEnumeration;
@@ -450,9 +447,9 @@ public class Resource {
 	protected ResponseCollector patchResponseFromNodes(List<Future<RemoteResult>> responses)
 	{
 		/*
-		 * <table name, remote result>
+		 * <table partition number, remote result>
 		 */
-		ConcurrentHashMap<String, RemoteResult> response_map = new ConcurrentHashMap<String, RemoteResult>();
+		ConcurrentHashMap<Integer, RemoteResult> response_map = new ConcurrentHashMap<Integer, RemoteResult>();
 		
 		for(Future<RemoteResult> resp : responses)
 		{
@@ -470,7 +467,8 @@ public class Resource {
 						//System.out.println(mr.isSucceed());
 						
 						//response_map.put(mr.getUUID(), mr);
-						response_map.put(mr.getTableName(), mr);
+						//response_map.put(mr.getTableName(), mr);
+						response_map.put(ControllerConstants.parsePartitionNumber(mr.getTableName()), mr);
 					}
 					else
 					{

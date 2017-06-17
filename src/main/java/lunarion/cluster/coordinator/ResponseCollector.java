@@ -39,9 +39,11 @@ import lunarion.node.utile.ControllerConstants;
 public class ResponseCollector {
 	
 	/*
-	 * <table name with suffix of partition number, remote result>
+	 * < table partition number, remote result>
+	 * or
+	 * < data piece id in remote results list, remote result>
 	 */
-	private ConcurrentHashMap<String, RemoteResult> response_map  ;
+	private ConcurrentHashMap<Integer, RemoteResult> response_map  ;
 	private boolean succeed = true;
 	
 	private final boolean is_sql_result ;
@@ -50,12 +52,12 @@ public class ResponseCollector {
 	private final long total_results;
 	
 	private final Resource db_resource;
-	public ResponseCollector(Resource _db, ConcurrentHashMap<String, RemoteResult> _map)
+	public ResponseCollector(Resource _db, ConcurrentHashMap<Integer, RemoteResult> _map)
 	{
 		is_sql_result = false;
 		response_map = _map;
 		
-		Iterator<String> t = response_map.keySet().iterator();
+		Iterator<Integer> t = response_map.keySet().iterator();
 		while(t.hasNext())
 		{
 			RemoteResult mr = response_map.get(t.next());
@@ -64,11 +66,11 @@ public class ResponseCollector {
 		}
 		
 		long count = 0;
-		Iterator<String> tables = response_map.keySet().iterator();
-		while(tables.hasNext())
+		Iterator<Integer> tt = response_map.keySet().iterator();
+		while(tt.hasNext())
 		{
-			String table = tables.next();
-			RemoteResult mr = response_map.get(table);
+			Integer t_result = tt.next();
+			RemoteResult mr = response_map.get(t_result);
 			count += (long)mr.getResultCount(); 
 		} 
 		
@@ -98,12 +100,12 @@ public class ResponseCollector {
 		return succeed;
 	}
 	
-	public RemoteResult getRemoteResult(String table_with_partition)
+	public RemoteResult getRemoteResult(Integer data_piece_i)
 	{
-		return this.response_map.get(table_with_partition);
+		return this.response_map.get(data_piece_i);
 	}
 	
-	public Iterator<String> getAllPartitionTables()
+	public Iterator<Integer> getAllDataPieces()
 	{
 		return this.response_map.keySet().iterator();
 	}
@@ -112,28 +114,28 @@ public class ResponseCollector {
 	{
 		if(succeed && !is_sql_result)
 		{
-			ArrayList<String[]> updated_tables = new ArrayList<String[]>();
-			Iterator<String> key_partitions = response_map.keySet().iterator();
+			ArrayList<String[]> updated_pieces = new ArrayList<String[]>();
+			Iterator<Integer> pieces = response_map.keySet().iterator();
 			
 			/*
 			 * at least has one response.
 			 */  
-			while(key_partitions.hasNext())
+			while(pieces.hasNext())
 			{
-				String partition = key_partitions.next();
-				RemoteResult mr = response_map.get(partition);
+				Integer piece_i = pieces.next();
+				RemoteResult mr = response_map.get(piece_i);
 				if(mr!=null)
 				{  
-					System.out.println("updated table on partition " +partition+ " is: "+ mr.getParams()[1]);
+					System.out.println("updated table on data piece " +piece_i+ " is: "+ mr.getParams()[1]);
 					 
 					String[]  db_and_table = new String[2];	 
-					db_and_table[0] = mr.getParams()[0];
-					db_and_table[1] = mr.getParams()[1];
-					updated_tables.add(db_and_table);
+					db_and_table[0] = mr.getDBName() ;
+					db_and_table[1] = mr.getTableName() ;
+					updated_pieces.add(db_and_table);
 				}  
 			}
 			
-			return updated_tables;
+			return updated_pieces;
 		}
 		else
 			return null;
@@ -199,9 +201,13 @@ public class ResponseCollector {
 			return records;
 			//} 
 	}
+
 	
-	
-	public ArrayList<String> fetchRecords(int[] _column_index, long from, int count)
+	/*
+	 * used in querying data that stored as what Resource.insert insert into partitions one by one.
+	 * When one is full, moves to the next.
+	 */
+	public ArrayList<String> fetchRecordsForQueryResource(int[] _column_index, long from, int count)
 	{
 		if(is_sql_result)
 		{  
@@ -215,23 +221,21 @@ public class ResponseCollector {
 		}
 		else
 		{ 	 
-			Enumeration<String> tables = response_map.keys();
-			List<String> sorted_table = new ArrayList<String>();
+			Enumeration<Integer> tables = response_map.keys();
+			List<Integer> sorted_tables = new ArrayList<Integer>();
 			while(tables.hasMoreElements())
 			{
-				sorted_table.add(tables.nextElement());
+				sorted_tables.add(tables.nextElement());
 			}
 			
-			Collections.sort(sorted_table, new Comparator<String>(){
+			Collections.sort(sorted_tables, new Comparator<Integer>(){
 				  @Override
-				  public int compare(String table_1, String table_2)
+				  public int compare(Integer table_1, Integer table_2)
 				  { 
-					  int partition1 = ControllerConstants.parsePartitionNumber(table_1);
-					  int partition2 = ControllerConstants.parsePartitionNumber(table_2);
-							
-					  if(partition1 < partition2 )
+					 		
+					  if(table_1 < table_2 )
 						  return -1;
-					  if(partition1 == partition2 )
+					  if(table_1 == table_2 )
 						  return 0;
 					  else
 						  return 1;
@@ -240,8 +244,8 @@ public class ResponseCollector {
 			
 			ArrayList<String> records  = new ArrayList<String>(); 
 			
-			int partition_i = sorted_table.size() -1 ;
-			RemoteResult rr_i = response_map.get(sorted_table.get(partition_i));
+			int partition_i = sorted_tables.size() -1 ;
+			RemoteResult rr_i = response_map.get(sorted_tables.get(partition_i));
 			int rec_count_in_partition_i = rr_i.getResultCount();
 			/*
 			 * same logic as @Resource.fetchRecords(String db, String table, long from, int count, boolean if_desc)
@@ -250,7 +254,7 @@ public class ResponseCollector {
 			 * recs returned from remote in each partition, having various counts, 
 			 * and some partitions may have no result:
 			 * |__1000_______|  |__2500_______|  |___100_______| ... |___750_____|
-			 * partition_0        partition_1     partition_5   ...   latest_partition
+			 *   partition_0      partition_1      partition_5   ...  latest_partition
 			 *                              from+count -------------------^ from position
 			 */
 			int begin_in_which_partition =  partition_i;
@@ -273,7 +277,7 @@ public class ResponseCollector {
 						return records;
 					
 					//i_th_rec_count =  max_datanumber.get();
-					rr_i = response_map.get(sorted_table.get(begin_in_which_partition));
+					rr_i = response_map.get(sorted_tables.get(begin_in_which_partition));
 					if(rr_i != null)
 						i_th_rec_count  = rr_i.getResultCount();
 					
@@ -287,7 +291,7 @@ public class ResponseCollector {
 			{
 				int fetch_ith_iter = (i_th_rec_count - (int)i_from) >= g_remains? g_remains : (i_th_rec_count - (int)i_from);
 				
-				rr_i = response_map.get(sorted_table.get(begin_in_which_partition));
+				rr_i = response_map.get(sorted_tables.get(begin_in_which_partition));
 				String[] recs_in_i = null;
 				try {
 					recs_in_i = rr_i.fetchQueryResult((int)i_from, fetch_ith_iter);
@@ -318,10 +322,159 @@ public class ResponseCollector {
 				//i_th_rec_count = max_datanumber.get();
 				while(begin_in_which_partition >= 0)
 				{
-					String table = sorted_table.get(begin_in_which_partition);
+					Integer table = sorted_tables.get(begin_in_which_partition);
 					if(table != null)
 					{
-						rr_i = response_map.get(sorted_table.get(begin_in_which_partition));
+						rr_i = response_map.get(sorted_tables.get(begin_in_which_partition));
+						if(rr_i != null)
+						{
+							i_th_rec_count  = rr_i.getResultCount();
+							break;
+						}
+					} 
+					begin_in_which_partition --;
+					if(begin_in_which_partition < 0)
+						return records;
+				}
+				
+			}
+			 
+			return records; 
+		} 
+	} 
+	
+	/*
+	 * for ResourceFullyDistributed, which inserts records according to data page with 1024 recs for each page. 
+	 * When one page is full, moves to the next partition and its latest page.
+	 */
+	public ArrayList<String> fetchRecords (int[] _column_index, long from, int count)
+	{
+		if(is_sql_result)
+		{  
+			try {
+				return fetchSqlRecords( _column_index, from, count);
+			} catch (SQLException e) {
+				 
+				e.printStackTrace();
+				return null;
+			}
+		}
+		else
+		{ 	 
+			Enumeration<Integer> tables = response_map.keys();
+			List<Integer> sorted_tables = new ArrayList<Integer>();
+			while(tables.hasMoreElements())
+			{
+				sorted_tables.add(tables.nextElement());
+			}
+			
+			Collections.sort(sorted_tables, new Comparator<Integer>(){
+				  @Override
+				  public int compare(Integer table_1, Integer table_2)
+				  { 
+					 		
+					  if(table_1 < table_2 )
+						  return -1;
+					  if(table_1 == table_2 )
+						  return 0;
+					  else
+						  return 1;
+				  }
+			  });
+			
+			ArrayList<String> records  = new ArrayList<String>(); 
+			
+			int partition_i = sorted_tables.size() -1 ;
+			RemoteResult rr_i = response_map.get(sorted_tables.get(partition_i));
+			int rec_count_in_partition_i = rr_i.getResultCount();
+			/*
+			 * same logic as @ResourceFullyDistributed.fetchRecords(String db, String table, long from, int count, boolean if_desc)
+			 */ 
+			/*
+			 * recs in each partition for a query, dp(data page) has 1024 at most:
+			 * level 0: |__|_dp 102 _|__|  |__|_dp  224_|__|  |__|_dp 998 _|__| ... |__|_dp 86 _|__|
+			 * level 1: |__|_dp 646 _|__|  |__|_dp  324_|__|  |__|_dp 106 _|__| ... |__|_dp 624_|__|
+			 * ...
+			 * level n: |__|_dp 824 _|__|  |__|_dp  560_|__|
+			 * 
+			 *             partition_0         partition_1        partition_2      ...  partition_n
+			 * 
+			 *                             			^------the current partition in writing
+			 * each data page has a bunch of records for a query.       
+			 * 
+			 * if fetch recs from position X, seek in which data piece, belonging to which partition, the position X is.  
+			 *                   
+			 */
+			
+			int begin_in_which_partition =  partition_i;
+			int i_th_rec_count = rec_count_in_partition_i;
+			long i_from = from;
+			/*
+			 * find out in which partition to begin fetching records
+			 */
+			while( i_from >= 0 )
+			{
+				//i_from = (i_from - i_th_rec_count )>0? ( i_from - i_th_rec_count ) : i_from;
+				i_from = (i_from - i_th_rec_count );
+				if(i_from >= 0)
+				{
+					/*
+					 * move to the previous partition.
+					 */
+					begin_in_which_partition --;
+					if(begin_in_which_partition < 0)
+						return records;
+					
+					//i_th_rec_count =  max_datanumber.get();
+					rr_i = response_map.get(sorted_tables.get(begin_in_which_partition));
+					if(rr_i != null)
+						i_th_rec_count  = rr_i.getResultCount();
+					
+				} 
+			}
+			
+			i_from += i_th_rec_count;
+			 
+			int g_remains = count;
+			while(g_remains > 0 && begin_in_which_partition >= 0)
+			{
+				int fetch_ith_iter = (i_th_rec_count - (int)i_from) >= g_remains? g_remains : (i_th_rec_count - (int)i_from);
+				
+				rr_i = response_map.get(sorted_tables.get(begin_in_which_partition));
+				String[] recs_in_i = null;
+				try {
+					recs_in_i = rr_i.fetchQueryResult((int)i_from, fetch_ith_iter);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+				if(recs_in_i != null)
+				{
+					for(String rec:recs_in_i)
+					{
+						records.add(rec);
+					} 
+				} 
+		        	
+				g_remains -= recs_in_i.length;
+				if(begin_in_which_partition <= 0)
+					return records;
+				 
+				/*
+				 * seek previous partition for more records
+				 */
+				begin_in_which_partition --;
+				if(begin_in_which_partition < 0)
+					return records;
+				i_from = 0;
+				//i_th_rec_count = max_datanumber.get();
+				while(begin_in_which_partition >= 0)
+				{
+					Integer table = sorted_tables.get(begin_in_which_partition);
+					if(table != null)
+					{
+						rr_i = response_map.get(sorted_tables.get(begin_in_which_partition));
 						if(rr_i != null)
 						{
 							i_th_rec_count  = rr_i.getResultCount();
@@ -364,10 +517,10 @@ public class ResponseCollector {
 		}
 		else
 		{
-			Iterator<String> tables = response_map.keySet().iterator();
+			Iterator<Integer> tables = response_map.keySet().iterator();
 			while(tables.hasNext())
 			{
-				String table = tables.next();
+				Integer table = tables.next();
 				RemoteResult mr = response_map.get(table);
 				if(mr!=null)
 				{
@@ -386,11 +539,11 @@ public class ResponseCollector {
 	
 	public void closeQuery()
 	{
-		Iterator<String> tables = response_map.keySet().iterator();
-		while(tables.hasNext())
+		Iterator<Integer> pieces = response_map.keySet().iterator();
+		while(pieces.hasNext())
 		{
-			String table = tables.next();
-			RemoteResult mr = response_map.get(table);
+			Integer piece_i = pieces.next();
+			RemoteResult mr = response_map.get(piece_i);
 			if(mr!=null)
 			{  
 				//System.err.println("closing query for " + table);  

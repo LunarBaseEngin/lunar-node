@@ -29,7 +29,7 @@ import io.netty.buffer.ByteBuf;
 import lunarion.db.local.shell.CMDEnumeration;
 import lunarion.db.local.shell.CMDEnumeration.command;
 
-public class MessageResponseForDriver extends MessageResponseQuery {
+public class MessageResponseForDriver extends MessageResponseForQuery {
 	 
 	@Override
 	public void read(ByteBuf message_byte_buf)

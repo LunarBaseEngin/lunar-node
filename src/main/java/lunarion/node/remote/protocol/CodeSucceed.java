@@ -46,7 +46,7 @@ public class CodeSucceed {
 	static public String illegal_table_name = "[FAILURE 00000011]: can not create table with illegal name. The name you commit may end with _log. remove it.";
 	
 	static public String wrong_parameters_for_notifying_update = "[FAILURE 00000012]: can not nofity slaves any updates, notifySlavesUpdate needs at least 2 parameters: db name, table name who has been updated.";
-	static public String does_not_has_null_result_uuid = "[FAILURE 000000013]: does not has query result for a null result uuid.";
+	static public String has_null_result_for_the_given_queryresultuuid = "[FAILURE 000000013]: does not has a query result for the given result uuid.";
 	static public String io_exception_in_fetching_records = "[FAILURE 000000014]: IO exception occurs in fetching records.";
 	static public String no_column_found = "[FAILURE 000000015]: no columns found.";
 	
@@ -56,7 +56,7 @@ public class CodeSucceed {
 	static public String wrong_parameters_for_sql_filter = "[FAILURE 00000018]: wrong parameters for sql filter, which requires atl east 3 parameters: db, table, statement known to LunarDB.";
 	static public String wrong_parameters_for_records_count = "[FAILURE 00000019]: wrong parameters for fetching records count.";
 	
-	static public String result_removed_failed = "[FAILURE 00000020]: fail in removing query result in cache.";
+	static public String result_removed_failed = "[FAILURE 00000020]: fail in removing query result in cache. It may have been removed before.";
 	static public String add_column_failed = "[FAILURE 00000021]: fail to add column for analytic/fulltextSearch/Storable.";
 	
 	static public String rec_id_out_of_boundary = "[FAILURE 00000022]: one node does not support records more than the maximum value of integer.";

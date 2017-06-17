@@ -48,7 +48,7 @@ import lunarion.node.logger.Timer;
 import lunarion.node.remote.protocol.CodeSucceed;
 import lunarion.node.remote.protocol.MessageRequest;
 import lunarion.node.remote.protocol.MessageResponse;
-import lunarion.node.remote.protocol.MessageResponseQuery;
+import lunarion.node.remote.protocol.MessageResponseForQuery;
 import lunarion.node.requester.MessageClientWatcher;
 import lunarion.node.utile.ControllerConstants;
 
@@ -689,7 +689,7 @@ public class TaskHandlingMessage implements Runnable {
         	result_uuid[4] = "0";
         	
         	//recs = result.fetchRecords(from, count);
-			response = new MessageResponseQuery();
+			response = new MessageResponseForQuery();
 			response.setUUID(request.getUUID());
 		    response.setCMD(request.getCMD());
 		    response.setSucceed(true);
@@ -699,7 +699,7 @@ public class TaskHandlingMessage implements Runnable {
         }
         else
         {
-        	response = new MessageResponseQuery();
+        	response = new MessageResponseForQuery();
         	response.setUUID(request.getUUID());
         	response.setCMD(request.getCMD());
         	response.setSucceed(false);
@@ -760,7 +760,7 @@ public class TaskHandlingMessage implements Runnable {
         	result_uuid[4] = "0";
         	
         	//recs = result.fetchRecords(from, count);
-			response = new MessageResponseQuery();
+			response = new MessageResponseForQuery();
 			response.setUUID(request.getUUID());
 		    response.setCMD(request.getCMD());
 		    response.setSucceed(true);
@@ -770,7 +770,7 @@ public class TaskHandlingMessage implements Runnable {
         }
         else
         {
-        	response = new MessageResponseQuery();
+        	response = new MessageResponseForQuery();
         	response.setUUID(request.getUUID());
         	response.setCMD(request.getCMD());
         	response.setSucceed(false);
@@ -827,7 +827,7 @@ public class TaskHandlingMessage implements Runnable {
         { 
         	try {
 				recs = result.fetchRecords(from, count);
-				response = new MessageResponseQuery();
+				response = new MessageResponseForQuery();
 				response.setUUID(request.getUUID());
 			    response.setCMD(request.getCMD());
 			    response.setSucceed(true);
@@ -842,7 +842,7 @@ public class TaskHandlingMessage implements Runnable {
         }
         else
         {
-        	responseError(db, table, CodeSucceed.does_not_has_null_result_uuid);  
+        	responseError(db, table, CodeSucceed.has_null_result_for_the_given_queryresultuuid);  
         	return ;
         } 
 		  	
@@ -939,7 +939,7 @@ public class TaskHandlingMessage implements Runnable {
 		}
         if(recs != null && !recs.isEmpty())
         {
-        	response = new MessageResponseQuery();
+        	response = new MessageResponseForQuery();
         	response.setUUID(request.getUUID());
         	response.setCMD(request.getCMD());
         	response.setSucceed(true);
@@ -1004,7 +1004,7 @@ public class TaskHandlingMessage implements Runnable {
              	table_names_found[i] = t_names.get(i);
              } 
              
-             response = new MessageResponseQuery();
+             response = new MessageResponseForQuery();
              response.setUUID(request.getUUID());
              response.setCMD(request.getCMD());
              response.setSucceed(true);
@@ -1064,7 +1064,7 @@ public class TaskHandlingMessage implements Runnable {
         
         if(columns_found != null)
         {     
-             response = new MessageResponseQuery();
+             response = new MessageResponseForQuery();
              response.setUUID(request.getUUID());
              response.setCMD(request.getCMD());
              response.setSucceed(true);
@@ -1115,7 +1115,7 @@ public class TaskHandlingMessage implements Runnable {
         	result_uuid[4] = "0";
         	
         	 
-			response = new MessageResponseQuery();
+			response = new MessageResponseForQuery();
 			response.setUUID(request.getUUID());
 		    response.setCMD(request.getCMD());
 		    response.setSucceed(true); 

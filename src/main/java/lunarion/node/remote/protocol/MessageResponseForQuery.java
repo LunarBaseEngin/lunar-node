@@ -27,7 +27,7 @@ import LCG.StorageEngin.Serializable.Impl.VariableGeneric;
 import io.netty.buffer.ByteBuf;
 import lunarion.db.local.shell.CMDEnumeration;
 
-public class MessageResponseQuery extends MessageResponse{
+public class MessageResponseForQuery extends MessageResponse{
 	 
 	@Override
 	public void setParamsFromNode(String db, String table, ArrayList<Record32KBytes> _params)

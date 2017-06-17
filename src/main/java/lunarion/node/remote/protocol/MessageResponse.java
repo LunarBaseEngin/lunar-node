@@ -36,17 +36,7 @@ import lunarion.node.requester.LunarDBClient;
  * has to extends from Object, otherwise it can not be used in Callable<MessageResponse>, 
  * where thread defined for ExecutorService.submit(...);
  */
-public class MessageResponse  extends Object{
-	 
-	//private byte[] raw_byte_buf; 
-	protected final int cmd_at = 0;//1 byte, 256 commands
-	protected CMDEnumeration.command cmd;
-	protected boolean succeed=false;
-	
-	protected String delim = ReservedSymbols.remote_message_delim;
-	protected static String null_str = "null"; 
-	protected String message_uuid;
-	protected String[] params;
+public class MessageResponse  extends Message{ 
 	
 	protected String db_name;
 	protected String table_name;
@@ -55,37 +45,7 @@ public class MessageResponse  extends Object{
 	public MessageResponse( )
 	{
 		 
-	}
-	
-	public static String getNullStr()
-	{
-		return null_str;
-	}
-	
-	public CMDEnumeration.command getCMD()
-	{ 
-		return cmd;
-	}
-	
-	public void setCMD(CMDEnumeration.command _cmd)
-	{
-		this.cmd = _cmd;
-	}
-	
-	public void setSucceed(boolean if_succeed)
-	{
-		this.succeed = if_succeed;
-	}
-	
-	public boolean isSucceed()
-	{
-		return this.succeed;
-	}
-	
-	public void setParams(String[] _params)
-	{
-		this.params = _params;
-	}
+	} 
 	
 	public void setParamsFromNode(String db, String table, ArrayList<Record32KBytes> _params)
 	{
@@ -96,11 +56,7 @@ public class MessageResponse  extends Object{
 		return;
 	}
 	
-	
-	public String[] getParams()
-	{
-		return this.params;
-	}
+
 	
 	public String[] getResultRecords()
 	{
@@ -197,100 +153,7 @@ public class MessageResponse  extends Object{
 			db_name =  this.params[0];
 			table_name = this.params[1];
 		 
-	}
-	
-	public String getUUID()
-	{
-		return this.message_uuid;
-	}
-	
-	public String setUUID(String uuid)
-	{
-		return this.message_uuid = uuid;
-	}
-	
-	
-	public void write(ByteBuf message_byte_buf) 
-	{
-		message_byte_buf.writeByte(cmd.getByte());
-		byte s =(byte) (succeed?1:0);
-		message_byte_buf.writeByte(s);
-		int count = this.params.length;
-		message_byte_buf.writeBytes(
-				VariableGeneric.utf8Encode(
-						this.message_uuid,0,this.message_uuid.length())
-				);
-		message_byte_buf.writeBytes(
-				VariableGeneric.utf8Encode(
-						delim,0,delim.length())
-				);
-		for(int i=0; i<count-1;i++)
-		{
-			if(this.params[i]!=null)
-			{
-				message_byte_buf.writeBytes(
-						VariableGeneric.utf8Encode(
-								this.params[i],0,this.params[i].length())
-						);  
-			}
-			else
-			{
-				 
-				message_byte_buf.writeBytes(
-						VariableGeneric.utf8Encode(
-								this.null_str,0,this.null_str.length())
-						);
-						 
-			}
-			message_byte_buf.writeBytes(
-					VariableGeneric.utf8Encode(
-							delim,0,delim.length())
-					);
-			
-			
-		}
-		if(this.params[count-1]!=null)
-		{
-			message_byte_buf.writeBytes(
-				VariableGeneric.utf8Encode(
-						this.params[count-1],0,this.params[count-1].length())
-				);
-		}
-		else
-		{
-			message_byte_buf.writeBytes(
-					VariableGeneric.utf8Encode(
-							this.null_str,0,this.null_str.length())
-					);
-		}
-	}
-	
-	public int size()
-	{
-		int size = 1+1 + message_uuid.length() + this.delim.length();
-		for(int i=0;i<this.params.length-1;i++)
-		{
-			int len = 0;
-			if(params[i]!=null)
-			{
-				len = VariableGeneric.utf8Encode(params[i],0, params[i].length()).length 
-						+  VariableGeneric.utf8Encode( this.delim,0,  this.delim.length()).length ;
-			}
-			else
-			{
-				len = VariableGeneric.utf8Encode(this.null_str,0, this.null_str.length()).length 
-						+  VariableGeneric.utf8Encode( this.delim,0,  this.delim.length()).length ;
-			}
-			size += len;
-		}
-		if(params[this.params.length-1] != null)
-			size += VariableGeneric.utf8Encode(params[this.params.length-1],0, params[this.params.length-1].length()).length;  
-		else
-			size += VariableGeneric.utf8Encode(this.null_str,0,this.null_str.length()).length;  
-		//size += params[this.params.length-1].length();
-		
-		return size;
-	}
+	} 
 	
 	public int getResultCount()
 	{
@@ -351,5 +214,9 @@ public class MessageResponse  extends Object{
 		return this.table_name;
 	}
 	
-	
+	public String getDBName()
+	{ 
+		
+		return this.db_name;
+	}
 }

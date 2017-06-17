@@ -50,7 +50,7 @@ import lunarion.node.remote.protocol.CodeSucceed;
 import lunarion.node.remote.protocol.MessageRequest;
 import lunarion.node.remote.protocol.MessageResponse;
 import lunarion.node.remote.protocol.MessageResponseForDriver;
-import lunarion.node.remote.protocol.MessageResponseQuery;
+import lunarion.node.remote.protocol.MessageResponseForQuery;
 import lunarion.node.remote.protocol.RemoteResult;
 import lunarion.node.requester.MessageClientWatcher;
 import lunarion.node.utile.ControllerConstants;
@@ -187,10 +187,10 @@ public class TaskRedirectMessage implements Runnable {
 				//resp_for_driver.add(params[0]);
 				//resp_for_driver.add(params[1]); 
 				 
-				Iterator<String> all_table_partitions = rc.getAllPartitionTables();
+				Iterator<Integer> all_table_partitions = rc.getAllDataPieces();
 				while(all_table_partitions.hasNext())
 				{
-					String table_partition_i = all_table_partitions.next();
+					Integer table_partition_i = all_table_partitions.next();
 					RemoteResult rr = rc.getRemoteResult(table_partition_i);
 					/*
 					 * see what returns from 
@@ -203,7 +203,7 @@ public class TaskRedirectMessage implements Runnable {
 					 
 				}
 			//} 
-			response.setParamsFromCoordinator(db_resource.getDBName(), MessageResponseQuery.getNullStr(), resp_for_driver);  
+			response.setParamsFromCoordinator(db_resource.getDBName(), MessageResponseForQuery.getNullStr(), resp_for_driver);  
 		}
 		break;
 		case sqlSelect: 
@@ -247,7 +247,7 @@ public class TaskRedirectMessage implements Runnable {
 					response.setUUID(request.getUUID());
 					response.setCMD(request.getCMD());
 					response.setSucceed(rc.isSucceed()); 
-					response.setParamsFromCoordinator(db_resource.getDBName(), MessageResponseQuery.getNullStr(), recs);
+					response.setParamsFromCoordinator(db_resource.getDBName(), MessageResponseForQuery.getNullStr(), recs);
 					return;
 				}
 				else
@@ -262,7 +262,7 @@ public class TaskRedirectMessage implements Runnable {
 			/*
 			 * response error as @TaskHandlingMessage.fetchQueryResultRecs(String[] params)
 			 */ 
-			responseError(db, table, CodeSucceed.does_not_has_null_result_uuid); 
+			responseError(db, table, CodeSucceed.has_null_result_for_the_given_queryresultuuid); 
 			 
 		}
 		break;

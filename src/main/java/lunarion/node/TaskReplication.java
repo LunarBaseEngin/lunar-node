@@ -46,7 +46,7 @@ import lunarion.node.logger.Timer;
 import lunarion.node.remote.protocol.CodeSucceed;
 import lunarion.node.remote.protocol.MessageRequest;
 import lunarion.node.remote.protocol.MessageResponse;
-import lunarion.node.remote.protocol.MessageResponseQuery;
+import lunarion.node.remote.protocol.MessageResponseForQuery;
 import lunarion.node.remote.protocol.RemoteResult;
 import lunarion.node.requester.LunarDBClient;
 import lunarion.node.utile.ControllerConstants;

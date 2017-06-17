@@ -38,7 +38,7 @@ import lunarion.node.EDF.events.VNodeIncomingRecords;
 import lunarion.node.remote.protocol.CodeSucceed;
 import lunarion.node.remote.protocol.MessageRequest;
 import lunarion.node.remote.protocol.MessageResponse;
-import lunarion.node.remote.protocol.MessageResponseQuery;
+import lunarion.node.remote.protocol.MessageResponseForQuery;
 
 public class TaskAddNode implements Runnable {
 

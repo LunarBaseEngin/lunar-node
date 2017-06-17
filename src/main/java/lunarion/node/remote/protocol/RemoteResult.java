@@ -126,4 +126,8 @@ public class RemoteResult  {
 	{ 
 		return message.getTableName();
 	}
+	public String getDBName()
+	{
+		return message.getDBName() ;
+	}
 }
