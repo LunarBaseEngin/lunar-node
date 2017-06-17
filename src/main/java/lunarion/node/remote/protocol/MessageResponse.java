@@ -112,46 +112,45 @@ public class MessageResponse  extends Message{
 			 * ignore the first three params 
 			 */
 			 
-				db_name = all_params[1];
-				table_name = all_params[2];
+			db_name = all_params[1];
+			table_name = all_params[2];
 			
-				this.params = new String[all_params.length-3];
+			this.params = new String[all_params.length-3];
 				//System.arraycopy(all_params, 1, this.params, 0, all_params.length-1);
-				for(int i=0;i<this.params.length;i++)
-				{
-					if(!all_params[i+3].equalsIgnoreCase(this.null_str))
-						this.params[i] = all_params[i+3];
-					else
-						this.params[i] = null;
-				}
-				return; 
+			for(int i=0;i<this.params.length;i++)
+			{
+				if(!all_params[i+3].equalsIgnoreCase(this.null_str))
+					this.params[i] = all_params[i+3];
+				else
+					this.params[i] = null;
+			}
+			return; 
 			
 		}
 		 
-			this.params = new String[all_params.length-1];
-			//System.arraycopy(all_params, 1, this.params, 0, all_params.length-1);
-			for(int i=0;i<this.params.length;i++)
-			{
-				if(!all_params[i+1].equalsIgnoreCase(this.null_str))
-					this.params[i] = all_params[i+1];
-				else
-					this.params[i] = null;
-			} 
-			if(cmd == command.fetchTableNamesWithSuffix)
-			{
-				db_name = "";
-				table_name = this.params[0];
-				return;
-			}
-			if(cmd == command.getColumns ||cmd == command.closeQueryResult )
-			{
-				db_name = "";
-				table_name = "";
-				return;
-			}
+		this.params = new String[all_params.length-1];
+		for(int i=0;i<this.params.length;i++)
+		{
+			if(!all_params[i+1].equalsIgnoreCase(this.null_str))
+				this.params[i] = all_params[i+1];
+			else
+				this.params[i] = null;
+		} 
+		if(cmd == command.fetchTableNamesWithSuffix)
+		{
+			db_name = "";
+			table_name = this.params[0];
+			return;
+		}
+		if(cmd == command.getColumns ||cmd == command.closeQueryResult )
+		{
+			db_name = "";
+			table_name = "";
+			return;
+		}
 			 
-			db_name =  this.params[0];
-			table_name = this.params[1];
+		db_name =  this.params[0];
+		table_name = this.params[1];
 		 
 	} 
 	
