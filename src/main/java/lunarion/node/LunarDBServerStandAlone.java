@@ -51,7 +51,9 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import lunarion.db.local.Test.LunarServerHandlerTest;
-import lunarion.node.EDF.NodeTaskCenter;
+import lunarion.db.local.shell.CMDEnumeration;
+import lunarion.node.EDF.ExecutorCenter;
+import lunarion.node.EDF.executors.CreateTable;
 import lunarion.node.logger.LoggerFactory;
 import lunarion.node.logger.Timer;
 import lunarion.node.remote.protocol.CodeSucceed;
@@ -86,7 +88,7 @@ public class LunarDBServerStandAlone {
     EventLoopGroup workerGroup ;
 	
 	private String server_root;
-	private NodeTaskCenter node_tc;
+	private ExecutorCenter node_tc;
 	
 	/*
 	private static class LunarServerInstatance {
@@ -196,11 +198,15 @@ public class LunarDBServerStandAlone {
 		}
 		
 		
-		node_tc = new NodeTaskCenter(this);
+		node_tc = new ExecutorCenter(this, logger);
 		bossGroup = new NioEventLoopGroup();
 		workerGroup = new NioEventLoopGroup(); 
 	} 
 
+	public ExecutorCenter getExecutorCenter()
+	{
+		return this.node_tc;
+	}
 	public void closeServer()
 	{
 		bossGroup.shutdownGracefully();
@@ -237,7 +243,7 @@ public class LunarDBServerStandAlone {
                     .option(ChannelOption.SO_BACKLOG, 1024) 
                     .option(ChannelOption.TCP_NODELAY, true)
                     .childOption(ChannelOption.SO_KEEPALIVE, true)
-                    .childHandler(new LunarDBServerChannelInitializer(node_tc, logger));
+                    .childHandler(new LunarDBServerChannelInitializer(node_tc ));
 
 		 
 		Channel ch = bootstrap.bind(port).sync().channel();
@@ -302,6 +308,7 @@ public class LunarDBServerStandAlone {
 		}
 		 
 	}
+	 
 	 
 	public static void main(String[] args) throws Exception {
 	        int port = 9090;

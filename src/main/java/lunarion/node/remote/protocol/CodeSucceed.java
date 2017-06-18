@@ -27,6 +27,7 @@ public class CodeSucceed {
 	static public String insert_succeed = "[SUCEED 00000006]: successfully inserted all the records.";
 	static public String result_removed_succeed = "[SUCEED 00000007]: successfully removed query result in cache.";
 	static public String add_column_succeed = "[SUCEED 00000008]: add column succeed for analytic/fulltextSearch/Storable.";
+	static public String notify_slaves_succeed = "[SUCEED 00000009]: successfully notified slaves to update.";
 	
 	
 	
@@ -67,5 +68,7 @@ public class CodeSucceed {
 	
 	static public String exception_when_fetching_query_result_records = "[FAILURE 00000026]: exception when fetching query result records.";
 	static public String add_analytic_column_with_unsupported_datatype_failed = "[FAILURE 00000027]: fail to add analytic column with unsupported data type.";
+	
+	static public String notify_slaves_failed = "[SUCEED 00000028]: failed to notified slaves to update.";
 	
 }

@@ -119,7 +119,7 @@ public class sendRequestToMasters_createTable {
 			 
 			 ResponseCollector rc =  res.sendRequest(cmd, params);
         	 
-			 res.notifySlavesUpdate(rc);
+			 //res.notifySlavesUpdate(rc);
 			 rc.printResponse();
 		 }
 		 

@@ -81,7 +81,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
     			from_svr = new MessageResponseForDriver();
     			from_svr.read(buf);  
     		}
-	    		/*
+	    		/* 
 	    		 System.out.println("LunarNode responded command: "+ from_svr.getCMD());
 				 System.out.println("LunarNode responded UUID: "+ from_svr.getUUID());
 				 System.out.println("LunarNode responded suceed: "+ from_svr.isSucceed());
@@ -89,8 +89,8 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
 				 {
 					 System.out.println("LunarNode responded: "+ from_svr.getParams()[i]);
 				 } 
-				 
 				 */
+				 
 	    		String message_id = from_svr.getUUID();
 	            MessageClientWatcher callBack = watcher_map.get(message_id);
 	            if (callBack != null) {

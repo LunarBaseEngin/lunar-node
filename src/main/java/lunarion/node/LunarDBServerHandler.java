@@ -30,24 +30,19 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.ReferenceCountUtil;
-import lunarion.node.EDF.NodeTaskCenter;
+import lunarion.node.EDF.ExecutorCenter; 
 import lunarion.node.remote.protocol.MessageRequest;
 import lunarion.node.remote.protocol.MessageResponse;
 import lunarion.node.requester.MessageClientWatcher; 
 
 public class LunarDBServerHandler extends ChannelInboundHandlerAdapter {
 
-	private final NodeTaskCenter node_tc;
-	private final Logger logger;
-	/*
-	 * <result_uuid, query result object>
-	 */
-	private ConcurrentHashMap<String, FTQueryResult> result_map = new ConcurrentHashMap<String, FTQueryResult>();
-
+	private final ExecutorCenter node_ec;
 	
-    public LunarDBServerHandler(NodeTaskCenter task_map, Logger _logger  ) {
-        this.node_tc = task_map;
-        this.logger = _logger;
+	
+    public LunarDBServerHandler(ExecutorCenter executor_map ) {
+        this.node_ec = executor_map;
+        
     }
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg)
@@ -70,12 +65,10 @@ public class LunarDBServerHandler extends ChannelInboundHandlerAdapter {
     		//MessageResponse response = new MessageResponse();
     		//TaskHandlingMessage recvTask = new TaskHandlingMessage(request, response, node_tc, ctx);
     		TaskHandlingMessage recvTask = new TaskHandlingMessage(request , 
-    																node_tc.getActiveServer(), 
-    																ctx, 
-    																logger, 
-    																result_map);
+    																node_ec , 
+    																ctx );
             
-            node_tc.getActiveServer().submit(recvTask);
+    		node_ec.getActiveServer().submit(recvTask);
           
     		/*
         	MessageSource response = new MessageSource();

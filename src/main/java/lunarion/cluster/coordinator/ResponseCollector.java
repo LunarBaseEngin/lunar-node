@@ -115,18 +115,18 @@ public class ResponseCollector {
 		if(succeed && !is_sql_result)
 		{
 			ArrayList<String[]> updated_pieces = new ArrayList<String[]>();
-			Iterator<Integer> pieces = response_map.keySet().iterator();
+			Iterator<Integer> tables = response_map.keySet().iterator();
 			
 			/*
 			 * at least has one response.
 			 */  
-			while(pieces.hasNext())
+			while(tables.hasNext())
 			{
-				Integer piece_i = pieces.next();
-				RemoteResult mr = response_map.get(piece_i);
+				Integer table_i = tables.next();
+				RemoteResult mr = response_map.get(table_i);
 				if(mr!=null)
 				{  
-					System.out.println("updated table on data piece " +piece_i+ " is: "+ mr.getParams()[1]);
+					System.out.println("updated table " +table_i+ " is: "+ mr.getParams()[1]);
 					 
 					String[]  db_and_table = new String[2];	 
 					db_and_table[0] = mr.getDBName() ;

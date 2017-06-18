@@ -28,8 +28,7 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import lunarion.cluster.coordinator.Coordinator;
 import lunarion.node.LunarDBServerChannelInitializer;
-import lunarion.node.LunarDBServerHandler;
-import lunarion.node.EDF.NodeTaskCenter;
+import lunarion.node.LunarDBServerHandler; 
 
 public class CoordinatorServerChannelInitializer  extends ChannelInitializer<SocketChannel>{
  	  
