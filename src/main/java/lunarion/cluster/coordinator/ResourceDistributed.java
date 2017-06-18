@@ -86,7 +86,7 @@ DataPartition_5			S			M			S
  * 
  * All the partitions together calls a resource.
  */
-public class ResourceFullyDistributed extends Resource{
+public class ResourceDistributed extends Resource{
 	 
 	protected final int data_page = DataPage.data_page;
 	protected final int data_page_bit_len = DataPage.data_page_bit_len;
@@ -94,7 +94,7 @@ public class ResourceFullyDistributed extends Resource{
 	
 	protected final long record_capacity;
 	
-	public ResourceFullyDistributed(HelixAdmin _admin, String _cluster_name, String _res_name, 
+	public ResourceDistributed(HelixAdmin _admin, String _cluster_name, String _res_name, 
 					int _num_partitions, int _num_replicas, 
 					int _max_rec_per_partition,
 					String _meta_files_path,

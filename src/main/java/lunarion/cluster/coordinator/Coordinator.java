@@ -75,7 +75,7 @@ public class Coordinator {
 	 * <resource_name, Resource>
 	 */
 	//private HashMap<String, Resource> resource_list = new HashMap<String, Resource>(); 
-	private HashMap<String, ResourceFullyDistributed> resource_list = new HashMap<String, ResourceFullyDistributed>(); 
+	private HashMap<String, ResourceDistributed> resource_list = new HashMap<String, ResourceDistributed>(); 
 	
 	//private static List<LunarNode> NODE_LIST;
 	private HelixAdmin admin;
@@ -158,7 +158,7 @@ public class Coordinator {
 	public void addResource( String _resource_name, int _num_partitions, int _num_replicas, int _max_rec_per_partition, 
 							String _meta_file, String _model_file) throws IOException
 	{
-		ResourceFullyDistributed res = new ResourceFullyDistributed( admin, 
+		ResourceDistributed res = new ResourceDistributed( admin, 
 				CLUSTER_NAME, 
 				_resource_name, 
 				_num_partitions, 
