@@ -21,6 +21,7 @@ import org.apache.calcite.sql.type.SqlTypeUtil;
 import LCG.DB.API.LunarDB;
 import LCG.MemoryIndex.IndexTypes.DataTypes;
 import lunarion.cluster.coordinator.Resource;
+import lunarion.cluster.coordinator.ResourceDistributed;
 import lunarion.cluster.coordinator.adaptor.Enumerator.RecordSetEnumerator; 
 
 public class LunarScannableTable extends LunarAbstractTable implements ScannableTable {
@@ -37,7 +38,7 @@ public class LunarScannableTable extends LunarAbstractTable implements Scannable
 	 */
 	//protected HashMap<String, CsvFieldType> fieldTypes;
 
-	public LunarScannableTable(Resource _db_res, String _table_name ) {
+	public LunarScannableTable(ResourceDistributed _db_res, String _table_name ) {
 	    super(_db_res, _table_name);
 	    
 	} 

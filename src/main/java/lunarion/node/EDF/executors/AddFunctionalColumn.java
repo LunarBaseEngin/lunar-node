@@ -174,6 +174,8 @@ public class AddFunctionalColumn implements ExecutorInterface{
 	            				TokenizerForSearchEngine t_e = new TokenizerForSearchEngine(); 
 	    	            		tt.registerTokenizer(column, t_e); 
 	            			} 
+	            			else
+	            				ok = tt.addSearchable(column_type, column);
 	            			
 						} catch (IOException e) {
 							// TODO Auto-generated catch block

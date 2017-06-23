@@ -26,49 +26,138 @@ import LCG.RecordTable.StoreUtile.Record32KBytes;
 import LCG.StorageEngin.Serializable.Impl.VariableGeneric;
 import io.netty.buffer.ByteBuf;
 import lunarion.db.local.shell.CMDEnumeration;
+import lunarion.db.local.shell.CMDEnumeration.command;
 
 public class MessageResponseForQuery extends MessageResponse{
 	 
-	@Override
-	public void setParamsFromNode(String db, String table, ArrayList<Record32KBytes> _params)
+	 
+	
+	private void setIfNoRecs(String db, String table)
 	{
-		if(_params == null || _params.size()==0 )
-		{
-			this.params = new String[3];
-			this.params[0] = db;
-			this.params[1] = table;
-			this.params[2] = null;
-			
+		params_in_bytes = new ArrayList<byte[]>(3); 
+		
+		params_in_bytes.add(VariableGeneric.utf8Encode(db,0, db.length())) ;
+		params_in_bytes.add(VariableGeneric.utf8Encode(table,0, table.length())) ;  
+		params_in_bytes.add(VariableGeneric.utf8Encode(this.null_str,0, this.null_str.length())) ;  
+		 
+		size_of_recs += (params_in_bytes.get(0).length + this.delim.length() 
+							+ params_in_bytes.get(1).length + this.delim.length() 
+							+ params_in_bytes.get(2).length);
+	}
+	 
+	@Override
+	public void setParamsFromNode(String db, String table, ArrayList<Record32KBytes> _recs)
+	{
+		if(_recs == null || _recs.size()==0 )
+		{ 
+			setIfNoRecs( db, table) ;
 			return ;
 		}
-		this.params = new String[_params.size()+2];
-		this.params[0] = db;
-		this.params[1] = table;
+		this.params_in_bytes = new ArrayList<byte[]>( _recs.size() + 2);
+		params_in_bytes.add(VariableGeneric.utf8Encode(db,0, db.length())) ;
+		params_in_bytes.add(VariableGeneric.utf8Encode(table,0, table.length())) ;  
 		
-		for(int i = 2; i < this.params.length; i++)
+		size_of_recs += (params_in_bytes.get(0).length + this.delim.length() 
+							+ params_in_bytes.get(1).length + this.delim.length() );  
+		  
+		for(int i = 0; i < _recs.size()-1; i++)
 		{
-			this.params[i] = _params.get(i-2).recData() ;
+			byte[] rec_i_in_byte  = null;
+			if(_recs.get(i ) != null)
+			{
+				String rec_i = _recs.get(i ).recData(); 
+				rec_i_in_byte = VariableGeneric.utf8Encode(rec_i,0, rec_i.length()); 
+			}
+			else
+			{
+				rec_i_in_byte = VariableGeneric.utf8Encode(this.null_str,0, this.null_str.length());
+				 
+			}
+			
+			params_in_bytes.add(rec_i_in_byte);
+			size_of_recs += rec_i_in_byte.length + this.delim.length()  ;  
+		 
 		} 
+		
+		if(_recs.get(_recs.size()-1 )  != null)
+		{
+			byte[] rec_i_in_byte  = null;
+			String rec_i = _recs.get(_recs.size()-1 ).recData(); 
+			rec_i_in_byte = VariableGeneric.utf8Encode(rec_i,0, rec_i.length());
+			params_in_bytes.add(rec_i_in_byte);
+			 
+			size_of_recs += rec_i_in_byte.length;  
+		
+		}
+		else
+		{
+			String rec_i = this.null_str; 
+			byte[] rec_i_in_byte = VariableGeneric.utf8Encode(rec_i, 0, rec_i.length());
+			params_in_bytes.add(rec_i_in_byte);
+			 
+			size_of_recs += rec_i_in_byte.length;  
+		}
+		
+		
 	} 
 	
-	public void setParamsFromCoordinator(String db, String table,  ArrayList<String> _params)
+	public void setParamsFromCoordinator(String db, String table,  ArrayList<String> _recs)
 	{
-		if(_params == null || _params.size()==0 )
-		{
-			this.params = new String[3];
-			this.params[0] = db;
-			this.params[1] = table;
-			this.params[2] = null;
-			
+		if(_recs == null || _recs.size()==0 )
+		{ 
+			setIfNoRecs( db, table) ;
 			return ;
-		}
-		this.params = new String[_params.size()+2];
-		this.params[0] = db;
-		this.params[1] = table;
-		
-		for(int i = 2; i < this.params.length; i++)
-		{
-			this.params[i] = _params.get(i-2) ;
 		} 
+		 
+		this.params_in_bytes = new ArrayList<byte[]>( _recs.size() + 2);
+		params_in_bytes.add(VariableGeneric.utf8Encode(db,0, db.length())) ;
+		params_in_bytes.add(VariableGeneric.utf8Encode(table,0, table.length())) ;  
+		
+		size_of_recs += (params_in_bytes.get(0).length + this.delim.length() 
+							+ params_in_bytes.get(1).length + this.delim.length() );  
+		  
+		for(int i = 0; i < _recs.size()-1; i++)
+		{
+			byte[] rec_i_in_byte  = null;
+			if(_recs.get(i ) != null)
+			{
+				String rec_i = _recs.get(i ) ; 
+				rec_i_in_byte = VariableGeneric.utf8Encode(rec_i,0, rec_i.length()); 
+			}
+			else
+			{
+				rec_i_in_byte = VariableGeneric.utf8Encode(this.null_str,0, this.null_str.length());
+				 
+			}
+			
+			params_in_bytes.add(rec_i_in_byte);
+			size_of_recs += rec_i_in_byte.length + this.delim.length()  ;  
+		 
+		} 
+		
+		if(_recs.get(_recs.size()-1 )  != null)
+		{
+			byte[] rec_i_in_byte  = null;
+			String rec_i = _recs.get(_recs.size()-1 ) ; 
+			rec_i_in_byte = VariableGeneric.utf8Encode(rec_i,0, rec_i.length());
+			params_in_bytes.add(rec_i_in_byte);
+			 
+			size_of_recs += rec_i_in_byte.length;  
+		
+		}
+		else
+		{
+			String rec_i = this.null_str; 
+			byte[] rec_i_in_byte = VariableGeneric.utf8Encode(rec_i, 0, rec_i.length());
+			params_in_bytes.add(rec_i_in_byte);
+			 
+			size_of_recs += rec_i_in_byte.length;  
+		}
+		
 	} 
+	
+
+	
+	
+	
 }

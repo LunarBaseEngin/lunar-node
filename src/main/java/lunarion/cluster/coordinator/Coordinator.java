@@ -177,7 +177,7 @@ public class Coordinator {
 	    //admin.rebalance(CLUSTER_NAME, _resource_name, _num_replicas);  
 	}
 
-	public Resource getResource(String res_name)
+	public ResourceDistributed getResource(String res_name)
 	{
 		return resource_list.get(res_name);
 	}

@@ -52,9 +52,24 @@ public class DataPage {
 		return page_leve_ids;
 	}
 	
-	static public int[] calcPagesRecs(int[] rec_ids, int max_value)
+	static public int[] calcRecsInPages(int[] rec_ids, int max_value)
 	{
 		 int max_level = (max_value & data_page_mask) >> data_page_bit_len;
+		 int[] levels = new int[max_level+1];
+		for(int i=0;i<rec_ids.length;i++)
+		{
+			int page_level = (rec_ids[i] & data_page_mask) >> data_page_bit_len;
+			levels[page_level] ++;
+		}
+		
+		return levels;
+	}
+	
+	/*
+	 * always start at page on level 0;
+	 */
+	static public int[] calcRecsInPages2(int[] rec_ids, int max_level)
+	{  
 		 int[] levels = new int[max_level+1];
 		for(int i=0;i<rec_ids.length;i++)
 		{
@@ -82,12 +97,13 @@ public class DataPage {
 		System.err.println("total time for simply calc page level for " + size + " elements is: " + (end-start) + " ns");
 		
 		start = System.nanoTime();
-		int[] count = DataPage.calcPagesRecs(id_array, size-1);
+		//int[] count = DataPage.calcRecsInPages(id_array, size-1);
+		int[] count = DataPage.calcRecsInPages2(id_array,  ( (size & data_page_mask) >> data_page_bit_len ));
 		end = System.nanoTime();
 		
 		for(int k=0;k<count.length;k++)
 		{
-			//System.out.println(count[k]);
+			 //System.out.println(count[k]);
 		}
 		System.err.println("total time for calcPagesRecs of " + size + " elements is: " + (end-start) + " ns");
 		

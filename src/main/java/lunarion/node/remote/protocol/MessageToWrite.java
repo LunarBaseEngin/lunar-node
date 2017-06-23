@@ -18,11 +18,13 @@
  */
 package lunarion.node.remote.protocol;
 
+import java.util.ArrayList;
+
 import LCG.StorageEngin.Serializable.Impl.VariableGeneric;
 import io.netty.buffer.ByteBuf;
 import lunarion.db.local.shell.CMDEnumeration;
 
-public class Message extends Object{
+public class MessageToWrite extends Object{
 	
 	protected final int cmd_at = 0;//1 byte, 256 commands
 	protected CMDEnumeration.command cmd;
@@ -32,7 +34,9 @@ public class Message extends Object{
 		
 	protected static String null_str = "null"; 
 	protected String message_uuid;
-	protected String[] params;
+	int size_of_recs = 0;
+	
+	ArrayList<byte[]> params_in_bytes = null;  //for writing
 	
 	public static String getNullStr()
 	{
@@ -60,16 +64,45 @@ public class Message extends Object{
 			return this.succeed;
 		}
 
-	public void setParams(String[] _params)
+	public void setParams(String[] params)
 	{
-		this.params = _params;
-	}
+		this.params_in_bytes = new ArrayList<byte[]>(params.length);
+		for(int i = 0; i < params.length-1; i++)
+		{
+			byte[] rec_i_in_byte  = null;
+			if(params[i]!= null)
+			{  
+				rec_i_in_byte = VariableGeneric.utf8Encode(params[i],0, params[i].length()); 
+			}
+			else
+			{
+				rec_i_in_byte = VariableGeneric.utf8Encode(this.null_str,0, this.null_str.length()); 
+			}
+			
+			params_in_bytes.add(rec_i_in_byte);
+			size_of_recs += rec_i_in_byte.length + this.delim.length()  ;  
+		 
+		} 
+		
+		if(params[params.length-1 ] != null)
+		{  
+			String rec_i = params[params.length-1 ]; 
+			byte[] rec_i_in_byte = VariableGeneric.utf8Encode(rec_i, 0, rec_i.length());
+			params_in_bytes.add(rec_i_in_byte);
+			 
+			size_of_recs += rec_i_in_byte.length;  
+		
+		}
+		else
+		{
+			String rec_i = this.null_str; 
+			byte[] rec_i_in_byte = VariableGeneric.utf8Encode(rec_i, 0, rec_i.length());
+			params_in_bytes.add(rec_i_in_byte);
+			 
+			size_of_recs += rec_i_in_byte.length;  
+		} 
+	} 
 	
-	
-	public String[] getParams()
-	{
-		return this.params;
-	}
 	public String getUUID()
 	{
 		return this.message_uuid;
@@ -85,7 +118,7 @@ public class Message extends Object{
 		message_byte_buf.writeByte(cmd.getByte());
 		byte s =(byte) (succeed?1:0);
 		message_byte_buf.writeByte(s);
-		int count = this.params.length;
+		int count = this.params_in_bytes.size();
 	 
 		message_byte_buf.writeBytes(
 				VariableGeneric.utf8Encode(
@@ -96,69 +129,26 @@ public class Message extends Object{
 						delim,0,delim.length())
 				);
 		for(int i=0; i<count-1;i++)
-		{
-			if(this.params[i]!=null)
-			{
-				message_byte_buf.writeBytes(
-						VariableGeneric.utf8Encode(
-								this.params[i],0,this.params[i].length())
-						);  
-			}
-			else
-			{
-				 
-				message_byte_buf.writeBytes(
-						VariableGeneric.utf8Encode(
-								this.null_str,0,this.null_str.length())
-						);
-						 
-			}
+		{ 
+			message_byte_buf.writeBytes(this.params_in_bytes.get(i));  
+			 
 			message_byte_buf.writeBytes(
-					VariableGeneric.utf8Encode(
-							delim,0,delim.length())
-					);
-			
-			
+										VariableGeneric.utf8Encode(
+												delim,0,delim.length())
+										); 
 		}
-		if(this.params[count-1]!=null)
-		{
-			message_byte_buf.writeBytes(
-				VariableGeneric.utf8Encode(
-						this.params[count-1],0,this.params[count-1].length())
-				);
-		}
-		else
-		{
-			message_byte_buf.writeBytes(
-					VariableGeneric.utf8Encode(
-							this.null_str,0,this.null_str.length())
-					);
-		}
+		 
+		message_byte_buf.writeBytes(this.params_in_bytes.get(count-1));
+		 
+		 
 	}
 	
+	 
 	public int size()
 	{
 		int size = 1+1 + message_uuid.length() + this.delim.length();
-		for(int i=0;i<this.params.length-1;i++)
-		{
-			int len = 0;
-			if(params[i]!=null)
-			{
-				len = VariableGeneric.utf8Encode(params[i],0, params[i].length()).length 
-						+  VariableGeneric.utf8Encode( this.delim,0,  this.delim.length()).length ;
-			}
-			else
-			{
-				len = VariableGeneric.utf8Encode(this.null_str,0, this.null_str.length()).length 
-						+  VariableGeneric.utf8Encode( this.delim,0,  this.delim.length()).length ;
-			}
-			size += len;
-		}
-		if(params[this.params.length-1] != null)
-			size += VariableGeneric.utf8Encode(params[this.params.length-1],0, params[this.params.length-1].length()).length;  
-		else
-			size += VariableGeneric.utf8Encode(this.null_str,0,this.null_str.length()).length;  
-		//size += params[this.params.length-1].length();
+		 
+		size +=	size_of_recs;
 		
 		return size;
 	}

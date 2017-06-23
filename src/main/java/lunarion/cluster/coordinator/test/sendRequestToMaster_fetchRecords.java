@@ -40,7 +40,7 @@ import lunarion.node.remote.protocol.MessageResponse;
 import lunarion.node.requester.LunarDBClient;
 import lunarion.node.utile.ControllerConstants;
 
-public class sendRequestToMaster_queryFulltext {
+public class sendRequestToMaster_fetchRecords {
 
 	public static void main(String[] args) throws InterruptedException, IOException {
 		
@@ -107,18 +107,14 @@ public class sendRequestToMaster_queryFulltext {
 		 
 	     Thread.sleep(10000);
 	     co.printState("State after adding the 1 nodes: ", resource_name);
-		 CMDEnumeration.command cmd = CMDEnumeration.command.ftQuery;
-		  
+		 CMDEnumeration.command cmd = CMDEnumeration.command.fetchRecordsDESC;
+		 
+		 int count = 1500;
 		 String[] params = new String[5];
 		 params[0] = "RTSeventhDB";
-		 params[1] = "node_table";
-		 //params[2] = "content against (\" 魔兽 \")";
-		 params[2] = "content against (\" 大家 \")";
-		 
-		// params[2] = "content against (\" test \")";
-		 
-		 params[3] = "1";
-		 params[4] = "1500"; 
+		 params[1] = "node_table";  
+		 params[2] = "5";
+		 params[3] = "" + count; 
      	
 		 long startTime=System.currentTimeMillis(); 
 		 ResponseCollector rc = res.sendRequest(cmd, params);
@@ -127,12 +123,12 @@ public class sendRequestToMaster_queryFulltext {
 		 System.out.println("Total " + rc.resultCount() + " results");
 		 for(int i=0;i< rc.resultCount();i+=100)
 		 {
-			 ArrayList<String> recs = rc.getRecordsForCMDQuery(null, i, 100);
+			 ArrayList<String> recs = rc.getRecordsForCMDFetchRecords(null, i, 100);
 			 for(String rec : recs)
 				 System.out.println(rec);
 		 }
 		 
 		 rc.closeQuery();
-		 System.out.println("Fulltext query costs： "+(endTime - startTime)+" ms"); 
+		 System.out.println("fetch " + count + " records costs： "+(endTime - startTime)+" ms"); 
 	}
 }

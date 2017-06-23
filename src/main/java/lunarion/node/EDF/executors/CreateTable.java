@@ -27,7 +27,7 @@ import lunarion.node.EDF.ExecutorInterface;
 import lunarion.node.logger.TableOperationLogger;
 import lunarion.node.logger.Timer;
 import lunarion.node.remote.protocol.CodeSucceed;
-import lunarion.node.remote.protocol.Message;
+import lunarion.node.remote.protocol.MessageToWrite;
 import lunarion.node.remote.protocol.MessageRequest;
 import lunarion.node.remote.protocol.MessageResponse;
 import lunarion.node.utile.ControllerConstants;

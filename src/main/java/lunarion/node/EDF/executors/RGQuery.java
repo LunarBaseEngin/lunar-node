@@ -31,6 +31,7 @@ import LCG.RecordTable.StoreUtile.Record32KBytes;
 import lunarion.db.local.shell.CMDEnumeration;
 import lunarion.node.LunarDBServerStandAlone;
 import lunarion.node.EDF.ExecutorInterface;
+import lunarion.node.page.DataPage;
 import lunarion.node.remote.protocol.CodeSucceed;
 import lunarion.node.remote.protocol.MessageRequest;
 import lunarion.node.remote.protocol.MessageResponse;
@@ -96,14 +97,8 @@ public class RGQuery implements ExecutorInterface{
 	        result = l_DB.queryRange(table, column, lower, upper, l_i, u_i); 
 			 
 	        if(result != null && result.resultCount()>0)
-	        {
-	        	
-	        	String[] result_uuid = new String[5];
-	        	result_uuid[0] = db;
-	        	result_uuid[table_name_index] = table;
-	        	result_uuid[intermediate_result_uuid_index] = UUID.randomUUID().toString();
-	        	result_uuid[3] = ""+result.resultCount();
-	        	result_uuid[4] = "0";
+	        {  
+	        	String[] result_uuid = ExecutorInterface.constructQueryResultHandler(l_DB, db, table, result);
 	        	
 	        	//recs = result.fetchRecords(from, count);
 				response = new MessageResponseForQuery();

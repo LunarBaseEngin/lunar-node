@@ -20,23 +20,27 @@ package lunarion.node.remote.protocol;
  
 
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.StringTokenizer;
 
 import LCG.EnginEvent.Event;
 import LCG.StorageEngin.Serializable.Impl.VariableGeneric;
 import io.netty.buffer.ByteBuf;
 import lunarion.db.local.shell.CMDEnumeration;
 
-public class MessageRequest extends Message{
-	 
- 	
- 
+public class MessageRequest extends MessageToWrite{ 
+	
+	protected String[] params; //for reading
+	
 	
 	public MessageRequest()
 	{
-	} 
-	
-	
- 
+	}  
+	  
+	public String[] getParams()
+	{
+		return this.params;
+	}
 	
 	public void read(ByteBuf message_byte_buf)
 	{ 
@@ -57,18 +61,28 @@ public class MessageRequest extends Message{
 			e.printStackTrace();
 		}
 		//String str = new String(message_byte_buf.array(), 2, message_byte_buf.readableBytes() -2 );
-		String[] all_params = str.split(delim);
-		message_uuid = all_params[0];
-		this.params = new String[all_params.length-1];
+		//String[] all_params = str.split(delim);
+		StringTokenizer stringTokenizer = new StringTokenizer(str, delim);  
+		
+		//message_uuid = all_params[0];
+		if(stringTokenizer.hasMoreElements())  
+			message_uuid =  (String) stringTokenizer.nextElement();
+		
+		
+		//this.params = new String[all_params.length-1];
+		this.params = new String[stringTokenizer.countTokens() ];
+		
 		//System.arraycopy(all_params, 1, this.params, 0, all_params.length-1);
 		for(int i=0;i<this.params.length;i++)
 		{
+			/*
 			if(!all_params[i+1].equalsIgnoreCase(this.null_str))
 				this.params[i] = all_params[i+1];
 			else
 				this.params[i] = null;
-		}
-		 
-	} 
-	
+			*/
+			
+			this.params[i] =  (String) stringTokenizer.nextElement();
+		} 
+	}   
 }

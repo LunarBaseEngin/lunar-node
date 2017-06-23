@@ -23,6 +23,7 @@ import LCG.MemoryIndex.IndexTypes.DataTypes;
 import LCG.RecordTable.StoreUtile.LunarColumn;
 import LCG.RecordTable.StoreUtile.Record32KBytes;
 import lunarion.cluster.coordinator.Resource;
+import lunarion.cluster.coordinator.ResourceDistributed;
 import lunarion.cluster.coordinator.ResponseCollector;
 import lunarion.cluster.coordinator.adaptor.converter.ArrayRecordConverter;
 import lunarion.cluster.coordinator.adaptor.converter.RecordConverter;  
@@ -35,7 +36,8 @@ public class RecordSetEnumerator<E> implements Enumerator<E> {
 	 */
 	private AtomicLong current_rec_id = new AtomicLong(-1);
 	
-	private final Resource db_inst;
+	//private final Resource db_inst;
+	private final ResourceDistributed db_inst;
 	private final String table_name;
 	private RecordConverter<E> rec_converter;
 	//int[] fields; 
@@ -55,7 +57,7 @@ public class RecordSetEnumerator<E> implements Enumerator<E> {
 	ArrayList<String> cached_recs = null;
 	int current_cached = 0;
 	
-	public RecordSetEnumerator(Resource _db_res,
+	public RecordSetEnumerator(ResourceDistributed _db_res,
 								String _table, 
 								String[] _columns,
 								HashMap<String, String> _col_type_map ) 
@@ -94,7 +96,7 @@ public class RecordSetEnumerator<E> implements Enumerator<E> {
 			/*
 			 * result has maximum_cached records at most. 
 			 */
-			cached_recs = result.fetchRecords(null, 0, (int)maximum_cached);
+			cached_recs = result.getRecordsForCMDFetchRecords(null, 0, (int)maximum_cached);
 			
 			if (cached_recs ==null || cached_recs.isEmpty()) 
 			{  

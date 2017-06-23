@@ -90,7 +90,7 @@ public class QueryResultEnumerator<E> implements Enumerator<E> {
 		else
 		{
 			cached_from = ((current_rec_id.get())&maximum_cached_mask); 
-			cached_recs = query_result.fetchRecords(null, cached_from, (int)maximum_cached);
+			cached_recs = query_result.getRecordsForCMDQuery(null, cached_from, (int)maximum_cached);
 			
 			if (cached_recs ==null || cached_recs.isEmpty()) 
 			{  

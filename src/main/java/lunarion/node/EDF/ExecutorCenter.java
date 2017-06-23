@@ -44,7 +44,7 @@ import lunarion.node.EDF.executors.Insert;
 import lunarion.node.EDF.executors.NotifySlavesUpdate;
 import lunarion.node.EDF.executors.RGQuery;
 import lunarion.node.EDF.executors.RecsCount;
-import lunarion.node.remote.protocol.Message;
+import lunarion.node.remote.protocol.MessageToWrite;
 import lunarion.node.remote.protocol.MessageRequest;
 import lunarion.node.remote.protocol.MessageResponse;
 

@@ -69,8 +69,10 @@ public class CloseQueryResult implements ExecutorInterface{
 			  	response.setUUID(request.getUUID());
 			  	response.setCMD(request.getCMD());
 			  	response.setSucceed(true); 
-			  	String[] resp = new String[1];
-			  	resp[0] = CodeSucceed.result_removed_succeed; 
+			  	String[] resp = new String[3];
+			  	resp[0] = db; 
+			  	resp[1] = table;  
+			  	resp[2] = CodeSucceed.result_removed_succeed; 
 			  	response.setParams(resp); 
 			  	return response;
 	        } 

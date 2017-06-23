@@ -57,8 +57,7 @@ public class CoordinatorServerHandler extends ChannelInboundHandlerAdapter {
 	
 	/*
 	 * <request_uuid, ResponseCollector>
-	 */
-			
+	 */ 	
 	private ConcurrentHashMap<String, ResponseCollector> response_map = new ConcurrentHashMap<String, ResponseCollector>();
 	//private ConcurrentHashMap<String, ResultSet> sql_result_map = new ConcurrentHashMap<String, ResultSet>();
 			    

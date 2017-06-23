@@ -29,6 +29,7 @@ import LCG.DB.API.Result.FTQueryResult;
 import lunarion.db.local.shell.CMDEnumeration;
 import lunarion.node.LunarDBServerStandAlone;
 import lunarion.node.EDF.ExecutorInterface;
+import lunarion.node.page.DataPage;
 import lunarion.node.remote.protocol.CodeSucceed;
 import lunarion.node.remote.protocol.MessageRequest;
 import lunarion.node.remote.protocol.MessageResponse;
@@ -85,13 +86,8 @@ private ConcurrentHashMap<String, FTQueryResult> result_map;
         
 		if(result != null )
         {  
-        	String[] result_uuid = new String[5];
-        	result_uuid[0] = db;
-        	result_uuid[table_name_index] = table;
-        	result_uuid[intermediate_result_uuid_index] = UUID.randomUUID().toString();
-        	result_uuid[3] = ""+result.resultCount();
-        	result_uuid[4] = "0";
-        	
+			 
+        	String[] result_uuid = ExecutorInterface.constructQueryResultHandler(l_DB, db, table, result); 
         	 
 			response = new MessageResponseForQuery();
 			response.setUUID(request.getUUID());

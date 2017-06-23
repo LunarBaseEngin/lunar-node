@@ -13,6 +13,7 @@ import com.google.common.collect.ImmutableMap;
 import LCG.DB.API.LunarDB;
 import lunarion.cluster.coordinator.Coordinator;
 import lunarion.cluster.coordinator.Resource;
+import lunarion.cluster.coordinator.ResourceDistributed;
 import lunarion.cluster.coordinator.server.CoordinatorServer; 
 
 public class LunarDBSchema extends AbstractSchema {
@@ -32,7 +33,7 @@ public class LunarDBSchema extends AbstractSchema {
 	protected Map<String, Table> getTableMap() {
 		final Map<String, Table> builder = new HashMap<String, Table>();
 		
-		Resource res = Coordinator.getInstance().getResource(db_name);
+		ResourceDistributed res = Coordinator.getInstance().getResource(db_name);
 	    
 	    
 		

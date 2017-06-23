@@ -20,7 +20,7 @@ package lunarion.node.remote.protocol;
 
 public class ReservedSymbols {
 	
-	public static String remote_message_delim = "##"; 
-	public static String value_for_rec_column_delim = "@@"; 
+	public static String remote_message_delim = "#"; 
+	public static String value_for_rec_column_delim = "@"; 
 
 }

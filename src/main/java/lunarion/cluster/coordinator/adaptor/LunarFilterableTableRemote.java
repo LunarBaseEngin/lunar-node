@@ -23,6 +23,7 @@ import LCG.DB.API.Result.FTQueryResult;
 import LCG.DB.API.Result.RGQueryResult;
 import LCG.MemoryIndex.IndexTypes.DataTypes;
 import lunarion.cluster.coordinator.Resource;
+import lunarion.cluster.coordinator.ResourceDistributed;
 import lunarion.cluster.coordinator.ResponseCollector;
 import lunarion.cluster.coordinator.adaptor.Enumerator.QueryResultEnumerator;
 import lunarion.cluster.coordinator.adaptor.Enumerator.RecordSetEnumerator;
@@ -31,7 +32,7 @@ import lunarion.cluster.coordinator.adaptor.converter.TripleOperator;
 public class LunarFilterableTableRemote extends LunarAbstractTable implements FilterableTable  {
 	
 	
-	public LunarFilterableTableRemote(Resource _db_res, String _table_name ) {
+	public LunarFilterableTableRemote(ResourceDistributed _db_res, String _table_name ) {
 		super(_db_res, _table_name);  
 	} 
 	 

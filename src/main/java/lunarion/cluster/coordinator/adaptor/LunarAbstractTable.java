@@ -23,12 +23,14 @@ import org.apache.calcite.sql.type.SqlTypeUtil;
 import LCG.DB.API.LunarDB;
 import LCG.MemoryIndex.IndexTypes.DataTypes;
 import lunarion.cluster.coordinator.Resource;
+import lunarion.cluster.coordinator.ResourceDistributed;
 import lunarion.cluster.coordinator.adaptor.converter.MemoryData; 
 
 public class LunarAbstractTable extends AbstractTable {
 	
 	protected String table_name;
-	protected Resource db_resource;
+	//protected Resource db_resource;
+	protected ResourceDistributed db_resource;
 	protected String[] column_names_and_types;
 	protected String[] column_names ;
 	
@@ -39,7 +41,7 @@ public class LunarAbstractTable extends AbstractTable {
 	
 	protected RelDataType dataType; 
 
-	public LunarAbstractTable(Resource _db_resource, String _table_name ) {
+	public LunarAbstractTable(ResourceDistributed _db_resource, String _table_name ) {
 	    this.table_name = _table_name;
 	    this.db_resource = _db_resource;  
 	    this.dataType = null; 

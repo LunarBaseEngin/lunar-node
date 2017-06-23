@@ -119,7 +119,7 @@ public class TaskRedirectMessage implements Runnable {
            
              ctx.writeAndFlush(response_buff).addListener(new ChannelFutureListener() {
                  public void operationComplete(ChannelFuture channelFuture) throws Exception {
-                     //System.out.println("[NODE INFO]: LunarNode responsed the request with message id:" + request.getUUID());
+                     //System.out.println("[NODE INFO]: LunarNode responds the request with message id:" + request.getUUID());
                  }
              });
         }
@@ -227,8 +227,7 @@ public class TaskRedirectMessage implements Runnable {
 		case fetchQueryResultRecs:
 		{
 			/*
-			 * @RemoteResult.fetchQueryResult( long from, int count)
-			 * 
+			 * @RemoteResult.fetchQueryResult( long from, int count) 
 			 */
 			String db  = params[0];
 			String table = params[1];
@@ -238,7 +237,7 @@ public class TaskRedirectMessage implements Runnable {
 			rc = response_map.get(intermediate_uuid);
 			if(rc != null)
 			{
-				ArrayList<String> recs = rc.fetchRecords(null, from, count);
+				ArrayList<String> recs = rc.getRecordsForCMDQuery(null, from, count);
 				if(!recs.isEmpty())
 				{
 					response = new MessageResponseForDriver();
@@ -290,19 +289,16 @@ public class TaskRedirectMessage implements Runnable {
 			  	response.setUUID(request.getUUID());
 			  	response.setCMD(request.getCMD());
 			  	response.setSucceed(true); 
-			  	String[] resp = new String[1];
-			  	resp[0] = CodeSucceed.result_removed_succeed; 
+			  	String[] resp = new String[3];
+			  	resp[0] = db; 
+			  	resp[1] = table;  
+			  	resp[2] = CodeSucceed.result_removed_succeed; 
 			  	response.setParams(resp); 
 	        } 
 	        else
 	        {
-	        	response = new MessageResponse();
-			  	response.setUUID(request.getUUID());
-			  	response.setCMD(request.getCMD());
-			  	response.setSucceed(false); 
-			  	String[] resp = new String[1];
-			  	resp[0] = CodeSucceed.result_removed_failed; 
-			  	response.setParams(resp);  
+	        	responseError(db, table, CodeSucceed.result_removed_failed);
+			 
 	        	return ;
 	        } 
 	        	

@@ -306,6 +306,7 @@ public class ResourceDistributed extends Resource{
 			 	 
 			int max_level = (rec_count_in_partition_i &(this.data_page_mask)) >> this.data_page_bit_len; 
 			int begin_level = max_level;
+			int rec_count_in_partition_i_level_n = rec_count_in_partition_i - (rec_count_in_partition_i &(this.data_page_mask));
 			/*
 			 * recs in each partition, dp(data page):
 			 * level 0: |__|_dp 1024_|__|  |__|_dp 1024_|__|  |__|_dp 1024_|__| ... |__|_dp 1024_|__|
@@ -320,7 +321,7 @@ public class ResourceDistributed extends Resource{
 			 *                   
 			 */
 			int begin_in_which_partition =  current_partition_in_writing;
-			int i_th_rec_count = Math.min(rec_count_in_partition_i, this.data_page);
+			int i_th_rec_count = Math.min(rec_count_in_partition_i_level_n, this.data_page);
 			long i_from = from;
 			/*
 			 * find out in which partition to begin fetching records
@@ -405,6 +406,105 @@ public class ResourceDistributed extends Resource{
 		
 		return patchResponseFromNodes(responses);
 	}
+	
+	
+	protected ResponseCollector ftQuery(String[] params )
+	{
+		 
+		List<Future<RemoteResult>> responses = new ArrayList<Future<RemoteResult>>();
+		
+		Iterator<String> keys = master_map.keySet().iterator();
+		//int partition = controller_consts.parsePartitionNumber(latest_partition_name);
+		String table = params[1];
+		TablePartitionMeta table_i_meta =  this.table_meta_map.get(table);
+		int partition = table_i_meta.getLatestPartitionNumber() ; 
+		int count = 0;
+		while(count < NUM_PARTITIONS) {
+			String current_partition_name = controller_consts.patchNameWithPartitionNumber(this.resource_name, partition);
+			//LunarDBClient client = master_map.get(partition_name);
+			
+			String instance_name = master_map.get(current_partition_name);
+			LunarDBClient client = instance_connection_map.get(instance_name);
+			
+			CMDEnumeration.command cmd = CMDEnumeration.command.ftQuery; 
+        	
+			String[] new_param = new String[params.length];
+			new_param[0] = params[0];
+			new_param[1] = controller_consts.patchNameWithPartitionNumber(params[1], partition);
+        	new_param[2] = params[2];
+        	new_param[3] = params[3];
+        	new_param[4] = params[4];
+        	TaskSendReqestToNode tsqtn = new TaskSendReqestToNode( client, 
+        															cmd, 
+        															new_param );
+        	 
+        	Future<RemoteResult> resp = thread_executor.submit(tsqtn);
+        	 
+        	responses.add(resp); 
+        	partition--;
+        	if(partition < 0)
+        		partition = NUM_PARTITIONS -1;
+        	
+        	count++;
+		}
+		
+		return patchResponseFromNodes(responses);
+	}
+	
+	public ResponseCollector queryRemoteWithFilter(String table, String logic_statement)
+	{ 
+		/*
+		 * <table name, remote result>
+		 */
+		ConcurrentHashMap<String, RemoteResult> response_map = new ConcurrentHashMap<String, RemoteResult>();
+		List<Future<RemoteResult>> responses = new ArrayList<Future<RemoteResult>>();
+		
+		Iterator<String> keys = master_map.keySet().iterator();
+		
+		TablePartitionMeta table_i_meta =  this.table_meta_map.get(table);
+		int partition = table_i_meta.getLatestPartitionNumber() ; 
+		
+		int count = 0;
+		while(count < NUM_PARTITIONS) { 
+			
+			String current_partition_name = controller_consts.patchNameWithPartitionNumber(this.resource_name, partition);
+			//LunarDBClient client = master_map.get(partition_name);
+			
+			String instance_name = master_map.get(current_partition_name);
+			LunarDBClient client = instance_connection_map.get(instance_name);
+			
+			CMDEnumeration.command cmd = CMDEnumeration.command.filterForWhereClause; 
+        	
+			String[] new_param = new String[3];
+			new_param[0] = this.resource_name;
+			new_param[1] = controller_consts.patchNameWithPartitionNumber(table, partition);
+        	new_param[2] = logic_statement; 
+        	
+        	TaskSendReqestToNode tsqtn = new TaskSendReqestToNode( 
+        															client, 
+        															cmd, 
+        															new_param );
+        	 
+        	Future<RemoteResult> resp = thread_executor.submit(tsqtn);
+        	/*
+        	RemoteResult resp_from_svr = tsqtn.call(); 
+        	for(int j=0;j<resp_from_svr.getParams().length;j++)
+     		{
+     			System.out.println("LunarNode responded: "+ resp_from_svr.getParams()[j]);
+     		}
+     		*/
+        	responses.add(resp); 
+        	partition--;
+        	 
+        	if(partition < 0)
+        		partition = NUM_PARTITIONS -1;
+        	
+        	count++;
+		}
+		
+		return patchResponseFromNodes(responses);
+	}
+	
 	
 	protected ResponseCollector patchResponseFromNodes(List<Future<RemoteResult>> responses)
 	{

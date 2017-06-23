@@ -54,13 +54,19 @@ public class RemoteResult  {
 			 if(resp_from_svr == null)
 				 return null;
 			 
-			 return resp_from_svr.getResultRecords(); 
+			 return resp_from_svr.getResultRecords(0, count); 
 			
 		}
 		if(message.getCMD() == command.fetchQueryResultRecs || message.getCMD() == command.fetchRecordsDESC
 														|| message.getCMD() == command.fetchRecordsASC)
 		{
-			return message.getResultRecords();
+			/*
+			 * since we never fetches records more than the integer.maxVal, here transfer long to int directly
+			 */
+			if(from > Integer.MAX_VALUE)
+				return null;
+			
+			return message.getResultRecords((int)from, count);
 		}
 		
 		
@@ -112,9 +118,9 @@ public class RemoteResult  {
 		return message.getParams();
 	}
 	
-	public String[] getResultRecords()
+	public String[] getResultRecords(int from, int count)
 	{
-		return message.getResultRecords();
+		return message.getResultRecords(from, count);
 	}
 	
 	public String getIntermediateResultUUID()
@@ -129,5 +135,10 @@ public class RemoteResult  {
 	public String getDBName()
 	{
 		return message.getDBName() ;
+	}
+	
+	public int[] getRecCountInEveryPage()
+	{
+		return message.getRecCountInEveryPage();
 	}
 }
