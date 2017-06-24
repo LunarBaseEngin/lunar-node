@@ -36,7 +36,9 @@ import org.apache.helix.controller.HelixControllerMain;
 import org.apache.helix.manager.zk.ZKHelixAdmin;
 import org.apache.helix.model.ExternalView; 
 import org.apache.helix.model.StateModelDefinition;
- 
+
+import lunarion.cluster.resource.Resource;
+import lunarion.cluster.resource.ResourceDistributed;
 import lunarion.node.utile.ControllerConstants;
 import lunarion.node.utile.Screen; 
 

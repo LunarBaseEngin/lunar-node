@@ -22,11 +22,11 @@ import LCG.DB.API.LunarDB;
 import LCG.MemoryIndex.IndexTypes.DataTypes;
 import LCG.RecordTable.StoreUtile.LunarColumn;
 import LCG.RecordTable.StoreUtile.Record32KBytes;
-import lunarion.cluster.coordinator.Resource;
-import lunarion.cluster.coordinator.ResourceDistributed;
-import lunarion.cluster.coordinator.ResponseCollector;
 import lunarion.cluster.coordinator.adaptor.converter.ArrayRecordConverter;
-import lunarion.cluster.coordinator.adaptor.converter.RecordConverter;  
+import lunarion.cluster.coordinator.adaptor.converter.RecordConverter;
+import lunarion.cluster.resource.Resource;
+import lunarion.cluster.resource.ResourceDistributed;
+import lunarion.cluster.resource.ResponseCollector;  
 
 public class RecordSetEnumerator<E> implements Enumerator<E> { 
 	

@@ -23,9 +23,9 @@ import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import lunarion.cluster.coordinator.Resource;
-import lunarion.cluster.coordinator.ResponseCollector;
 import lunarion.cluster.coordinator.adaptor.converter.RecordConverter;
+import lunarion.cluster.resource.Resource;
+import lunarion.cluster.resource.ResponseCollector;
 import lunarion.node.remote.protocol.RemoteResult;
 import lunarion.node.requester.LunarDBClient;
 

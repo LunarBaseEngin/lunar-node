@@ -20,9 +20,9 @@ import org.apache.calcite.sql.type.SqlTypeUtil;
 
 import LCG.DB.API.LunarDB;
 import LCG.MemoryIndex.IndexTypes.DataTypes;
-import lunarion.cluster.coordinator.Resource;
-import lunarion.cluster.coordinator.ResourceDistributed;
-import lunarion.cluster.coordinator.adaptor.Enumerator.RecordSetEnumerator; 
+import lunarion.cluster.coordinator.adaptor.Enumerator.RecordSetEnumerator;
+import lunarion.cluster.resource.Resource;
+import lunarion.cluster.resource.ResourceDistributed; 
 
 public class LunarScannableTable extends LunarAbstractTable implements ScannableTable {
 	

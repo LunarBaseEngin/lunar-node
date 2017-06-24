@@ -22,7 +22,7 @@ public class Readme {
 
 	private String readme = "This is the Event Driven Framework for"
 			+ " automaticaly excute tasks by dispatching incoming events"
-			+ " to the NodeTaskCenter, "
+			+ " to the ExecutorCenter, "
 			+ " where each event has its own task registered.";
 			 
 }

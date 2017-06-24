@@ -37,8 +37,10 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.ReferenceCountUtil;
 import lunarion.cluster.coordinator.Coordinator;
-import lunarion.cluster.coordinator.Resource;
-import lunarion.cluster.coordinator.ResponseCollector;
+import lunarion.cluster.resource.Resource;
+import lunarion.cluster.resource.ResourceDistributed;
+import lunarion.cluster.resource.ResponseCollector;
+import lunarion.cluster.resource.EDF.ResourceExecutorCenter;
 import lunarion.db.local.shell.CMDEnumeration;
 import lunarion.node.TaskHandlingMessage; 
 import lunarion.node.logger.Timer;
@@ -64,7 +66,7 @@ public class CoordinatorServerHandler extends ChannelInboundHandlerAdapter {
 	public CoordinatorServerHandler(Coordinator _co,  Logger _logger ) 
 	{
 		this.co = _co; 
-		this.logger = _logger;  
+		this.logger = _logger;   
 	}
 		   
 	@Override
@@ -85,7 +87,7 @@ public class CoordinatorServerHandler extends ChannelInboundHandlerAdapter {
 		    			System.out.println("Coordinator received: "+ request.getParams()[i]);
 		    		}
 		    		*/
-		    		Resource res = co.getResource(request.getParams()[0]); 
+		    		ResourceDistributed res = co.getResource(request.getParams()[0]); 
 		    		 
 		    		
 		    		TaskRedirectMessage recvTask = new TaskRedirectMessage(request , 

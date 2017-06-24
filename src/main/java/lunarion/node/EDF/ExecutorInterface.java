@@ -25,6 +25,7 @@ import org.apache.log4j.Logger;
 import LCG.DB.API.LunarDB;
 import LCG.DB.API.LunarTable;
 import LCG.DB.API.Result.FTQueryResult;
+import lunarion.cluster.resource.ResourceDistributed;
 import lunarion.node.LunarDBServerStandAlone;
 import lunarion.node.page.DataPage;
 import lunarion.node.remote.protocol.MessageToWrite;
@@ -39,7 +40,7 @@ public interface ExecutorInterface {
 	    
 	 
 	
-	public MessageResponse execute(LunarDBServerStandAlone l_db_ssa , MessageRequest msg, Logger logger);
+	public MessageResponse execute(LunarDBServerStandAlone l_db_ssa , MessageRequest msg, Logger logger) ;
 	
 	public static MessageResponse responseError(MessageRequest request, String db, String table, String error_code)
 	{

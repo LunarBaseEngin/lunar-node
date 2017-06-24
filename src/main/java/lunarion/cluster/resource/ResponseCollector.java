@@ -16,7 +16,7 @@
  *******************************************************************************
  * 
  */
-package lunarion.cluster.coordinator;
+package lunarion.cluster.resource;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;

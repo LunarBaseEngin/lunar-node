@@ -19,9 +19,9 @@ import LCG.DB.API.Result.FTQueryResult;
 import LCG.MemoryIndex.IndexTypes.DataTypes;
 import LCG.RecordTable.StoreUtile.LunarColumn;
 import LCG.RecordTable.StoreUtile.Record32KBytes;
-import lunarion.cluster.coordinator.ResponseCollector;
 import lunarion.cluster.coordinator.adaptor.converter.ArrayRecordConverter;
-import lunarion.cluster.coordinator.adaptor.converter.RecordConverter;  
+import lunarion.cluster.coordinator.adaptor.converter.RecordConverter;
+import lunarion.cluster.resource.ResponseCollector;  
 
 public class QueryResultEnumerator<E> implements Enumerator<E> { 
 	

@@ -53,7 +53,21 @@ import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import lunarion.db.local.Test.LunarServerHandlerTest;
 import lunarion.db.local.shell.CMDEnumeration;
 import lunarion.node.EDF.ExecutorCenter;
+import lunarion.node.EDF.ExecutorInterface;
+import lunarion.node.EDF.executors.AddFunctionalColumn;
+import lunarion.node.EDF.executors.CloseQueryResult;
 import lunarion.node.EDF.executors.CreateTable;
+import lunarion.node.EDF.executors.FTQuery;
+import lunarion.node.EDF.executors.FetchLog;
+import lunarion.node.EDF.executors.FetchQueryResultRecs;
+import lunarion.node.EDF.executors.FetchRecords;
+import lunarion.node.EDF.executors.FetchTableNamesWithSuffix;
+import lunarion.node.EDF.executors.FilterForWhereClause;
+import lunarion.node.EDF.executors.GetColumns;
+import lunarion.node.EDF.executors.Insert;
+import lunarion.node.EDF.executors.NotifySlavesUpdate;
+import lunarion.node.EDF.executors.RGQuery;
+import lunarion.node.EDF.executors.RecsCount;
 import lunarion.node.logger.LoggerFactory;
 import lunarion.node.logger.Timer;
 import lunarion.node.remote.protocol.CodeSucceed;
@@ -196,13 +210,35 @@ public class LunarDBServerStandAlone {
 			db_replicators.put(db_names.get(i).trim(), replica);
 			
 		}
-		
-		
-		node_tc = new ExecutorCenter(this, logger);
+		 
+		registerNodeExecutors();
 		bossGroup = new NioEventLoopGroup();
 		workerGroup = new NioEventLoopGroup(); 
 	} 
 
+	private void registerNodeExecutors()
+	{
+		node_tc = new ExecutorCenter(this, logger);
+		node_tc.registerExecutor(CMDEnumeration.command.createTable,  new CreateTable());
+		node_tc.registerExecutor(CMDEnumeration.command.notifySlavesUpdate,  new NotifySlavesUpdate());
+		node_tc.registerExecutor(CMDEnumeration.command.addFulltextColumn,  new AddFunctionalColumn(CMDEnumeration.command.addFulltextColumn));
+		node_tc.registerExecutor(CMDEnumeration.command.addAnalyticColumn,  new AddFunctionalColumn(CMDEnumeration.command.addAnalyticColumn));
+		node_tc.registerExecutor(CMDEnumeration.command.addStorableColumn,  new AddFunctionalColumn(CMDEnumeration.command.addStorableColumn));
+		node_tc.registerExecutor(CMDEnumeration.command.insert,  new Insert());
+		node_tc.registerExecutor(CMDEnumeration.command.ftQuery,  new FTQuery(node_tc.getResultMap()));
+		node_tc.registerExecutor(CMDEnumeration.command.rgQuery,  new RGQuery(node_tc.getResultMap()));
+		node_tc.registerExecutor(CMDEnumeration.command.fetchQueryResultRecs,  new FetchQueryResultRecs(node_tc.getResultMap()));
+		node_tc.registerExecutor(CMDEnumeration.command.closeQueryResult,  new CloseQueryResult(node_tc.getResultMap()));
+		node_tc.registerExecutor(CMDEnumeration.command.fetchRecordsDESC,  new FetchRecords(true));
+		node_tc.registerExecutor(CMDEnumeration.command.fetchRecordsASC,  new FetchRecords(false));
+		node_tc.registerExecutor(CMDEnumeration.command.fetchLog,  new FetchLog( ));
+		node_tc.registerExecutor(CMDEnumeration.command.fetchTableNamesWithSuffix,  new FetchTableNamesWithSuffix());
+		node_tc.registerExecutor(CMDEnumeration.command.getColumns,  new GetColumns());
+		node_tc.registerExecutor(CMDEnumeration.command.filterForWhereClause,  new FilterForWhereClause(node_tc.getResultMap()));
+		node_tc.registerExecutor(CMDEnumeration.command.recsCount,  new RecsCount( ));
+		
+		 
+	}
 	public ExecutorCenter getExecutorCenter()
 	{
 		return this.node_tc;

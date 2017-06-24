@@ -45,7 +45,7 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import lunarion.cluster.coordinator.Coordinator;
-import lunarion.cluster.coordinator.Resource;
+import lunarion.cluster.resource.Resource;
 import lunarion.node.LunarDBServerChannelInitializer; 
 import lunarion.node.logger.LoggerFactory;
 import lunarion.node.logger.Timer;

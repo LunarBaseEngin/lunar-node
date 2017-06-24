@@ -36,7 +36,7 @@ public class LoggerFactory {
 		 
     	FileAppender fa = null;
 		try {
-			fa = new  FileAppender(layout, name+".db_svr.log.txt", true);
+			fa = new  FileAppender(layout, name+".log.txt", true);
 		} catch (IOException e) { 
 			// TODO Auto-generated catch block
 			e.printStackTrace();

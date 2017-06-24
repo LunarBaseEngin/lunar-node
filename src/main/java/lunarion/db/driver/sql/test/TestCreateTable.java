@@ -25,7 +25,7 @@ import java.io.InputStreamReader;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 
-import lunarion.cluster.coordinator.ResponseCollector;
+import lunarion.cluster.resource.ResponseCollector;
 import lunarion.db.driver.sql.LDriverManager;
 import lunarion.db.driver.sql.LResultSet;
 import lunarion.db.driver.sql.LunarDBConnection;

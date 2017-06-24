@@ -22,9 +22,9 @@ import org.apache.calcite.sql.type.SqlTypeUtil;
 
 import LCG.DB.API.LunarDB;
 import LCG.MemoryIndex.IndexTypes.DataTypes;
-import lunarion.cluster.coordinator.Resource;
-import lunarion.cluster.coordinator.ResourceDistributed;
-import lunarion.cluster.coordinator.adaptor.converter.MemoryData; 
+import lunarion.cluster.coordinator.adaptor.converter.MemoryData;
+import lunarion.cluster.resource.Resource;
+import lunarion.cluster.resource.ResourceDistributed; 
 
 public class LunarAbstractTable extends AbstractTable {
 	

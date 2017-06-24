@@ -16,38 +16,28 @@
  *******************************************************************************
  * 
  */
-package lunarion.cluster.coordinator.adaptor;
+package lunarion.cluster.resource.EDF;
 
- 
-import lunarion.cluster.coordinator.adaptor.converter.TripleOperator;
+import java.util.HashMap;
+
+import org.apache.log4j.Logger;
+
 import lunarion.cluster.resource.Resource;
 import lunarion.cluster.resource.ResourceDistributed;
-import lunarion.cluster.resource.ResponseCollector; 
+import lunarion.cluster.resource.ResponseCollector;
+import lunarion.db.local.shell.CMDEnumeration;
+import lunarion.node.LunarDBServerStandAlone;
+import lunarion.node.remote.protocol.MessageRequest;
+import lunarion.node.remote.protocol.MessageResponse;
 
-public class LogicUtileRemote extends LogicUtile{
-	
-	final ResourceDistributed db_resource;
-	
-	public LogicUtileRemote(String[] _cols, ResourceDistributed _db_resource, String _table)
-	{
-		super(null, _table, _cols );
+public interface ResourceExecutorInterface { 
+
+		public final int intermediate_result_uuid_index = 2;
+		public final int table_name_index = 1;
+		public final int db_name_index = 0; 
 		 
-		db_resource = _db_resource; 
-	}
-	
-	public ResponseCollector queryRemote(TripleOperator t_o)
-	{
-		String statement = makeQuery(t_o);
 		
-		return queryRemote(statement);
-	}
-	
-	public ResponseCollector queryRemote(String filter_statement)
-	{  
+		public ResponseCollector execute(ResourceDistributed db_res , String[] params , Logger logger) ;
 		
-		return db_resource.queryRemoteWithFilter(table_name, filter_statement) ;
-		
-	}
-	
-
+		 
 }

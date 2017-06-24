@@ -33,8 +33,8 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import lunarion.cluster.coordinator.Coordinator;
-import lunarion.cluster.coordinator.Resource;
-import lunarion.cluster.coordinator.ResponseCollector;
+import lunarion.cluster.resource.Resource;
+import lunarion.cluster.resource.ResponseCollector;
 import lunarion.db.local.shell.CMDEnumeration;
 import lunarion.node.remote.protocol.MessageResponse;
 import lunarion.node.requester.LunarDBClient;

@@ -37,8 +37,9 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
-import lunarion.cluster.coordinator.Resource;
-import lunarion.cluster.coordinator.ResponseCollector;
+import lunarion.cluster.resource.Resource;
+import lunarion.cluster.resource.ResourceDistributed;
+import lunarion.cluster.resource.ResponseCollector;
 import lunarion.db.local.shell.CMDEnumeration;
 import lunarion.db.local.shell.CMDEnumeration.command; 
 import lunarion.node.logger.LogCMDConstructor;
@@ -59,7 +60,7 @@ public class TaskRedirectMessage implements Runnable {
     private MessageResponse response = null;
      
 	private ChannelHandlerContext ctx = null;
-	private Resource db_resource;
+	private ResourceDistributed db_resource;
     private Logger logger= null;
     
     final int intermediate_result_uuid_index = 2;
@@ -82,7 +83,7 @@ public class TaskRedirectMessage implements Runnable {
     }
 
     TaskRedirectMessage(MessageRequest _request , 
-    						Resource _db_resource, 
+    						ResourceDistributed _db_resource, 
     						ChannelHandlerContext ctx, 
     						Logger _logger,
     						ConcurrentHashMap<String, ResponseCollector> _response_map) {
@@ -97,7 +98,7 @@ public class TaskRedirectMessage implements Runnable {
     }
     
     TaskRedirectMessage(MessageRequest request , 
-    					Resource _db_resource, 
+    					ResourceDistributed _db_resource, 
 						Logger _logger) {
     		this.request = request; 
     	 
@@ -109,7 +110,7 @@ public class TaskRedirectMessage implements Runnable {
     public void run() { 
        
         execute(request); 
-        
+    	
         if(ctx!=null)
         {
         	 int len = response.size();
@@ -149,7 +150,7 @@ public class TaskRedirectMessage implements Runnable {
 			if(request.getCMD() == CMDEnumeration.command.addAnalyticColumn)
 			{
 				/*
-				 * @TaskHandlingMessage.addFunctionalColumn()
+				 * @AddFunctionalColumn
 				 */
 				if(params.length < 4)
 				{	
@@ -285,6 +286,8 @@ public class TaskRedirectMessage implements Runnable {
 	        ResponseCollector rc_removed = this.response_map.remove(query_result_uuid);
 	        if(rc_removed!= null)
 	        {  
+	        	rc_removed.closeQuery();
+	        	
 	        	response = new MessageResponse();
 			  	response.setUUID(request.getUUID());
 			  	response.setCMD(request.getCMD());

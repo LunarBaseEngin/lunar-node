@@ -16,7 +16,7 @@
  *******************************************************************************
  * 
  */
-package lunarion.cluster.coordinator;
+package lunarion.cluster.resource;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -54,7 +54,11 @@ import org.omg.CORBA.portable.InputStream;
 
  
 import io.netty.channel.ChannelFuture;
+import lunarion.cluster.coordinator.TablePartitionMeta;
+import lunarion.cluster.coordinator.TaskCloseIntermediateQueryResult;
+import lunarion.cluster.coordinator.TaskSendReqestToNode;
 import lunarion.cluster.coordinator.adaptor.LunarDBSchema;
+import lunarion.cluster.resource.EDF.ResourceExecutorCenter;
 import lunarion.db.local.shell.CMDEnumeration;
 import lunarion.db.local.shell.CMDEnumeration.command;
 import lunarion.node.LunarNode;
@@ -84,13 +88,15 @@ DataPartition_5			S			M			S
 public class Resource {
 	protected AtomicInteger	NUM_NODES = new AtomicInteger(0);
 	protected String resource_name ;
-	protected int NUM_PARTITIONS = 6;
-	protected int NUM_REPLICAS = 2;
+	public final int NUM_PARTITIONS ;
+	public final int NUM_REPLICAS ;
 	protected List<InstanceConfig> INSTANCE_CONFIG_LIST = new ArrayList<InstanceConfig>(); 
 	
-	protected String meta_files_path;
 	protected Logger resource_logger = null; 
-	protected String meta_file_suffix = ".meta.info";
+	
+	
+	public final String meta_files_path;
+	public final String meta_file_suffix = ".meta.info";
 	
 	protected HelixAdmin admin;
 	protected String cluster_name;
@@ -214,7 +220,9 @@ public class Resource {
 
 		resource_logger.info(Timer.currentTime() + " [SUCCEED]: coordinator for database " + resource_name + " in the cluster: " +  _cluster_name + " started successfully. ");
 	 	
-	}
+
+		
+	} 
 	
 	public void close()
 	{
@@ -396,9 +404,12 @@ public class Resource {
 		
 		return result;
 	}
+	
+	@Deprecated
 	public ResponseCollector sendRequest(CMDEnumeration.command cmd, String[] params )
 	{
 		ResponseCollector rc = null;
+        
 		switch(cmd)
         {
 	        case createTable:
@@ -444,7 +455,7 @@ public class Resource {
 		
 	}
 	
-	protected ResponseCollector patchResponseFromNodes(List<Future<RemoteResult>> responses)
+	public ResponseCollector patchResponseFromNodes(List<Future<RemoteResult>> responses)
 	{
 		/*
 		 * <table partition number, remote result>
@@ -587,7 +598,7 @@ public class Resource {
 		if(rc.isSucceed())
 		{
 			try {
-				
+				 
 				table_new.createMeta(meta_files_path + table_name+meta_file_suffix, table_name);
 				table_meta_map.put(table_name, table_new);
 				 
@@ -1042,6 +1053,8 @@ public class Resource {
 		} 
 		return total;  
 	}
+	
+	@Deprecated
 	public ResponseCollector fetchRecords(String db, String table, long from, int count, boolean if_desc)
 	{ 
 		List<Future<RemoteResult>> responses = new ArrayList<Future<RemoteResult>>();
@@ -1162,6 +1175,7 @@ public class Resource {
 		return new ResponseCollector(this, result, total);
 	}
 	
+	@Deprecated
 	public ResponseCollector queryRemoteWithFilter(String table, String logic_statement)
 	{ 
 		/*
@@ -1214,17 +1228,7 @@ public class Resource {
 	public int getNodeNumber()
 	{
 		return this.NUM_NODES.get();
-	}
-	
-	public int getPartitionNumber()
-	{
-		return this.NUM_PARTITIONS;
-	}
-	
-	public int getReplicaNumber()
-	{
-		return this.NUM_REPLICAS;
-	}
+	} 
 	
 	public InstanceConfig getInstantConfig(int i)
 	{
@@ -1236,5 +1240,34 @@ public class Resource {
 		return this.resource_name;
 	}
 	
-	 
+	public String getResourceName( )
+	{
+		return this.resource_name;
+	}
+	
+	public HashMap<String, String> getMasters()
+	{
+		return master_map;
+	}
+	
+	public LunarDBClient getClientForMaster(String instance_name)
+	{
+		return instance_connection_map.get(instance_name);
+	}
+	
+	public ExecutorService getThreadExecutor()
+	{
+		return thread_executor ;
+	}
+	
+	public TablePartitionMeta getTablePartitionMeta(String table_name)
+	{
+		return table_meta_map.get(table_name);
+	}
+	public TablePartitionMeta updateTablePartitionMeta(String table_name, TablePartitionMeta table_new )
+	{
+		return table_meta_map.put(table_name, table_new);
+	}
+	
+ 
 }

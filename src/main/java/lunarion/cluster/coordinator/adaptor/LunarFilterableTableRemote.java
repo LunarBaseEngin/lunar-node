@@ -22,12 +22,12 @@ import LCG.DB.API.LunarDB;
 import LCG.DB.API.Result.FTQueryResult;
 import LCG.DB.API.Result.RGQueryResult;
 import LCG.MemoryIndex.IndexTypes.DataTypes;
-import lunarion.cluster.coordinator.Resource;
-import lunarion.cluster.coordinator.ResourceDistributed;
-import lunarion.cluster.coordinator.ResponseCollector;
 import lunarion.cluster.coordinator.adaptor.Enumerator.QueryResultEnumerator;
 import lunarion.cluster.coordinator.adaptor.Enumerator.RecordSetEnumerator;
-import lunarion.cluster.coordinator.adaptor.converter.TripleOperator; 
+import lunarion.cluster.coordinator.adaptor.converter.TripleOperator;
+import lunarion.cluster.resource.Resource;
+import lunarion.cluster.resource.ResourceDistributed;
+import lunarion.cluster.resource.ResponseCollector; 
 
 public class LunarFilterableTableRemote extends LunarAbstractTable implements FilterableTable  {
 	

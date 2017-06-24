@@ -12,9 +12,9 @@ import com.google.common.collect.ImmutableMap;
 
 import LCG.DB.API.LunarDB;
 import lunarion.cluster.coordinator.Coordinator;
-import lunarion.cluster.coordinator.Resource;
-import lunarion.cluster.coordinator.ResourceDistributed;
-import lunarion.cluster.coordinator.server.CoordinatorServer; 
+import lunarion.cluster.coordinator.server.CoordinatorServer;
+import lunarion.cluster.resource.Resource;
+import lunarion.cluster.resource.ResourceDistributed; 
 
 public class LunarDBSchema extends AbstractSchema {
 	  

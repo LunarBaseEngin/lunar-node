@@ -25,7 +25,7 @@ import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.Properties;
 
-import lunarion.cluster.coordinator.Resource;
+import lunarion.cluster.resource.Resource;
 
 public class start {
 
