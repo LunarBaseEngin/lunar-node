@@ -52,8 +52,11 @@ public class ResponseCollector {
 	
 	private final long total_results;
 	
-	private final Resource db_resource;
-	public ResponseCollector(Resource _db, ConcurrentHashMap<Integer, RemoteResult> _map)
+	//private final Resource db_resource;
+	
+	private final QueryEngine query_engine;
+	
+	public ResponseCollector(QueryEngine _db, ConcurrentHashMap<Integer, RemoteResult> _map)
 	{
 		is_sql_result = false;
 		response_map = _map;
@@ -76,19 +79,19 @@ public class ResponseCollector {
 		} 
 		
 		total_results = count;
-		db_resource = _db;
+		query_engine = _db;
 	}
 	
 	public void setFalse()
 	{
 		this.succeed = false;
 	}
-	public ResponseCollector(Resource _db, ResultSet _sql_result, long _total)
+	public ResponseCollector(QueryEngine _db, ResultSet _sql_result, long _total)
 	{
 		sql_select_result_set = _sql_result; 
 		is_sql_result = true; 
 		total_results = _total;
-		db_resource = _db;
+		query_engine = _db;
 	} 
 	
 	public boolean isSqlResult()
@@ -783,7 +786,7 @@ public class ResponseCollector {
 			if(mr!=null)
 			{  
 				//System.err.println("closing query for " + table);  
-				this.db_resource.closeIntermediateQueryResult(mr);
+				this.query_engine.closeIntermediateQueryResult(mr);
 				//System.err.println("closing query succeed? " + mm.isSucceed()); 
 				 
 			}

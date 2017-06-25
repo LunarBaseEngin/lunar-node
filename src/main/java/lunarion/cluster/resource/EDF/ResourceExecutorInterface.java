@@ -22,6 +22,7 @@ import java.util.HashMap;
 
 import org.apache.log4j.Logger;
 
+import lunarion.cluster.resource.QueryEngine;
 import lunarion.cluster.resource.Resource;
 import lunarion.cluster.resource.ResourceDistributed;
 import lunarion.cluster.resource.ResponseCollector;
@@ -37,7 +38,7 @@ public interface ResourceExecutorInterface {
 		public final int db_name_index = 0; 
 		 
 		
-		public ResponseCollector execute(ResourceDistributed db_res , String[] params , Logger logger) ;
+		public ResponseCollector execute(QueryEngine db_res , String[] params , Logger logger) ;
 		
 		 
 }

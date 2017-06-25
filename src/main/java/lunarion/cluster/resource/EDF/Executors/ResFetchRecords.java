@@ -27,6 +27,7 @@ import org.apache.log4j.Logger;
 
 import lunarion.cluster.coordinator.TablePartitionMeta;
 import lunarion.cluster.coordinator.TaskSendReqestToNode;
+import lunarion.cluster.resource.QueryEngine;
 import lunarion.cluster.resource.ResourceDistributed;
 import lunarion.cluster.resource.ResponseCollector;
 import lunarion.cluster.resource.EDF.ResourceExecutorInterface;
@@ -46,7 +47,7 @@ public class ResFetchRecords implements ResourceExecutorInterface{
 	{
 		this.cmd = _cmd;
 	} 
-	public ResponseCollector execute(ResourceDistributed db_resource , String[] params, Logger logger)
+	public ResponseCollector execute(QueryEngine db_resource , String[] params, Logger logger)
 	{
 		ResponseCollector rc = null;
 		master_map =  db_resource.getMasters(); 
@@ -65,15 +66,15 @@ public class ResFetchRecords implements ResourceExecutorInterface{
 	}
 	
 	
-	public ResponseCollector fetchRecords(ResourceDistributed db_resource, String db, String table, long from, int count, boolean if_desc, Logger logger)
+	public ResponseCollector fetchRecords(QueryEngine db_resource, String db, String table, long from, int count, boolean if_desc, Logger logger)
 	{ 
 		List<Future<RemoteResult>> responses = new ArrayList<Future<RemoteResult>>();
 		
 		//TablePartitionMeta table_i_meta =  this.table_meta_map.get(table);
-		TablePartitionMeta table_i_meta =  db_resource.getTablePartitionMeta(table);
+		//TablePartitionMeta table_i_meta =  db_resource.getTablePartitionMeta(table);
 		
-		int current_partition_in_writing = table_i_meta.getLatestPartitionNumber() ; 
-		
+		//int current_partition_in_writing = table_i_meta.getLatestPartitionNumber() ; 
+		int current_partition_in_writing = db_resource.currentPartitionInWriting(table);
 		 
 		if(current_partition_in_writing >=0 )
 		{ 

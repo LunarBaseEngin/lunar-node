@@ -28,6 +28,7 @@ import org.apache.log4j.Logger;
 
 import lunarion.cluster.coordinator.TablePartitionMeta;
 import lunarion.cluster.coordinator.TaskSendReqestToNode;
+import lunarion.cluster.resource.QueryEngine;
 import lunarion.cluster.resource.ResourceDistributed;
 import lunarion.cluster.resource.ResponseCollector;
 import lunarion.cluster.resource.EDF.ResourceExecutorInterface;
@@ -41,7 +42,7 @@ public class ResFulltextQuery implements ResourceExecutorInterface{
 	public HashMap<String, String> master_map; 
 	
 	 
-	public ResponseCollector execute(ResourceDistributed db_resource , String[] params, Logger logger)
+	public ResponseCollector execute(QueryEngine db_resource , String[] params, Logger logger)
 	{
 		ResponseCollector rc = null;
 		master_map =  db_resource.getMasters(); 
@@ -51,7 +52,7 @@ public class ResFulltextQuery implements ResourceExecutorInterface{
       
 	}
 
-	protected ResponseCollector ftQuery(ResourceDistributed db_resource , String[] params, Logger logger )
+	protected ResponseCollector ftQuery(QueryEngine db_resource , String[] params, Logger logger )
 	{
 		 
 		List<Future<RemoteResult>> responses = new ArrayList<Future<RemoteResult>>();
@@ -61,9 +62,10 @@ public class ResFulltextQuery implements ResourceExecutorInterface{
 		String db = params[0];
 		String table = params[1];
 		//TablePartitionMeta table_i_meta =  this.table_meta_map.get(table);
-		TablePartitionMeta table_i_meta =  db_resource.getTablePartitionMeta(table);
+		//TablePartitionMeta table_i_meta =  db_resource.getTablePartitionMeta(table); 
+		//int partition = table_i_meta.getLatestPartitionNumber() ; 
 		
-		int partition = table_i_meta.getLatestPartitionNumber() ; 
+		int partition = db_resource.currentPartitionInWriting( table);
 		int count = 0;
 		while(count < db_resource.NUM_PARTITIONS) {
 			String current_partition_name = ControllerConstants.patchNameWithPartitionNumber(db, partition);

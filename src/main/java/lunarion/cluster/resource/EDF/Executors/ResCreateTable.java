@@ -30,6 +30,7 @@ import org.apache.log4j.Logger;
 import lunarion.cluster.coordinator.TablePartitionMeta;
 import lunarion.cluster.coordinator.TaskSendReqestToNode;
 import lunarion.cluster.coordinator.server.DataTypeSupported;
+import lunarion.cluster.resource.QueryEngine;
 import lunarion.cluster.resource.Resource;
 import lunarion.cluster.resource.ResourceDistributed;
 import lunarion.cluster.resource.ResponseCollector;
@@ -51,14 +52,15 @@ public class ResCreateTable implements ResourceExecutorInterface{
 	public HashMap<String, String> master_map; 
 	
 	 
-	public ResponseCollector execute(ResourceDistributed db_resource , String[] params, Logger logger)
+	public ResponseCollector execute(QueryEngine db_resource , String[] params, Logger logger)
 	{
 		ResponseCollector rc = null;
 		master_map =  db_resource.getMasters();
 				
-		 
-   	 
-		return  createTable(db_resource, params, logger );
+		if(db_resource.isLocalMode()) 
+			return  createTable(db_resource, params, logger );
+		
+		return null;
       
 	}
 	
@@ -68,7 +70,7 @@ public class ResCreateTable implements ResourceExecutorInterface{
 	 * 
 	 * @return ResponseCollector
 	 */
-	protected ResponseCollector createTable(ResourceDistributed db_resource , String[] params, Logger logger)
+	protected ResponseCollector createTable(QueryEngine db_resource , String[] params, Logger logger)
 	{
 		/*
 		 * params[0]: db
@@ -102,8 +104,11 @@ public class ResCreateTable implements ResourceExecutorInterface{
 			}
 		}
 		ResponseCollector rc = db_resource.patchResponseFromNodes(responses);
+		
 		String table_name = params[1]; 
-		TablePartitionMeta table_new = db_resource.getTablePartitionMeta(table_name);
+		Resource resource_distributed = db_resource.getResource();
+		
+		TablePartitionMeta table_new = resource_distributed.getTablePartitionMeta(table_name);
 		/*
 		 * if already has, then rewrite the metadata. 
 		 * if there has no existing meta file, create a new one.
@@ -114,8 +119,8 @@ public class ResCreateTable implements ResourceExecutorInterface{
 		{
 			try {
 				
-				table_new.createMeta(db_resource.meta_files_path + table_name + db_resource.meta_file_suffix, table_name);
-				db_resource.updateTablePartitionMeta(table_name, table_new);
+				table_new.createMeta(resource_distributed.meta_files_path + table_name + resource_distributed.meta_file_suffix, table_name);
+				resource_distributed.updateTablePartitionMeta(table_name, table_new);
 				 
 			} catch (IOException e) {
 				// TODO Auto-generated catch block

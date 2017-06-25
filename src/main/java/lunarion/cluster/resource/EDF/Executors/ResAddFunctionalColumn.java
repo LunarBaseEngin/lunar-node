@@ -27,6 +27,7 @@ import java.util.concurrent.Future;
 import org.apache.log4j.Logger;
 
 import lunarion.cluster.coordinator.TaskSendReqestToNode;
+import lunarion.cluster.resource.QueryEngine;
 import lunarion.cluster.resource.Resource;
 import lunarion.cluster.resource.ResourceDistributed;
 import lunarion.cluster.resource.ResponseCollector;
@@ -48,7 +49,7 @@ public class ResAddFunctionalColumn implements ResourceExecutorInterface{
 		this.cmd = _cmd;
 	}
 	
-	public ResponseCollector execute(ResourceDistributed db_resource , String[] params, Logger logger)
+	public ResponseCollector execute(QueryEngine db_resource , String[] params, Logger logger)
 	{
 		ResponseCollector rc = null;
 		master_map =  db_resource.getMasters(); 
@@ -60,7 +61,7 @@ public class ResAddFunctionalColumn implements ResourceExecutorInterface{
 	/*
 	 * @TaskHandlingMessage.addFunctionalColumn
 	 */
-	protected ResponseCollector addFunctionalColumn(ResourceDistributed db_resource, String[] params, Logger resource_logger )
+	protected ResponseCollector addFunctionalColumn(QueryEngine db_resource, String[] params, Logger resource_logger )
 	{
 		
 		if(cmd == command.addAnalyticColumn && params.length < 4)

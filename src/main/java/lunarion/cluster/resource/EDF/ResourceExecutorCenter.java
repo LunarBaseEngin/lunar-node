@@ -24,6 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.log4j.Logger;
 
 import LCG.DB.API.Result.FTQueryResult;
+import lunarion.cluster.resource.QueryEngine;
 import lunarion.cluster.resource.Resource;
 import lunarion.cluster.resource.ResourceDistributed;
 import lunarion.cluster.resource.ResponseCollector;
@@ -44,7 +45,7 @@ public class ResourceExecutorCenter {
 	 
 	
 	private HashMap<CMDEnumeration.command , ResourceExecutorInterface> executors;
-	private ResourceDistributed  db_resource;
+	private QueryEngine  db_query_engine;
 	private Logger logger= null;   
 	 /*
 	  * <result_uuid, query result object>
@@ -52,13 +53,13 @@ public class ResourceExecutorCenter {
 	private ConcurrentHashMap<String, FTQueryResult> result_map = new ConcurrentHashMap<String, FTQueryResult>();
 
 	
-	public ResourceExecutorCenter(ResourceDistributed db_res, Logger _logger) 
+	public ResourceExecutorCenter(QueryEngine db_res, Logger _logger) 
 	{  
 
 		executors = new HashMap<CMDEnumeration.command , ResourceExecutorInterface>();
 		
 		logger = _logger;
-		db_resource = db_res;
+		db_query_engine = db_res;
 		 
 		executors.put(CMDEnumeration.command.createTable, new ResCreateTable());
 		executors.put(CMDEnumeration.command.addFulltextColumn, new ResAddFunctionalColumn(CMDEnumeration.command.addFulltextColumn));
@@ -78,9 +79,9 @@ public class ResourceExecutorCenter {
 	{
 		return this.result_map;
 	}
-	public Resource getResource()
+	public QueryEngine getQueryEngine()
 	{
-		return db_resource;
+		return db_query_engine;
 	}
 	
 	public Logger getLogger()
@@ -92,7 +93,7 @@ public class ResourceExecutorCenter {
 	}
 	
 	public ResponseCollector dispatch(CMDEnumeration.command cmd, String[] params) {
-		return executors.get(cmd).execute(db_resource, params, logger) ;
+		return executors.get(cmd).execute(db_query_engine, params, logger) ;
 	}
 
 	public void removeExecutor(CMDEnumeration.command cmd, ExecutorInterface executor) { 

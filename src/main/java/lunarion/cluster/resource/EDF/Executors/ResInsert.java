@@ -31,6 +31,8 @@ import org.apache.log4j.Logger;
 
 import lunarion.cluster.coordinator.TablePartitionMeta;
 import lunarion.cluster.coordinator.TaskSendReqestToNode;
+import lunarion.cluster.resource.QueryEngine;
+import lunarion.cluster.resource.Resource;
 import lunarion.cluster.resource.ResourceDistributed;
 import lunarion.cluster.resource.ResponseCollector;
 import lunarion.cluster.resource.EDF.ResourceExecutorInterface;
@@ -45,14 +47,16 @@ public class ResInsert  implements ResourceExecutorInterface{
 	public HashMap<String, String> master_map; 
 	
 	 
-	public ResponseCollector execute(ResourceDistributed db_resource , String[] params, Logger logger)
+	public ResponseCollector execute(QueryEngine db_resource , String[] params, Logger logger)
 	{
 		ResponseCollector rc = null;
 		master_map =  db_resource.getMasters();
 				
 		 
-   	 
-		return  insert(db_resource, params, logger );
+		if(db_resource.isLocalMode()) 
+			return  insert(db_resource, params, logger );
+		
+		return null;
       
 	}
 
@@ -73,7 +77,7 @@ public class ResInsert  implements ResourceExecutorInterface{
 	 * the next partition. If reaches the maximum partition, returns to the 0 partition and 
 	 * writes to the second data piece within it.
 	 */
-	protected ResponseCollector insert(ResourceDistributed db_resource , String[] params, Logger resource_logger) 
+	protected ResponseCollector insert(QueryEngine db_resource , String[] params, Logger resource_logger) 
 	{
 		
 		List<Future<RemoteResult>> responses = new ArrayList<Future<RemoteResult>>();
@@ -82,7 +86,11 @@ public class ResInsert  implements ResourceExecutorInterface{
 		String table = params[1];
 		
 		//TablePartitionMeta table_i_meta =  this.table_meta_map.get(table);
-		TablePartitionMeta table_i_meta =  db_resource.getTablePartitionMeta(table);
+		
+		Resource resource_distributed = db_resource.getResource();
+		
+		
+		TablePartitionMeta table_i_meta =  resource_distributed.getTablePartitionMeta(table);
 		int partition = table_i_meta.getLatestPartitionNumber() ; 
 		AtomicInteger rec_count_in_current_partition = table_i_meta.getRecCountInCurrentPartition();
 		AtomicLong total_recs = table_i_meta.getTotalRecs();
@@ -140,7 +148,7 @@ public class ResInsert  implements ResourceExecutorInterface{
 				if(remain_recs <= remain_in_this_page_this_partition)
 				{  
 					//if((rec_count_in_current_partition.get() + remain_recs) <= max_recs_per_partition.get()) {
-					if( total_recs.get() + remain_recs  < db_resource.record_capacity)	{
+					if( total_recs.get() + remain_recs  < resource_distributed.record_capacity)	{
 		        		String[] new_param = new String[remain_recs+2];
 		    			new_param[0] = params[0];
 		    			new_param[1] = ControllerConstants.patchNameWithPartitionNumber(table, current_partition);
@@ -184,7 +192,7 @@ public class ResInsert  implements ResourceExecutorInterface{
 				else /* remain_recs > remain_in_this_piece_this_partition */
 				{
 					int need_to_insert =  remain_in_this_page_this_partition;
-					if( total_recs.get() + need_to_insert < db_resource.record_capacity)	{
+					if( total_recs.get() + need_to_insert < resource_distributed.record_capacity)	{
 		    			String[] part_of_param = new String[2+need_to_insert];
 		    			part_of_param[0] = params[0];
 		    			part_of_param[1] = ControllerConstants.patchNameWithPartitionNumber(table, current_partition);

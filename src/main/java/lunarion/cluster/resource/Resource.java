@@ -90,6 +90,9 @@ public class Resource {
 	protected String resource_name ;
 	public final int NUM_PARTITIONS ;
 	public final int NUM_REPLICAS ;
+	
+	public final long record_capacity;
+	
 	protected List<InstanceConfig> INSTANCE_CONFIG_LIST = new ArrayList<InstanceConfig>(); 
 	
 	protected Logger resource_logger = null; 
@@ -147,6 +150,9 @@ public class Resource {
 	   
 	protected ExecutorService thread_executor = Executors.newFixedThreadPool(parallel); 
 	   
+	QueryEngine q_engine;
+	
+	ResourceExecutorCenter re_center ;
 	
 	public Resource(HelixAdmin _admin, String _cluster_name, String _res_name, 
 					int _num_partitions, int _num_replicas, 
@@ -161,6 +167,10 @@ public class Resource {
 		NUM_REPLICAS = _num_replicas;
 		max_recs_per_partition.set(_max_rec_per_partition);
 		resource_logger = LoggerFactory.getLogger(_cluster_name+"_"+resource_name);  
+		
+		
+		record_capacity = _num_partitions * (long)_max_rec_per_partition;
+		
 		
 		resource_logger.info(Timer.currentTime() + " [INFO]: coordinator for database " + resource_name + " in the cluster: " +  _cluster_name + " is starting now. ");
 	 	
@@ -220,7 +230,9 @@ public class Resource {
 
 		resource_logger.info(Timer.currentTime() + " [SUCCEED]: coordinator for database " + resource_name + " in the cluster: " +  _cluster_name + " started successfully. ");
 	 	
-
+		q_engine = new QueryEngine(this);
+		re_center = new ResourceExecutorCenter(q_engine, resource_logger); 
+		
 		
 	} 
 	
@@ -247,15 +259,6 @@ public class Resource {
 		}
 	}
 	
-	public Future<MessageResponse> closeIntermediateQueryResult(RemoteResult remote_result_of_query)
-	{
-		TaskCloseIntermediateQueryResult tsrtn = 
-				new TaskCloseIntermediateQueryResult(remote_result_of_query);
-		 
-
-		Future<MessageResponse> resp = thread_executor.submit(tsrtn);
-		return resp;
-	}
 	
 	public void addNode(String ip, int port) throws Exception
 	{
@@ -404,7 +407,9 @@ public class Resource {
 		
 		return result;
 	}
+	 
 	
+	/*
 	@Deprecated
 	public ResponseCollector sendRequest(CMDEnumeration.command cmd, String[] params )
 	{
@@ -439,27 +444,30 @@ public class Resource {
 	    		rc = fetchLog(params);
 	    		break; 
 	    	case sqlSelect:
-	    		/*
-	    		 * for sql select, params is: 
-	    		 * params[0]: db name;
-	    		 * 
-	    		 * params[1]: select statement, e.g. select a, b, c from table_name where a<100 and c like 'what the fuck'
-	    		 */
+	    		 
+	    		 //for sql select, params is: 
+	    		 //params[0]: db name;
+	    		 //
+	    		 //params[1]: select statement, e.g. select a, b, c from table_name where a<100 and c like 'what the fuck'
+	    		 //
 	    		rc = sqlSelect(params[1]);
 	    		break;
 	    	default:
 	        		break;
         }
-        return rc;
-        		
+        return rc; 
 		
 	}
+	*/
+	
+	/* 
+	@Deprecated
 	
 	public ResponseCollector patchResponseFromNodes(List<Future<RemoteResult>> responses)
 	{
-		/*
-		 * <table partition number, remote result>
-		 */
+		 
+		//<table partition number, remote result>
+		 
 		ConcurrentHashMap<Integer, RemoteResult> response_map = new ConcurrentHashMap<Integer, RemoteResult>();
 		
 		for(Future<RemoteResult> resp : responses)
@@ -469,16 +477,9 @@ public class Resource {
 				RemoteResult mr;
 				try {
 					 mr = (RemoteResult)resp.get();
-					//response_map.put(mr.getUUID(), mr);
-					//System.out.println(mr[0]);
+					 
 					if(mr != null)
-					{
-						//System.out.println(mr.getUUID());
-						//System.out.println(mr.getCMD());
-						//System.out.println(mr.isSucceed());
-						
-						//response_map.put(mr.getUUID(), mr);
-						//response_map.put(mr.getTableName(), mr);
+					{ 
 						response_map.put(ControllerConstants.parsePartitionNumber(mr.getTableName()), mr);
 					}
 					else
@@ -495,7 +496,7 @@ public class Resource {
 		}
 		return new ResponseCollector(this, response_map);
 	}
-	
+	*/
 	public ResponseCollector notifySlavesUpdate(ResponseCollector rc)
 	{
 		List<Future<RemoteResult>> responses = new ArrayList<Future<RemoteResult>>();
@@ -543,88 +544,9 @@ public class Resource {
 			}
 		}
 		
-		return patchResponseFromNodes(responses);
+		return q_engine.patchResponseFromNodes(responses);
     	
-	}
-	
-	/*
-	 * @param is as what it is required:  
-	 * {@link TaskHandlingMessage#createTable(String[] params) createTable}. 
-	 * 
-	 * @return ResponseCollector
-	 */
-	protected ResponseCollector createTable(String[] params )
-	{
-		/*
-		 * params[0]: db
-		 * params[1]: table
-		 */
-		List<Future<RemoteResult>> responses = new ArrayList<Future<RemoteResult>>();
-		
-		Iterator<String> keys = master_map.keySet().iterator();
-		while(keys.hasNext())
-		{
-			String partition_name = keys.next();
-			int partition = controller_consts.parsePartitionNumber(partition_name);
-			if(partition >=0 )
-			{
-				//LunarDBClient client = master_map.get(partition_name);
-				String instance_name = master_map.get(partition_name);
-				LunarDBClient client = instance_connection_map.get(instance_name);
-				 
-				CMDEnumeration.command cmd = CMDEnumeration.command.createTable; 
-	        	
-				String[] new_param = new String[params.length];
-				new_param[0] = params[0];
-				new_param[1] = controller_consts.patchNameWithPartitionNumber(params[1], partition);
-	        	
-	        	TaskSendReqestToNode tsqtn = new TaskSendReqestToNode( client, 
-	        															cmd, 
-	        															new_param );
-	        	 
-	        	Future<RemoteResult> resp = thread_executor.submit(tsqtn);
-	        	responses.add(resp); 
-			}
-		}
-		ResponseCollector rc = patchResponseFromNodes(responses);
-		String table_name = params[1]; 
-		TablePartitionMeta table_new = table_meta_map.get(table_name);
-		/*
-		 * if already has, then rewrite the metadata. 
-		 * if there has no existing meta file, create a new one.
-		 */
-		if(table_new == null)
-			table_new = new TablePartitionMeta( );
-		if(rc.isSucceed())
-		{
-			try {
-				 
-				table_new.createMeta(meta_files_path + table_name+meta_file_suffix, table_name);
-				table_meta_map.put(table_name, table_new);
-				 
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				 
-				rc.setFalse();
-				
-				resource_logger.info(Timer.currentTime() + " [EXCEPTION]: fail in creating table: " + table_name 
-																+ ", the table metadata file can not be created.");
-			 	
-			}
-		}
-		else
-			resource_logger.info(Timer.currentTime() + " [ERROR]: fail to create table: " + table_name );
-			
-		return rc;
-	}
-	
-	/*
-	public Iterator<String> getTables()
-	{
-		return this.tables_in_resource;
-	}
-	*/
+	} 
 	
 	public Iterator<String> listTables()
 	{ 
@@ -728,11 +650,12 @@ public class Resource {
 		 
 	} 
 	
+	/*
 	protected ResponseCollector insert(String[] params)
 	{
-		/*
-		 * <table name, remote result>
-		 */
+		 
+		// <table name, remote result>
+		 
 		ConcurrentHashMap<String, RemoteResult> response_map = new ConcurrentHashMap<String, RemoteResult>();
 		List<Future<RemoteResult>> responses = new ArrayList<Future<RemoteResult>>();
 		
@@ -832,77 +755,14 @@ public class Resource {
 		
 		return patchResponseFromNodes(responses);
 	} 
-	
-	/*
-	 * @TaskHandlingMessage.addFunctionalColumn
-	 */
-	protected ResponseCollector addFunctionalColumn(CMDEnumeration.command cmd, String[] params )
-	{
-		
-		if(cmd == command.addAnalyticColumn && params.length < 4)
-    	{
-    		System.err.println("[NODE ERROR]: addAnalyticColumn needs at least 4 parameters: db name, table name, column name and column type");
-    		resource_logger.info("[NODE ERROR]: addAnalyticColumn needs at least 4 parameters: db name, table name, column name and column type");
-			 	 
-			return null;
-    	}
-		if(params.length < 3 )
-		{
-			System.err.println("[NODE ERROR]: addFulltextColumn needs at least 3 parameters: db name, table name and column name");
-			resource_logger.info("[NODE ERROR]: addFulltextColumn needs at least 3 parameters: db name, table name and column name");
-			 
-			return null;
-		}
-
-		List<Future<RemoteResult>> responses = new ArrayList<Future<RemoteResult>>();
-		
-		Iterator<String> keys = master_map.keySet().iterator();
-		while(keys.hasNext())
-		{
-			String partition_name = keys.next();
-			int partition = controller_consts.parsePartitionNumber(partition_name);
-			if(partition >=0 )
-			{  
-				String instance_name = master_map.get(partition_name);
-				LunarDBClient client = instance_connection_map.get(instance_name);
-				String[] new_param = null;
-				switch(cmd)
-				{
-					case addFulltextColumn:
-					case addStorableColumn:
-					{
-						new_param = new String[params.length];
-						new_param[0] = params[0];
-						new_param[1] = controller_consts.patchNameWithPartitionNumber(params[1], partition);
-						new_param[2] = params[2];
-					}
-					break;
-					case addAnalyticColumn:
-					{
-						new_param = new String[params.length];
-						new_param[0] = params[0];
-						new_param[1] = controller_consts.patchNameWithPartitionNumber(params[1], partition);
-						new_param[2] = params[2];
-						new_param[3] = params[3];
-					}
-					break; 
-				}
-	        	TaskSendReqestToNode tsqtn = new TaskSendReqestToNode( client,cmd,new_param );
-	        	 
-	        	Future<RemoteResult> resp = thread_executor.submit(tsqtn);
-	        	responses.add(resp); 
-			}
-		}
-		
-		return patchResponseFromNodes(responses);
-	}
-	
+	*/
 	 
+	/* 
 	protected ResponseCollector ftQuery(String[] params )
 	{
-		/*
-		 * <table name, remote result>
-		 */
+		 
+		//<table name, remote result>
+		 
 		ConcurrentHashMap<String, RemoteResult> response_map = new ConcurrentHashMap<String, RemoteResult>();
 		List<Future<RemoteResult>> responses = new ArrayList<Future<RemoteResult>>();
 		
@@ -932,20 +792,14 @@ public class Resource {
         															new_param );
         	 
         	Future<RemoteResult> resp = thread_executor.submit(tsqtn);
-        	/*
-        	RemoteResult resp_from_svr = tsqtn.call(); 
-        	for(int j=0;j<resp_from_svr.getParams().length;j++)
-     		{
-     			System.out.println("LunarNode responded: "+ resp_from_svr.getParams()[j]);
-     		}
-     		*/
+        	 
         	responses.add(resp); 
         	partition--;
 		}
 		
 		return patchResponseFromNodes(responses);
 	}
-	
+	*/
 	protected ResponseCollector fetchLog(String[] params)
 	{
 		/*
@@ -977,19 +831,15 @@ public class Resource {
 	        	 
 	        	Future<RemoteResult> resp = thread_executor.submit(tsqtn);
 	        	
-	        	/*
-	        	RemoteResult resp_from_svr = tsqtn.call(); 
-	        	 for(int i=0;i<resp_from_svr.getParams().length;i++)
-	     		{
-	     			System.out.println("LunarNode responded: "+ resp_from_svr.getParams()[i]);
-	     		}*/
+	        	 
 	        	responses.add(resp); 
 			}
 		}
 		
-		return patchResponseFromNodes(responses);
+		return q_engine.patchResponseFromNodes(responses);
 	}
 	
+	/*
 	protected ResponseCollector fetchRecords(String[] params, boolean if_desc)
 	{
 		return fetchRecords(params[0], 
@@ -998,7 +848,7 @@ public class Resource {
 							Integer.parseInt(params[3].trim()), 
 							if_desc); 
 	}
-	
+	*/
 	public long recsCount(String table)
 	{
 		List<Future<RemoteResult>> responses = new ArrayList<Future<RemoteResult>>();
@@ -1140,7 +990,7 @@ public class Resource {
 		        	begin_in_which_partition --;
 		        	if(begin_in_which_partition < 0)
 		        	{
-		        		return patchResponseFromNodes(responses);
+		        		return q_engine.patchResponseFromNodes(responses);
 		        	}
 		        	i_from = 0;
 		        	i_th_rec_count = max_recs_per_partition.get(); 
@@ -1148,7 +998,7 @@ public class Resource {
 		}
 	 
 		
-		return patchResponseFromNodes(responses);
+		return q_engine.patchResponseFromNodes(responses);
 	}
 	
 	protected ResponseCollector sqlSelect(String statement)
@@ -1172,7 +1022,7 @@ public class Resource {
 		}
 		
 		*/
-		return new ResponseCollector(this, result, total);
+		return new ResponseCollector(q_engine, result, total);
 	}
 	
 	@Deprecated
@@ -1222,7 +1072,7 @@ public class Resource {
         	partition--;
 		}
 		
-		return patchResponseFromNodes(responses);
+		return q_engine.patchResponseFromNodes(responses);
 	}
 	
 	public int getNodeNumber()
@@ -1253,6 +1103,11 @@ public class Resource {
 	public LunarDBClient getClientForMaster(String instance_name)
 	{
 		return instance_connection_map.get(instance_name);
+	}
+	
+	public HashMap<String, LunarDBClient> getClientMapForMaster( )
+	{
+		return instance_connection_map ;
 	}
 	
 	public ExecutorService getThreadExecutor()

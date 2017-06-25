@@ -89,13 +89,7 @@ DataPartition_5			S			M			S
  */
 public class ResourceDistributed extends Resource{
 	 
-	public final int data_page = DataPage.data_page;
-	public final int data_page_bit_len = DataPage.data_page_bit_len;
-	public final int data_page_mask = DataPage.data_page_mask;
 	
-	public final long record_capacity;
-	
-	ResourceExecutorCenter re_center ;
 	
 	
 	public ResourceDistributed(HelixAdmin _admin, String _cluster_name, String _res_name, 
@@ -109,61 +103,8 @@ public class ResourceDistributed extends Resource{
 					_meta_files_path,
 					_model_file); 
 		
-		record_capacity = _num_partitions * (long)_max_rec_per_partition;
-		re_center = new ResourceExecutorCenter(this, resource_logger); 
-	}
-	
- 
-	public ResourceExecutorCenter getExecutorCenter()
-	{
-		return re_center;
-	}
- 
-	
-	
-	
-	
-	public ResponseCollector patchResponseFromNodes(List<Future<RemoteResult>> responses)
-	{
-		/*
-		 * <i-th data piece, remote result>
-		 */
-		ConcurrentHashMap<Integer, RemoteResult> response_map = new ConcurrentHashMap<Integer, RemoteResult>();
 		
-		int i_th = 0;
-		for(Future<RemoteResult> resp : responses)
-		{
-			if(resp != null)
-			{
-				RemoteResult mr;
-				try {
-					 mr = (RemoteResult)resp.get();
-					//response_map.put(mr.getUUID(), mr);
-					//System.out.println(mr[0]);
-					if(mr != null)
-					{
-						//System.out.println(mr.getUUID());
-						//System.out.println(mr.getCMD());
-						//System.out.println(mr.isSucceed());
-						
-						//response_map.put(mr.getUUID(), mr);
-						response_map.put(i_th, mr);
-						i_th++;
-					}
-					else
-					{
-						System.err.println("no response");
-					}
-				} catch (InterruptedException | ExecutionException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-			
-			
-		}
-		return new ResponseCollector (this, response_map);
-	}
+	} 
 	
 	public ResponseCollector queryRemoteWithFilter(String table, String logic_statement)
 	{ 
@@ -176,7 +117,7 @@ public class ResourceDistributed extends Resource{
 	
 	public ResponseCollector sendRequest(CMDEnumeration.command cmd, String[] params )
 	{
-		return re_center.dispatch(cmd, params);
-        
+		return re_center.dispatch(cmd, params); 
 	}
+	 
 }

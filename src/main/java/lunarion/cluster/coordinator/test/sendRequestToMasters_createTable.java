@@ -26,6 +26,7 @@ import java.util.Properties;
 
 import lunarion.cluster.coordinator.Coordinator;
 import lunarion.cluster.resource.Resource;
+import lunarion.cluster.resource.ResourceDistributed;
 import lunarion.cluster.resource.ResponseCollector;
 import lunarion.db.local.shell.CMDEnumeration;
 import lunarion.node.remote.protocol.MessageResponse;
@@ -97,7 +98,7 @@ public class sendRequestToMasters_createTable {
 			 e.printStackTrace();
 		 }
 		 //Thread.sleep(10000);
-		 Resource res = co.getResource(resource_name);
+		 ResourceDistributed res = co.getResource(resource_name);
 		 res.updateMasters( ) ;
 		 
 		 while(true)
