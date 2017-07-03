@@ -25,10 +25,9 @@ import java.util.concurrent.Future;
 
 import org.apache.log4j.Logger;
 
-import lunarion.cluster.coordinator.TablePartitionMeta;
+ 
 import lunarion.cluster.coordinator.TaskSendReqestToNode;
-import lunarion.cluster.resource.QueryEngine;
-import lunarion.cluster.resource.ResourceDistributed;
+import lunarion.cluster.resource.QueryEngine; 
 import lunarion.cluster.resource.ResponseCollector;
 import lunarion.cluster.resource.EDF.ResourceExecutorInterface;
 import lunarion.db.local.shell.CMDEnumeration;
@@ -47,10 +46,10 @@ public class ResFetchRecords implements ResourceExecutorInterface{
 	{
 		this.cmd = _cmd;
 	} 
-	public ResponseCollector execute(QueryEngine db_resource , String[] params, Logger logger)
+	public ResponseCollector execute(QueryEngine db_query_engine , String[] params, Logger logger)
 	{
 		ResponseCollector rc = null;
-		master_map =  db_resource.getMasters(); 
+		master_map =  db_query_engine.getMasters(); 
 		 
    	 
 		String db = params[0]; 
@@ -62,11 +61,11 @@ public class ResFetchRecords implements ResourceExecutorInterface{
 		if(this.cmd == CMDEnumeration.command.fetchRecordsASC)
 			if_desc = false;
 		
-		return  fetchRecords(db_resource, db, table , from, count, if_desc, logger);
+		return  fetchRecords(db_query_engine, db, table , from, count, if_desc, logger);
 	}
 	
 	
-	public ResponseCollector fetchRecords(QueryEngine db_resource, String db, String table, long from, int count, boolean if_desc, Logger logger)
+	public ResponseCollector fetchRecords(QueryEngine db_query_engine, String db, String table, long from, int count, boolean if_desc, Logger logger)
 	{ 
 		List<Future<RemoteResult>> responses = new ArrayList<Future<RemoteResult>>();
 		
@@ -74,7 +73,7 @@ public class ResFetchRecords implements ResourceExecutorInterface{
 		//TablePartitionMeta table_i_meta =  db_resource.getTablePartitionMeta(table);
 		
 		//int current_partition_in_writing = table_i_meta.getLatestPartitionNumber() ; 
-		int current_partition_in_writing = db_resource.currentPartitionInWriting(table);
+		int current_partition_in_writing = db_query_engine.currentPartitionInWriting(table);
 		 
 		if(current_partition_in_writing >=0 )
 		{ 
@@ -82,7 +81,7 @@ public class ResFetchRecords implements ResourceExecutorInterface{
 			
 			String instance_name = master_map.get(latest_partition_name);
 			//LunarDBClient client = instance_connection_map.get(instance_name);
-			LunarDBClient client = db_resource.getClientForMaster(instance_name);
+			LunarDBClient client = db_query_engine.getClientForMaster(instance_name);
 			
 			
 			CMDEnumeration.command cmd_for_rec_count = CMDEnumeration.command.recsCount; 
@@ -96,9 +95,9 @@ public class ResFetchRecords implements ResourceExecutorInterface{
 			if(rr.isSucceed())
 				rec_count_in_partition_i = rr.getResultCount() ;
 			 	 
-			int max_level = (rec_count_in_partition_i &(db_resource.data_page_mask)) >> db_resource.data_page_bit_len; 
+			int max_level = (rec_count_in_partition_i &(db_query_engine.data_page_mask)) >> db_query_engine.data_page_bit_len; 
 			int begin_level = max_level;
-			int rec_count_in_partition_i_level_n = rec_count_in_partition_i - (rec_count_in_partition_i &(db_resource.data_page_mask));
+			int rec_count_in_partition_i_level_n = rec_count_in_partition_i - (rec_count_in_partition_i &(db_query_engine.data_page_mask));
 			/*
 			 * recs in each partition, dp(data page):
 			 * level 0: |__|_dp 1024_|__|  |__|_dp 1024_|__|  |__|_dp 1024_|__| ... |__|_dp 1024_|__|
@@ -113,7 +112,7 @@ public class ResFetchRecords implements ResourceExecutorInterface{
 			 *                   
 			 */
 			int begin_in_which_partition =  current_partition_in_writing;
-			int i_th_rec_count = Math.min(rec_count_in_partition_i_level_n, db_resource.data_page);
+			int i_th_rec_count = Math.min(rec_count_in_partition_i_level_n, db_query_engine.data_page);
 			long i_from = from;
 			/*
 			 * find out in which partition to begin fetching records
@@ -130,11 +129,11 @@ public class ResFetchRecords implements ResourceExecutorInterface{
 					begin_in_which_partition --;
 					if(begin_in_which_partition < 0)
 					{
-						begin_in_which_partition = db_resource.NUM_PARTITIONS -1;
+						begin_in_which_partition = db_query_engine.NUM_PARTITIONS -1;
 						begin_level --;
 					}
 								
-					i_th_rec_count =  db_resource.data_page; 
+					i_th_rec_count =  db_query_engine.data_page; 
 				} 
 			} 
 			
@@ -152,7 +151,7 @@ public class ResFetchRecords implements ResourceExecutorInterface{
 			
 			long i_from_in_data_piece = i_from;
 			
-			long i_from_in_partition = i_level*db_resource.data_page + i_from ; 
+			long i_from_in_partition = i_level*db_query_engine.data_page + i_from ; 
 			 
 			int g_remains = count;
 			while(g_remains > 0 && (begin_in_which_partition >= 0 && begin_level >=0))
@@ -170,7 +169,7 @@ public class ResFetchRecords implements ResourceExecutorInterface{
 		        															cmd, 
 		        															param_fetching );
 		        	 
-		        	Future<RemoteResult> resp = db_resource.getThreadExecutor().submit(request_fetching_recs);
+		        	Future<RemoteResult> resp = db_query_engine.getThreadExecutor().submit(request_fetching_recs);
 		        	
 		        	responses.add(resp); 
 		        	
@@ -181,22 +180,21 @@ public class ResFetchRecords implements ResourceExecutorInterface{
 					 */
 		        	begin_in_which_partition --;
 		        	if(begin_in_which_partition < 0)
-		        	{
-		        		//return patchResponseFromNodes(responses);
-		        		begin_in_which_partition = db_resource.NUM_PARTITIONS;
+		        	{  
+		        		begin_in_which_partition = db_query_engine.NUM_PARTITIONS;
 		        		i_level++;
 		        	}
 		        	//i_from = 0;
 		        	//i_th_rec_count = max_recs_per_partition.get(); 
 		        	i_from_in_data_piece = 0;
-		        	i_from_in_partition = i_level*db_resource.data_page ; 
+		        	i_from_in_partition = i_level*db_query_engine.data_page ; 
 		        	
-		        	i_th_rec_count = db_resource.data_page; 
+		        	i_th_rec_count = db_query_engine.data_page; 
 			} 	
 		}
 	 
 		
-		return db_resource.patchResponseFromNodes(responses);
+		return db_query_engine.patchResponseFromNodes(responses);
 	}
 	
 	

@@ -94,7 +94,8 @@ public class MessageResponse  extends MessageToWrite{
 		return null;
 	}
 	
-	public void read(ByteBuf message_byte_buf)
+	@Deprecated
+	public void readDeprecated(ByteBuf message_byte_buf)
 	{ 
 		byte[] raw_byte_buf = new byte[message_byte_buf.readableBytes()];
 		message_byte_buf.readBytes(raw_byte_buf);
@@ -234,6 +235,120 @@ public class MessageResponse  extends MessageToWrite{
 		table_name = this.params[1];
 		 
 	} 
+	
+	
+	public void read(ByteBuf message_byte_buf) throws UnsupportedEncodingException
+	{ 
+		cmd = CMDEnumeration.getCMD(message_byte_buf.readByte()); 
+		succeed = message_byte_buf.readByte()==0?false:true; 
+		
+		byte[] uuid_len_bytes = new byte[4];
+		message_byte_buf.readBytes(uuid_len_bytes);
+		int uuid_len = VariableGeneric.Transform4ByteToInt(uuid_len_bytes, 0);
+	 
+		byte[] uuid_in_bytes = new byte[uuid_len];
+		message_byte_buf.readBytes(uuid_in_bytes);
+		 
+		message_uuid = new String(uuid_in_bytes, 0, uuid_in_bytes.length, "utf-8"); 
+	 	 
+		byte[] count_len_bytes = new byte[4];
+		message_byte_buf.readBytes(count_len_bytes);
+		int count =  VariableGeneric.Transform4ByteToInt(count_len_bytes, 0);
+		 
+		if(cmd == command.fetchQueryResultRecs 
+				|| cmd == command.fetchRecordsASC 
+				|| cmd == command.fetchRecordsDESC)
+		{
+			/* 
+			 * all_params[0]: db_name
+			 * all_params[1]: table_name
+			 * 
+			 * ignore the first 2 params 
+			 */
+			 
+			//db_name = all_params[1];
+			//table_name = all_params[2]; 
+			if(count < 2)
+				return;
+			db_name = transformBytesToUTF8String(readOneParamInBuff( message_byte_buf)) ;
+			table_name = transformBytesToUTF8String(readOneParamInBuff( message_byte_buf)) ;
+			
+			//this.params = new String[all_params.length-3];
+			if(count == 2)
+				return;
+			
+			this.params = new String[count - 2];
+			 
+			for(int i=0;i<this.params.length;i++)
+			{ 
+				params[i] = transformBytesToUTF8String(readOneParamInBuff( message_byte_buf)) ;
+				 
+			} 
+			return; 
+			
+		}
+		
+		if( this.cmd == CMDEnumeration.command.ftQuery 
+				|| this.cmd == CMDEnumeration.command.rgQuery
+				|| this.cmd == CMDEnumeration.command.ptQuery
+				|| this.cmd == CMDEnumeration.command.filterForWhereClause)
+		{
+			/*
+			 * @ExecutorInterface.constructQueryResultHandler(...), in serializing the message, uuid has been read above, 
+			 * so here the first param is the db name. 
+			 * all_params[0]: db_name
+			 * all_params[1]: table_name 
+			 * all_params[2]: intermediate_result_uuid 
+			 * all_params[3]: query_result.resultCount();
+			 * 
+			 * all_params[4]: records in the page on level 0;
+			 * all_params[5]: records in the page on level 1;
+			 * ...			 
+			 */
+			this.params = new String[4];
+			for(int i=0;i<this.params.length;i++) 
+				params[i] = transformBytesToUTF8String(readOneParamInBuff( message_byte_buf));
+			
+			db_name = this.params[0]; 
+			table_name = this.params[1]; 
+			 
+			//counts_in_every_page = new int[all_params.length-5];
+			counts_in_every_page = new int[count - 4 ];
+			for(int i=0;i<counts_in_every_page.length;i++)
+			{
+				//counts_in_every_page[i] = Integer.parseInt(all_params[start_at+i]);
+				//counts_in_every_page[i] = Integer.parseInt( (String)stringTokenizer.nextElement());
+				counts_in_every_page[i] =  VariableGeneric.Transform4ByteToInt(readOneParamInBuff( message_byte_buf), 0);
+			} 
+			
+			return ;
+			
+		} 
+		
+		this.params = new String[count];
+		
+		for(int i=0;i<this.params.length;i++)
+		{ 
+			this.params[i] =  transformBytesToUTF8String(readOneParamInBuff( message_byte_buf));
+		} 
+		if(cmd == command.fetchTableNamesWithSuffix)
+		{
+			db_name = "";
+			table_name = this.params[0];
+			return;
+		}
+		if(cmd == command.getColumns )
+		{
+			db_name = "";
+			table_name = "";
+			return;
+		}
+			 
+		db_name =  this.params[0];
+		table_name = this.params[1];
+		 
+	} 
+	
 	
 	public int getResultCount()
 	{

@@ -19,9 +19,9 @@
 package lunarion.node.remote.protocol;
  
 
-import java.io.UnsupportedEncodingException; 
+import java.io.UnsupportedEncodingException;
 
- 
+import LCG.StorageEngin.Serializable.Impl.VariableGeneric;
 import io.netty.buffer.ByteBuf;
 import lunarion.db.local.shell.CMDEnumeration;
 import lunarion.db.local.shell.CMDEnumeration.command;
@@ -29,27 +29,24 @@ import lunarion.db.local.shell.CMDEnumeration.command;
 public class MessageResponseForDriver extends MessageResponseForQuery {
 	 
 	@Override
-	public void read(ByteBuf message_byte_buf)
+	public void read(ByteBuf message_byte_buf) throws UnsupportedEncodingException
 	{ 
-		byte[] raw_byte_buf = new byte[message_byte_buf.readableBytes()];
-		message_byte_buf.readBytes(raw_byte_buf);
+		cmd = CMDEnumeration.getCMD(message_byte_buf.readByte()); 
+		succeed = message_byte_buf.readByte()==0?false:true; 
+		
+		byte[] uuid_len_bytes = new byte[4];
+		message_byte_buf.readBytes(uuid_len_bytes);
+		int uuid_len = VariableGeneric.Transform4ByteToInt(uuid_len_bytes, 0);
 	 
+		byte[] uuid_in_bytes = new byte[uuid_len];
+		message_byte_buf.readBytes(uuid_in_bytes);
+		 
+		message_uuid = new String(uuid_in_bytes, 0, uuid_in_bytes.length, "utf-8"); 
+	 	 
+		byte[] count_len_bytes = new byte[4];
+		message_byte_buf.readBytes(count_len_bytes);
+		int count =  VariableGeneric.Transform4ByteToInt(count_len_bytes, 0);
 		
-		cmd = CMDEnumeration.getCMD(raw_byte_buf[0]);
-		//cmd = CMDEnumeration.getCMD(message_byte_buf.getByte(0));
-		succeed = raw_byte_buf[1]==0?false:true;
-		//succeed = message_byte_buf.getByte(1)==0?false:true;
-		
-		String str = "";
-		try {
-			str = new String(raw_byte_buf, 2, raw_byte_buf.length-2, "utf-8");
-		} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		//String str = new String(message_byte_buf.array(), 2, message_byte_buf.readableBytes() -2 );
-		String[] all_params = str.split(delim);
-		message_uuid = all_params[0]; 
 		
 		if(cmd == command.fetchQueryResultRecs 
 				|| cmd == command.fetchRecordsASC 
@@ -62,31 +59,29 @@ public class MessageResponseForDriver extends MessageResponseForQuery {
 			 * 
 			 * ignore the first three params 
 			 */
-			 
-				db_name = all_params[1];
-				table_name = all_params[2];
-				this.params = new String[all_params.length-3];
-				//System.arraycopy(all_params, 1, this.params, 0, all_params.length-1);
-				for(int i=0;i<this.params.length;i++)
-				{
-					if(!all_params[i+3].equalsIgnoreCase(this.null_str))
-						this.params[i] = all_params[i+3];
-					else
-						this.params[i] = null;
-				}
+			if(count < 2)
 				return;
-		 
+			db_name = transformBytesToUTF8String(readOneParamInBuff( message_byte_buf)) ;
+			table_name = transformBytesToUTF8String(readOneParamInBuff( message_byte_buf)) ;
+			
+			if(count == 2)
+				return;
+			
+			this.params = new String[count - 2];
+			for(int i=0;i<this.params.length;i++)
+			{ 
+				params[i] = transformBytesToUTF8String(readOneParamInBuff( message_byte_buf)) ;
+				 
+			} 
+			return;  
 			
 		}
 		 
-		this.params = new String[all_params.length-1];
+		this.params = new String[count];
 		 
 		for(int i=0;i<this.params.length;i++)
-		{
-			if(!all_params[i+1].equalsIgnoreCase(this.null_str))
-				this.params[i] = all_params[i+1];
-			else
-				this.params[i] = null;
+		{ 
+			this.params[i] =  transformBytesToUTF8String(readOneParamInBuff( message_byte_buf));
 		} 
 		 
 		if(cmd == command.getColumns ||cmd == command.closeQueryResult )

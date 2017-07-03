@@ -31,7 +31,7 @@ import lunarion.db.local.shell.CMDEnumeration;
 public class MessageRequest extends MessageToWrite{ 
 	
 	protected String[] params; //for reading
-	
+	 
 	
 	public MessageRequest()
 	{
@@ -42,16 +42,43 @@ public class MessageRequest extends MessageToWrite{
 		return this.params;
 	}
 	
-	public void read(ByteBuf message_byte_buf)
+	
+	public void read(ByteBuf message_byte_buf) throws UnsupportedEncodingException  
+	{  
+		cmd = CMDEnumeration.getCMD(message_byte_buf.readByte()); 
+		succeed = message_byte_buf.readByte()==0?false:true; 
+		
+		byte[] uuid_len_bytes = new byte[4];
+		message_byte_buf.readBytes(uuid_len_bytes);
+		int uuid_len = VariableGeneric.Transform4ByteToInt(uuid_len_bytes, 0);
+	 
+		byte[] uuid_in_bytes = new byte[uuid_len];
+		message_byte_buf.readBytes(uuid_in_bytes);
+		 
+		message_uuid = new String(uuid_in_bytes, 0, uuid_in_bytes.length, "utf-8"); 
+	 	 
+		byte[] count_len_bytes = new byte[4];
+		message_byte_buf.readBytes(count_len_bytes);
+		int count =  VariableGeneric.Transform4ByteToInt(count_len_bytes, 0);
+		this.params = new String[count]; 
+	 
+		for(int i=0;i<this.params.length;i++)
+		{ 
+			params[i] = transformBytesToUTF8String(readOneParamInBuff( message_byte_buf));  
+		}
+		 
+	}   
+	
+	@Deprecated
+	public void readDeprecated(ByteBuf message_byte_buf)
 	{ 
 		byte[] raw_byte_buf = new byte[message_byte_buf.readableBytes()];
 		message_byte_buf.readBytes(raw_byte_buf);
 	 
 		 
-		cmd = CMDEnumeration.getCMD(raw_byte_buf[0]);
-		//cmd = CMDEnumeration.getCMD(message_byte_buf.getByte(0));
+		cmd = CMDEnumeration.getCMD(raw_byte_buf[0]); 
 		succeed = raw_byte_buf[1]==0?false:true;
-		//succeed = message_byte_buf.getByte(1)==0?false:true; 
+		 
 		 
 		String str = "";
 		try {
@@ -60,28 +87,16 @@ public class MessageRequest extends MessageToWrite{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		//String str = new String(message_byte_buf.array(), 2, message_byte_buf.readableBytes() -2 );
-		//String[] all_params = str.split(delim);
-		StringTokenizer stringTokenizer = new StringTokenizer(str, delim);  
-		
-		//message_uuid = all_params[0];
+	 	StringTokenizer stringTokenizer = new StringTokenizer(str, delim);   
+	 
 		if(stringTokenizer.hasMoreElements())  
-			message_uuid =  (String) stringTokenizer.nextElement();
-		
-		
-		//this.params = new String[all_params.length-1];
+			message_uuid =  (String) stringTokenizer.nextElement(); 
+	 
 		this.params = new String[stringTokenizer.countTokens() ];
 		
-		//System.arraycopy(all_params, 1, this.params, 0, all_params.length-1);
+		 
 		for(int i=0;i<this.params.length;i++)
-		{
-			/*
-			if(!all_params[i+1].equalsIgnoreCase(this.null_str))
-				this.params[i] = all_params[i+1];
-			else
-				this.params[i] = null;
-			*/
-			
+		{  
 			this.params[i] =  (String) stringTokenizer.nextElement();
 		} 
 	}   
