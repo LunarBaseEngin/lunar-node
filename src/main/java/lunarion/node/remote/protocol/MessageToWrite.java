@@ -86,7 +86,7 @@ public class MessageToWrite extends Object{
 			
 			params_in_bytes.add(rec_i_in_byte);
 			 
-			size_of_recs +=  this.byte_for_length + rec_i_in_byte.length ;  
+			size_of_recs +=  (this.byte_for_length + rec_i_in_byte.length) ;  
 			 
 		}  
 		 
@@ -167,7 +167,7 @@ public class MessageToWrite extends Object{
 		byte[] uuid = VariableGeneric.utf8Encode(
 				this.message_uuid,0,this.message_uuid.length());
 		byte[] uuid_len = new byte[4];
-		VariableGeneric.TransformIntTo4Byte(uuid_len, 0, this.message_uuid.length());
+		VariableGeneric.TransformIntTo4Byte(uuid_len, 0, uuid.length);
 		message_byte_buf.writeBytes(uuid_len); 
 		message_byte_buf.writeBytes(uuid); 
 	 

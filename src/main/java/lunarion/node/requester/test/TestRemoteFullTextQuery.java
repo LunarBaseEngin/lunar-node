@@ -50,7 +50,7 @@ public class TestRemoteFullTextQuery {
         	//params[1] = "textTable";
         	//params[2] = "content against (\" 大家 \")";
         	params[1] = "textTable_remote_1";
-        	params[2] = "content against (\" 大家 \")";
+        	params[2] = "content against (\" 大家 + 意思\")";
         	
         	params[3] = "1";
         	params[4] = "1500";

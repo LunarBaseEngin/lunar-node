@@ -123,6 +123,9 @@ public class CMDEnumeration {
 		},
 		sqlSelect{
 			public byte getByte(){return 31;}   
+		},
+		unknown{
+			public byte getByte(){return 127;}   
 		}; 
 		
 		
@@ -210,7 +213,11 @@ public class CMDEnumeration {
 	    	case 31:
 	    		cmd = CMDEnumeration.command.sqlSelect;
 	    		break;
+	    	case 127:
+	    		cmd = CMDEnumeration.command.unknown;
+	    		break;
 	    	default:
+	    		cmd = CMDEnumeration.command.unknown;
 	    		break; 
 	    }
 		return cmd;

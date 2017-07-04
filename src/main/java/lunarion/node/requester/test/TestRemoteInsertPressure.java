@@ -123,7 +123,7 @@ public class TestRemoteInsertPressure {
         	 * at MessageClientWatcher 
         	 * to block the thread waiting for server response.
         	 */
-        	 cf.channel().closeFuture().sync();
+        	// cf.channel().closeFuture().sync();
         
         } finally {
             
