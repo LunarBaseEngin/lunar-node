@@ -107,7 +107,7 @@ public class ResFetchRecords implements ResourceExecutorInterface{
 			 * 
 			 *             partition_0         partition_1        partition_2      ...  partition_n
 			 * 
-			 *                             			^------the current partition
+			 *                             			^------the current partition in writing.
 			 * if fetch recs from position X, seek in which data piece, belonging to which partition, the position X is.  
 			 *                   
 			 */

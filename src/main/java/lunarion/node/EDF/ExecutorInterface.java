@@ -25,6 +25,7 @@ import org.apache.log4j.Logger;
 import LCG.DB.API.LunarDB;
 import LCG.DB.API.LunarTable;
 import LCG.DB.API.Result.FTQueryResult;
+import LCG.StorageEngin.Serializable.Impl.VariableGeneric;
 import lunarion.cluster.resource.ResourceDistributed;
 import lunarion.node.LunarDBServerStandAlone;
 import lunarion.node.page.DataPage;
@@ -83,7 +84,7 @@ public interface ExecutorInterface {
     	//TODO do not transfer integer to string, instead using binary protocol to serialize the object. 
     	for(int j = 0; j < pages_with_rec_count.length; j++ )
     	{
-    		result_uuid[4+j] = pages_with_rec_count[j]+"";
+    		result_uuid[4+j] = pages_with_rec_count[j]+""; 
     	}
     	
     	return result_uuid;

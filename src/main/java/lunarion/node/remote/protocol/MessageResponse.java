@@ -318,7 +318,10 @@ public class MessageResponse  extends MessageToWrite{
 			{
 				//counts_in_every_page[i] = Integer.parseInt(all_params[start_at+i]);
 				//counts_in_every_page[i] = Integer.parseInt( (String)stringTokenizer.nextElement());
-				counts_in_every_page[i] =  VariableGeneric.Transform4ByteToInt(readOneParamInBuff( message_byte_buf), 0);
+				//counts_in_every_page[i] =  VariableGeneric.Transform4ByteToInt(readOneParamInBuff( message_byte_buf), 0); 
+				counts_in_every_page[i] =  Integer.parseInt(
+												transformBytesToUTF8String(readOneParamInBuff( message_byte_buf) )); 
+				
 			} 
 			
 			return ;

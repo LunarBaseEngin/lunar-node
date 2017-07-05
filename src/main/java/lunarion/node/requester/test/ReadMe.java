@@ -21,8 +21,8 @@ package lunarion.node.requester.test;
 public class ReadMe {
 
 	String readme = "To test cases in this package, user must "
-			+ "run the server first to take the request from clients. "
+			+ "run the server first to take the requests from clients. "
 			+ "The server is lunarion.node.requester.test.server, "
-			+ "which contains the main funtion, in which databases have already "
-			+ "been created and opened, waiting for taking command. ";
+			+ "which contains the main functions, in which databases have already "
+			+ "been created and opened, waiting for taking commands. ";
 }
